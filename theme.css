@@ -368,3 +368,136 @@ footer {
     padding-left: 24px;
   }
 }
+
+.author-portrait picture {
+  display: block;
+}
+
+/* Keep decorative elements and long theme strips inside the viewport. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.hero {
+  overflow: hidden;
+}
+
+.hero-glow {
+  pointer-events: none;
+}
+
+.thesis-strip {
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Content stays visible when JavaScript is unavailable. */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.js-ready .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.js-ready .reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.consent-banner {
+  position: fixed;
+  z-index: 100;
+  right: clamp(16px, 3vw, 42px);
+  bottom: clamp(16px, 3vw, 42px);
+  left: clamp(16px, 3vw, 42px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  max-width: 920px;
+  margin-inline: auto;
+  padding: 20px 22px;
+  color: #f6efe2;
+  background: rgba(41, 36, 29, .97);
+  border: 1px solid rgba(246, 239, 226, .24);
+  box-shadow: 0 22px 60px rgba(46, 37, 28, .28);
+}
+
+.consent-banner strong {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.consent-banner p {
+  margin: 0;
+  color: #d6cfc3;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.consent-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.consent-banner .button {
+  background: #f3e7d4;
+  color: #29241d;
+  border-color: #f3e7d4;
+  white-space: nowrap;
+}
+
+.consent-decline {
+  min-height: 44px;
+  padding: 8px 4px;
+  color: #f6efe2;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(246, 239, 226, .55);
+  cursor: pointer;
+}
+
+.consent-decline:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .menu-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 680px) {
+  .consent-banner,
+  .consent-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consent-banner {
+    gap: 16px;
+  }
+
+  .consent-actions {
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js-ready .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -2,27 +2,33 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/</loc>
+    <loc>https://garethmackenzie.github.io/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/built/</loc>
+    <loc>https://garethmackenzie.github.io/built/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/about/</loc>
+    <loc>https://garethmackenzie.github.io/about/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/insights/</loc>
+    <loc>https://garethmackenzie.github.io/insights/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/media/</loc>
+    <loc>https://garethmackenzie.github.io/media/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
   <url>
-    <loc>https://built-gareth-mackenzie.garethmackenzie.workers.dev/contact/</loc>
+    <loc>https://garethmackenzie.github.io/contact/</loc>
+    <lastmod>2026-08-28</lastmod>
   </url>
 
 </urlset>

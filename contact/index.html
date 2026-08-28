@@ -8,18 +8,18 @@
   <meta name="author" content="Gareth Andrew Mackenzie">
   <meta name="theme-color" content="#f2ebdc">
   <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="canonical" href="https://built-gareth-mackenzie.garethmackenzie.workers.dev/contact/">
+  <link rel="canonical" href="https://garethmackenzie.github.io/contact/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BUILT by Gareth Andrew Mackenzie">
   <meta property="og:title" content="Contact | Gareth Andrew Mackenzie">
   <meta property="og:description" content="Media, speaking, professional, and book-related enquiries for the author of BUILT.">
-  <meta property="og:url" content="https://built-gareth-mackenzie.garethmackenzie.workers.dev/contact/">
-  <meta property="og:image" content="https://built-gareth-mackenzie.garethmackenzie.workers.dev/assets/social-card.png">
+  <meta property="og:url" content="https://garethmackenzie.github.io/contact/">
+  <meta property="og:image" content="https://garethmackenzie.github.io/assets/social-card.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Contact | Gareth Andrew Mackenzie">
   <meta name="twitter:description" content="Media, speaking, professional, and book-related enquiries for the author of BUILT.">
-  <meta name="twitter:image" content="https://built-gareth-mackenzie.garethmackenzie.workers.dev/assets/social-card.png">
+  <meta name="twitter:image" content="https://garethmackenzie.github.io/assets/social-card.jpg">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/cover.css">
   <link rel="stylesheet" href="/theme.css">
@@ -29,9 +29,9 @@
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Contact | Gareth Andrew Mackenzie",
-    "url": "https://built-gareth-mackenzie.garethmackenzie.workers.dev/contact/",
+    "url": "https://garethmackenzie.github.io/contact/",
     "description": "Contact Gareth Andrew Mackenzie, author of BUILT, for media, speaking, professional, and book-related enquiries.",
-    "isPartOf": { "@type": "WebSite", "name": "BUILT by Gareth Andrew Mackenzie", "url": "https://built-gareth-mackenzie.garethmackenzie.workers.dev/" }
+    "isPartOf": { "@type": "WebSite", "name": "BUILT by Gareth Andrew Mackenzie", "url": "https://garethmackenzie.github.io/" }
   }
   </script>
 </head>
@@ -44,7 +44,7 @@
     </button>
     <nav id="primary-nav" class="nav" aria-label="Primary" data-nav>
       <a href="/built/">BUILT</a><a href="/about/">ABOUT</a><a href="/insights/">INSIGHTS</a><a href="/media/">MEDIA</a><a href="/contact/" aria-current="page">CONTACT</a>
-      <a class="button button-small" href="https://a.co/d/07Qr0WAn" target="_blank" rel="noopener">Buy BUILT</a>
+      <a class="button button-small" href="https://a.co/d/0gLDcpvu" data-amazon-cta="amazon" target="_blank" rel="noopener">Buy BUILT</a>
     </nav>
   </header>
 
@@ -80,19 +80,26 @@
     <section class="section contact-form-section" id="form">
       <div class="section-label reveal"><span>02</span><p>Send a message</p></div>
       <h2 class="reveal contact-form-heading">Or write directly.</h2>
-      <form class="contact-form reveal" data-contact-form novalidate>
-        <p class="form-note" id="form-status" role="status">This form is not yet connected to a live inbox. For now, please reach out via <a href="https://www.linkedin.com/in/gareth-andrew-mackenzie-50407b52" target="_blank" rel="noopener">LinkedIn</a> instead.</p>
+      <form class="contact-form reveal" data-contact-form data-endpoint="https://formsubmit.co/ajax/gmackenzie199@gmail.com" novalidate>
+        <p class="form-note" id="form-status" role="status">Messages are delivered directly to Gareth's inbox. Please do not include sensitive financial or personal information.</p>
+        <div class="sr-only" aria-hidden="true">
+          <label for="website">Leave this field empty</label>
+          <input type="text" id="website" name="_honey" tabindex="-1" autocomplete="off">
+        </div>
+        <input type="hidden" name="_subject" value="New enquiry from the BUILT website">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
         <div class="form-row">
           <label for="name">Name</label>
-          <input type="text" id="name" name="name" autocomplete="name">
+          <input type="text" id="name" name="name" autocomplete="name" required>
         </div>
         <div class="form-row">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" autocomplete="email">
+          <input type="email" id="email" name="email" autocomplete="email" required>
         </div>
         <div class="form-row">
           <label for="category">Enquiry type</label>
-          <select id="category" name="category">
+          <select id="category" name="category" required>
             <option value="">Select one</option>
             <option value="media">Media</option>
             <option value="speaking">Speaking</option>
@@ -102,14 +109,15 @@
         </div>
         <div class="form-row">
           <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5"></textarea>
+          <textarea id="message" name="message" rows="5" required></textarea>
         </div>
         <button class="button" type="submit">Send message</button>
       </form>
     </section>
   </main>
 
-  <footer><a class="wordmark" href="/">BUILT<span>.</span></a><p>How Wealth Is Deliberately Constructed</p><div class="footer-links"><a href="/built/">BUILT</a><a href="/about/">About</a><a href="/insights/">Insights</a><a href="/media/">Media</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://www.linkedin.com/in/gareth-andrew-mackenzie-50407b52" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/GarethMackenzie" target="_blank" rel="noopener">GitHub</a><a href="https://a.co/d/07Qr0WAn" target="_blank" rel="noopener">Amazon</a></div><p class="legal">© <span data-year>2026</span> Gareth Andrew Mackenzie. All rights reserved. BUILT shares ideas about systems and decision-making. It is not financial, investment, or professional advice.</p></footer>
+  <footer><a class="wordmark" href="/">BUILT<span>.</span></a><p>How Wealth Is Deliberately Constructed</p><div class="footer-links"><a href="/built/">BUILT</a><a href="/about/">About</a><a href="/insights/">Insights</a><a href="/media/">Media</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://www.linkedin.com/in/gareth-andrew-mackenzie-50407b52" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/GarethMackenzie" target="_blank" rel="noopener">GitHub</a><a href="https://a.co/d/0gLDcpvu" data-amazon-cta="amazon" target="_blank" rel="noopener">Amazon</a></div><p class="legal">© <span data-year>2026</span> Gareth Andrew Mackenzie. All rights reserved. BUILT shares ideas about systems and decision-making. It is not financial, investment, or professional advice.</p></footer>
+  <script src="/analytics.js" defer></script>
   <script src="/script.js" defer></script>
 </body>
 </html>
