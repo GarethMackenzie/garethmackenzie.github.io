@@ -95,6 +95,10 @@ h2.shift-heading, h2.media-assets-heading, h2.contact-form-heading { margin: 0 0
   .about-link-card { padding: 32px 24px; }
 }
 
+@media (max-width: 360px) {
+  .page-hero h1 { font-size: 2.7rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .about-link-card { transition: none; }
 }
