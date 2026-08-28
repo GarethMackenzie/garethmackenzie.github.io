@@ -1,0 +1,56 @@
+/* Corrected book cover presentation
+   Keeps the full front cover visible at all viewport sizes. */
+
+.book-stage {
+  min-width: 0;
+  overflow: visible;
+}
+
+.book-shell {
+  position: relative;
+  z-index: 2;
+  width: min(320px, 100%);
+  max-width: 100%;
+  margin: 0 auto;
+  transform: none;
+  transform-style: flat;
+  filter: drop-shadow(-16px 24px 24px rgba(0, 0, 0, .42));
+}
+
+.book-shell::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 7px -10px 7px 10px;
+  background: linear-gradient(90deg, #8e7751, #d3bd91 62%, #665334);
+  border: 1px solid rgba(239, 212, 155, .38);
+}
+
+.book-cover {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  border: 1px solid rgba(255, 255, 255, .16);
+  box-shadow: inset 4px 0 12px rgba(255, 255, 255, .05);
+}
+
+@media (max-width: 900px) {
+  .book-shell {
+    width: min(300px, 82vw);
+  }
+}
+
+@media (max-width: 600px) {
+  .book-shell {
+    width: min(270px, 78vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-shell {
+    transform: none;
+  }
+}
