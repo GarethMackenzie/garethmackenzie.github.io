@@ -80,7 +80,7 @@
     <section class="section contact-form-section" id="form">
       <div class="section-label reveal"><span>02</span><p>Send a message</p></div>
       <h2 class="reveal contact-form-heading">Or write directly.</h2>
-      <form class="contact-form reveal" data-contact-form data-endpoint="https://formsubmit.co/ajax/gmackenzie199@gmail.com" novalidate>
+      <form class="contact-form reveal" action="https://formsubmit.co/gmackenzie199@gmail.com" method="post" data-contact-form data-endpoint="https://formsubmit.co/ajax/gmackenzie199@gmail.com" novalidate>
         <p class="form-note" id="form-status" role="status">Messages are delivered directly to Gareth's inbox. Please do not include sensitive financial or personal information.</p>
         <div class="sr-only" aria-hidden="true">
           <label for="website">Leave this field empty</label>
@@ -89,6 +89,7 @@
         <input type="hidden" name="_subject" value="New enquiry from the BUILT website">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_url" value="https://garethmackenzie.github.io/contact/">
         <div class="form-row">
           <label for="name">Name</label>
           <input type="text" id="name" name="name" autocomplete="name" required>
