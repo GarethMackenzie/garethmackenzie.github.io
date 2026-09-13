@@ -72,11 +72,17 @@ def index_card():
     d.text((875,555),'garethmackenzie.github.io/insights/',font=font(SANS,14),fill=MUTED)
     img.save(OUT/'insights-series.png','PNG',optimize=True)
 
+def meta_pattern(prop, attribute='property'):
+    return rf'<meta {attribute}="{re.escape(prop)}" content="[^"]*">'
+
 def set_meta(text, prop, value, attribute='property'):
-    pattern=rf'<meta {attribute}="{re.escape(prop)}" content="[^"]*">'
+    pattern=meta_pattern(prop,attribute)
     replacement=f'<meta {attribute}="{prop}" content="{value}">'
     if re.search(pattern,text): return re.sub(pattern,replacement,text,count=1)
     return text
+
+def remove_meta(text, prop, attribute='property'):
+    return re.sub(meta_pattern(prop,attribute),'',text)
 
 def ensure_after(text, anchor_prop, new_tag, attribute='property'):
     if new_tag in text: return text
@@ -86,8 +92,15 @@ def ensure_after(text, anchor_prop, new_tag, attribute='property'):
 def wire_page(path,image_name,alt):
     text=path.read_text(encoding='utf-8')
     image=f'https://garethmackenzie.github.io/assets/social/{image_name}'
+
     text=set_meta(text,'og:image',image)
     text=set_meta(text,'twitter:image',image,attribute='name')
+
+    # Remove previously generated metadata before inserting a single canonical set.
+    for prop in ('og:image:width','og:image:height','og:image:type','og:image:alt'):
+        text=remove_meta(text,prop)
+    text=remove_meta(text,'twitter:image:alt',attribute='name')
+
     text=ensure_after(text,'og:image','<meta property="og:image:width" content="1200">')
     text=ensure_after(text,'og:image:width','<meta property="og:image:height" content="630">')
     text=ensure_after(text,'og:image:height','<meta property="og:image:type" content="image/png">')
