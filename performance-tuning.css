@@ -1,0 +1,23 @@
+/* Performance-specific progressive enhancement.
+   Keep the primary hero message immediately paintable so the largest text does
+   not wait behind decorative entrance choreography. Secondary elements retain
+   the staged motion that gives the hero its editorial character. */
+
+.home-premium .premium-hero .step-2,
+.home-premium .premium-hero .step-3 {
+  opacity: 1;
+  transform: none;
+}
+
+.home-premium.loaded .premium-hero .step-2,
+.home-premium.loaded .premium-hero .step-3 {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-premium .premium-hero .hero-step {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
