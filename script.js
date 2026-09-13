@@ -25,9 +25,29 @@ if (themeColor && (document.body.classList.contains('home-premium') || document.
   themeColor.setAttribute('content', '#11151a');
 }
 
-const updateHeader = () => header?.classList.toggle('scrolled', window.scrollY > 24);
-updateHeader();
-window.addEventListener('scroll', updateHeader, { passive: true });
+let progressBar = isPremiumInterior ? document.querySelector('[data-reading-progress]') : null;
+let viewportFrame = 0;
+
+const updateViewportState = () => {
+  viewportFrame = 0;
+  header?.classList.toggle('scrolled', window.scrollY > 24);
+
+  if (progressBar) {
+    const rootElement = document.documentElement;
+    const max = Math.max(1, rootElement.scrollHeight - window.innerHeight);
+    const progress = Math.min(100, Math.max(0, (window.scrollY / max) * 100));
+    progressBar.style.width = `${progress}%`;
+  }
+};
+
+const scheduleViewportUpdate = () => {
+  if (viewportFrame) return;
+  viewportFrame = requestAnimationFrame(updateViewportState);
+};
+
+updateViewportState();
+window.addEventListener('scroll', scheduleViewportUpdate, { passive: true });
+window.addEventListener('resize', scheduleViewportUpdate, { passive: true });
 
 const setMenuState = (open, { restoreFocus = false } = {}) => {
   if (!menuButton || !nav) return;
@@ -75,9 +95,7 @@ if (menuButton && nav) {
     }
   });
 
-  const syncResponsiveMenu = () => setMenuState(false);
-  compactMenuQuery.addEventListener?.('change', syncResponsiveMenu);
-  window.addEventListener('resize', syncResponsiveMenu, { passive: true });
+  compactMenuQuery.addEventListener?.('change', () => setMenuState(false));
 }
 
 /* The system map is explanatory, not interactive. Keep decorative labels out of the tab order. */
@@ -109,29 +127,38 @@ document.querySelectorAll('[data-year]').forEach(element => {
 });
 
 if (isPremiumInterior) {
-  const progressBar = document.querySelector('[data-reading-progress]');
-  const updateProgress = () => {
-    if (!progressBar) return;
-    const rootElement = document.documentElement;
-    const max = Math.max(1, rootElement.scrollHeight - window.innerHeight);
-    progressBar.style.width = `${Math.min(100, Math.max(0, (window.scrollY / max) * 100))}%`;
-  };
-  updateProgress();
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  window.addEventListener('resize', updateProgress, { passive: true });
+  progressBar = document.querySelector('[data-reading-progress]');
+  scheduleViewportUpdate();
 
   const canHover = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
   const reduceMotion = reducedMotionQuery.matches;
   const book = document.querySelector('.book-shell');
   if (book && canHover && !reduceMotion) {
     const stage = book.closest('.book-stage');
-    stage?.addEventListener('pointermove', (event) => {
+    let pointerFrame = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+
+    const renderBookTilt = () => {
+      pointerFrame = 0;
+      if (!stage) return;
       const rect = stage.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      const x = (pointerX - rect.left) / rect.width - 0.5;
+      const y = (pointerY - rect.top) / rect.height - 0.5;
       book.style.transform = `rotateY(${x * 6}deg) rotateX(${y * -4}deg) translateY(-3px)`;
+    };
+
+    stage?.addEventListener('pointermove', (event) => {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      if (!pointerFrame) pointerFrame = requestAnimationFrame(renderBookTilt);
+    }, { passive: true });
+
+    stage?.addEventListener('pointerleave', () => {
+      if (pointerFrame) cancelAnimationFrame(pointerFrame);
+      pointerFrame = 0;
+      book.style.transform = '';
     });
-    stage?.addEventListener('pointerleave', () => { book.style.transform = ''; });
   }
 
   document.querySelectorAll('.systems-flow').forEach((element) => {
