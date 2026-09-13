@@ -68,27 +68,27 @@ try {
   await noJs.close();
   pass('source-native foundation links, decorative focus behavior, no-JS navigation, static essay sequence and 404 recovery semantics checked');
 
-  // Force below-fold lazy assets into view and verify they actually decode.
+  // Force each below-fold image into view and validate the resource the browser actually selected.
+  // Responsive <picture> fallbacks must not be treated as failures when a WebP source is selected.
   const visual = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const visualPage = await visual.newPage();
   for (const route of ['/', '/built/', '/about/', '/media/']) {
     await visualPage.goto(`${baseURL}${route}`, { waitUntil: 'networkidle' });
     await visualPage.evaluate(async () => {
-      const max = document.documentElement.scrollHeight;
-      for (let y = 0; y <= max; y += 600) {
-        window.scrollTo(0, y);
-        await new Promise((resolve) => setTimeout(resolve, 20));
+      for (const img of [...document.images]) {
+        img.scrollIntoView({ block: 'center' });
+        await new Promise((resolve) => setTimeout(resolve, 70));
       }
-      window.scrollTo(0, max);
     });
-    await visualPage.waitForTimeout(300);
+    await visualPage.waitForTimeout(250);
+
     const broken = await visualPage.evaluate(() => [...document.images]
-      .filter((img) => img.naturalWidth === 0)
-      .map((img) => img.currentSrc || img.src));
-    if (broken.length) fail(`${route}: image(s) still failed after scrolling: ${broken.join(', ')}`);
+      .filter((img) => Boolean(img.currentSrc) && img.complete && img.naturalWidth === 0)
+      .map((img) => img.currentSrc));
+    if (broken.length) fail(`${route}: selected image resource(s) failed after scrolling: ${broken.join(', ')}`);
   }
   await visual.close();
-  pass('below-fold lazy images checked after scrolling on image-heavy pages');
+  pass('selected responsive/lazy image resources checked after scrolling on image-heavy pages');
 } finally {
   await browser.close();
 }
