@@ -3,32 +3,8 @@ name: Site QA
 on:
   pull_request:
     branches: [main]
-    paths:
-      - '**/*.html'
-      - '**/*.css'
-      - '**/*.js'
-      - 'sitemap.xml'
-      - 'robots.txt'
-      - 'tools/site_qa.py'
-      - 'tools/browser_qa.mjs'
-      - 'tools/semantic_qa.mjs'
-      - 'tools/check_lighthouse.py'
-      - '.github/workflows/site-qa.yml'
-      - '.github/workflows/production-gate.yml'
   push:
     branches: [main]
-    paths:
-      - '**/*.html'
-      - '**/*.css'
-      - '**/*.js'
-      - 'sitemap.xml'
-      - 'robots.txt'
-      - 'tools/site_qa.py'
-      - 'tools/browser_qa.mjs'
-      - 'tools/semantic_qa.mjs'
-      - 'tools/check_lighthouse.py'
-      - '.github/workflows/site-qa.yml'
-      - '.github/workflows/production-gate.yml'
   workflow_dispatch:
 
 concurrency:
