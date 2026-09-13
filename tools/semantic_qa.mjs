@@ -53,8 +53,20 @@ try {
       fail(`${route}: static article navigation is wrong (${hrefs.join(', ')})`);
     }
   }
+
+  await page.goto(`${baseURL}/404.html`, { waitUntil: 'domcontentloaded' });
+  const notFound = await page.evaluate(() => ({
+    robots: document.querySelector('meta[name="robots"]')?.getAttribute('content') || '',
+    h1Count: document.querySelectorAll('h1').length,
+    hasHomeRecovery: Boolean(document.querySelector('main a[href="/"]')),
+    hasInsightsRecovery: Boolean(document.querySelector('main a[href="/insights/"]')),
+  }));
+  if (!notFound.robots.toLowerCase().includes('noindex')) fail('404 page is not explicitly noindex');
+  if (notFound.h1Count !== 1) fail(`404 page should contain one h1, found ${notFound.h1Count}`);
+  if (!notFound.hasHomeRecovery || !notFound.hasInsightsRecovery) fail(`404 recovery routes are incomplete: ${JSON.stringify(notFound)}`);
+
   await noJs.close();
-  pass('source-native foundation links, decorative focus behavior, no-JS navigation and static essay sequence checked');
+  pass('source-native foundation links, decorative focus behavior, no-JS navigation, static essay sequence and 404 recovery semantics checked');
 
   // Force below-fold lazy assets into view and verify they actually decode.
   const visual = await browser.newContext({ viewport: { width: 390, height: 844 } });
