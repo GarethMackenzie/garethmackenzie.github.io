@@ -7,8 +7,15 @@
     window.dataLayer.push(arguments);
   };
 
-  const storedConsent = localStorage.getItem(consentKey);
-  const analyticsGranted = storedConsent === 'granted';
+  let storedConsent = null;
+  try {
+    storedConsent = localStorage.getItem(consentKey);
+  } catch {
+    storedConsent = null;
+  }
+
+  let analyticsGranted = storedConsent === 'granted';
+  let googleTagLoaded = false;
 
   window.gtag('consent', 'default', {
     ad_storage: 'denied',
@@ -19,22 +26,38 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
-  window.gtag('js', new Date());
-  window.gtag('config', measurementId, {
-    anonymize_ip: true,
-    send_page_view: true
-  });
 
-  const googleTag = document.createElement('script');
-  googleTag.async = true;
-  googleTag.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(googleTag);
+  const loadGoogleTag = () => {
+    if (googleTagLoaded || !analyticsGranted) return;
+    googleTagLoaded = true;
+
+    window.gtag('js', new Date());
+    window.gtag('config', measurementId, {
+      anonymize_ip: true,
+      send_page_view: true
+    });
+
+    const googleTag = document.createElement('script');
+    googleTag.async = true;
+    googleTag.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(googleTag);
+  };
+
+  if (analyticsGranted) loadGoogleTag();
 
   const setConsent = (value) => {
-    localStorage.setItem(consentKey, value);
+    analyticsGranted = value === 'granted';
+    try {
+      localStorage.setItem(consentKey, value);
+    } catch {
+      /* Consent still applies for the current page even if storage is unavailable. */
+    }
+
     window.gtag('consent', 'update', {
-      analytics_storage: value === 'granted' ? 'granted' : 'denied'
+      analytics_storage: analyticsGranted ? 'granted' : 'denied'
     });
+
+    if (analyticsGranted) loadGoogleTag();
     document.querySelector('[data-consent-banner]')?.remove();
   };
 
@@ -60,6 +83,7 @@
   };
 
   document.addEventListener('click', (event) => {
+    if (!analyticsGranted) return;
     const link = event.target.closest('a[href*="a.co/"], a[href*="amazon."]');
     if (!link) return;
 
