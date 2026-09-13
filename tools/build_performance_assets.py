@@ -1,5 +1,6 @@
 from pathlib import Path
 from PIL import Image
+from io import BytesIO
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -106,17 +107,55 @@ built_page.write_text(built_text, encoding='utf-8')
 
 
 # Rebuild responsive WebP covers from the untouched high-resolution JPEG master.
+# The target budgets are 10% below the original responsive assets. We choose the
+# highest quality level that meets each budget instead of blindly re-encoding.
+original_sizes = {
+    480: 75348,
+    800: 239654,
+    1200: 442404,
+}
+quality_candidates = (82, 80, 78, 76, 74, 72, 70)
 source_path = ROOT / 'assets' / 'book-cover.jpg'
+
 with Image.open(source_path) as source:
     source = source.convert('RGB')
     source_width, source_height = source.size
+
     for width in (480, 800, 1200):
         height = round(source_height * width / source_width)
         resized = source.resize((width, height), Image.Resampling.LANCZOS)
         output = ROOT / 'assets' / f'book-cover-{width}.webp'
         before = output.stat().st_size if output.exists() else 0
-        resized.save(output, 'WEBP', quality=84, method=6)
-        after = output.stat().st_size
-        print(f'{output.relative_to(ROOT)}: {before:,} -> {after:,} bytes')
+        target = int(original_sizes[width] * 0.90)
+
+        chosen_bytes = None
+        chosen_quality = None
+        smallest_bytes = None
+        smallest_quality = None
+
+        for quality in quality_candidates:
+            buffer = BytesIO()
+            resized.save(buffer, 'WEBP', quality=quality, method=6)
+            candidate = buffer.getvalue()
+
+            if smallest_bytes is None or len(candidate) < len(smallest_bytes):
+                smallest_bytes = candidate
+                smallest_quality = quality
+
+            if len(candidate) <= target:
+                chosen_bytes = candidate
+                chosen_quality = quality
+                break
+
+        if chosen_bytes is None:
+            chosen_bytes = smallest_bytes
+            chosen_quality = smallest_quality
+
+        output.write_bytes(chosen_bytes)
+        after = len(chosen_bytes)
+        print(
+            f'{output.relative_to(ROOT)}: {before:,} -> {after:,} bytes '
+            f'(quality {chosen_quality}, target <= {target:,})'
+        )
 
 print(f'Built CSS bundles; rewired {rewired} interior pages.')
