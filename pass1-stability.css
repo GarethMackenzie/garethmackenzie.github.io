@@ -78,6 +78,26 @@ textarea:focus-visible {
   min-height: 44px;
 }
 
+/* WCAG AA footer contrast on the dark premium palette. Legacy light-theme rules otherwise bleed through. */
+body.home-premium footer,
+body.premium-page footer,
+body.home-premium footer p,
+body.premium-page footer p,
+body.home-premium footer a,
+body.premium-page footer a {
+  color: #aeb3b6 !important;
+}
+
+body.home-premium footer .wordmark,
+body.premium-page footer .wordmark {
+  color: #f2eee5 !important;
+}
+
+body.home-premium footer .wordmark span,
+body.premium-page footer .wordmark span {
+  color: var(--gold-2, #f0cf98) !important;
+}
+
 /* Mobile navigation remains usable if JavaScript is unavailable. */
 @media (max-width: 1024px) {
   html:not(.nav-ready) .menu-button {
