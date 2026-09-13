@@ -20,11 +20,6 @@ if (isPremiumInterior) {
   }
 }
 
-const themeColor = document.querySelector('meta[name="theme-color"]');
-if (themeColor && (document.body.classList.contains('home-premium') || document.body.classList.contains('premium-page'))) {
-  themeColor.setAttribute('content', '#11151a');
-}
-
 let progressBar = isPremiumInterior ? document.querySelector('[data-reading-progress]') : null;
 let viewportFrame = 0;
 
@@ -97,11 +92,6 @@ if (menuButton && nav) {
 
   compactMenuQuery.addEventListener?.('change', () => setMenuState(false));
 }
-
-/* The system map is explanatory, not interactive. Keep decorative labels out of the tab order. */
-document.querySelectorAll('.system-map .node[tabindex]').forEach(node => {
-  node.removeAttribute('tabindex');
-});
 
 /* Progressive enhancement: content remains visible without IntersectionObserver or when motion is reduced. */
 const revealElements = [...document.querySelectorAll('.reveal')];
@@ -176,52 +166,6 @@ if (isPremiumInterior) {
     }, { threshold: 0.28 });
     systemsObserver.observe(element);
   });
-}
-
-const insightSeries = [
-  { path: '/insights/capital-allocation/', title: 'Capital allocation is the operating system of wealth' },
-  { path: '/insights/leverage/', title: 'Leverage should multiply a system, not a weakness' },
-  { path: '/insights/asymmetric-risk/', title: 'Design the shape of the risk before you chase the upside' },
-  { path: '/insights/business-systems/', title: 'A system turns good decisions into repeatable outcomes' },
-  { path: '/insights/decision-making/', title: 'Decision quality depends on the frame before the choice' },
-  { path: '/insights/compounding/', title: 'Compounding rewards continuity more than intensity' },
-  { path: '/insights/information-advantage/', title: 'Information advantage is about better decisions, not more data' },
-  { path: '/insights/ownership/', title: 'Ownership changes the relationship between effort and outcome' },
-  { path: '/insights/scale/', title: 'Scale should expand what already works' },
-  { path: '/insights/strategic-execution/', title: 'Strategy becomes real only when execution has a system' }
-];
-
-const normalizedPath = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
-const currentInsightIndex = insightSeries.findIndex(item => item.path === normalizedPath);
-const articleNav = document.querySelector('.article-nav');
-if (articleNav && currentInsightIndex >= 0) {
-  const links = articleNav.querySelectorAll('a');
-  const previous = currentInsightIndex > 0 ? insightSeries[currentInsightIndex - 1] : null;
-  const next = currentInsightIndex < insightSeries.length - 1 ? insightSeries[currentInsightIndex + 1] : null;
-
-  if (links[0]) {
-    if (previous) {
-      links[0].href = previous.path;
-      links[0].innerHTML = `<span>Previous insight</span><strong>${previous.title}</strong>`;
-      links[0].setAttribute('aria-label', `Previous insight: ${previous.title}`);
-    } else {
-      links[0].href = '/insights/';
-      links[0].innerHTML = '<span>Series index</span><strong>Explore all ten insight themes</strong>';
-      links[0].setAttribute('aria-label', 'Return to the Insights series index');
-    }
-  }
-
-  if (links[1]) {
-    if (next) {
-      links[1].href = next.path;
-      links[1].innerHTML = `<span>Next insight</span><strong>${next.title}</strong>`;
-      links[1].setAttribute('aria-label', `Next insight: ${next.title}`);
-    } else {
-      links[1].href = '/insights/';
-      links[1].innerHTML = '<span>Complete the series</span><strong>Return to the ten-theme Insights index</strong>';
-      links[1].setAttribute('aria-label', 'Return to the complete Insights series index');
-    }
-  }
 }
 
 const contactForm = document.querySelector('[data-contact-form]');
