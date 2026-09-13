@@ -1,0 +1,29 @@
+/* Final compatibility layer for the dark BUILT redesign. It intentionally sits after the legacy light theme. */
+body.home-premium,
+body.premium-page{color-scheme:dark}
+
+.home-premium .wordmark,
+.premium-page .wordmark,
+.home-premium footer .wordmark,
+.premium-page footer .wordmark{color:var(--paper)}
+
+.home-premium .menu-button span:not(.sr-only),
+.premium-page .menu-button span:not(.sr-only){background:var(--paper)}
+
+.premium-page .author-portrait{padding:0;background:transparent;border:0;box-shadow:none}
+.premium-page .author-portrait::after{display:none}
+
+.premium-page .learn,
+.premium-page .reviews,
+.premium-page .faq{background:rgba(255,255,255,.012)}
+
+.premium-page .final-cta{border-block-color:var(--hair)}
+
+@media(max-width:900px){
+  .home-premium .nav,
+  .premium-page .nav{background:rgba(8,10,12,.98);border-color:rgba(215,171,103,.18);box-shadow:0 20px 48px rgba(0,0,0,.38)}
+  .home-premium .nav>a:not(.button),
+  .premium-page .nav>a:not(.button){color:#e2dfd8}
+  .home-premium .menu-button,
+  .premium-page .menu-button{color:var(--paper)}
+}
