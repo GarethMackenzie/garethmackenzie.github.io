@@ -4,6 +4,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = 'https://garethmackenzie.github.io'
+PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
 
@@ -19,6 +20,16 @@ ESSAYS = [
     ('scale', 'Scale Should Expand What Already Works', 'Scale'),
     ('strategic-execution', 'Strategy Becomes Real Only When Execution Has a System', 'Strategic execution'),
 ]
+
+FOUNDATION_DESTINATIONS = {
+    'Capital': '/insights/capital-allocation/',
+    'Leverage': '/insights/leverage/',
+    'Risk': '/insights/asymmetric-risk/',
+    'Systems': '/insights/business-systems/',
+    'Information': '/insights/information-advantage/',
+    'Scale': '/insights/scale/',
+    'Compounding': '/insights/compounding/',
+}
 
 
 def set_or_add_meta(text: str, key: str, value: str, attr: str = 'property', after: str | None = None) -> str:
@@ -68,9 +79,38 @@ def standardize_social(path: Path, alt: str = SOCIAL_ALT) -> None:
     write(path, text)
 
 
+def link_person_entity(text: str) -> str:
+    """Add the site's stable Person @id to common inline Person objects."""
+    # Homepage publisher object.
+    text = text.replace(
+        '"publisher": {\n      "@type": "Person",\n      "name": "Gareth Andrew Mackenzie",',
+        f'"publisher": {{\n      "@type": "Person",\n      "@id": "{PERSON_ID}",\n      "name": "Gareth Andrew Mackenzie",\n      "url": "{SITE}/about/",',
+        1,
+    )
+    # Compact JSON-LD Person author/publisher objects used on interior pages.
+    text = text.replace(
+        '{"@type":"Person","name":"Gareth Andrew Mackenzie","url":"https://garethmackenzie.github.io/about/"}',
+        f'{{"@type":"Person","@id":"{PERSON_ID}","name":"Gareth Andrew Mackenzie","url":"{SITE}/about/"}}',
+    )
+    text = text.replace(
+        '{"@type":"Person","name":"Gareth Andrew Mackenzie"}',
+        f'{{"@type":"Person","@id":"{PERSON_ID}","name":"Gareth Andrew Mackenzie","url":"{SITE}/about/"}}',
+    )
+    return text
+
+
 # Main-page social metadata consistency.
 for relative in ['index.html', 'built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
     standardize_social(ROOT / relative)
+
+# Keep legal pages visually consistent while intentionally remaining noindex.
+for relative in ['privacy/index.html', 'terms/index.html']:
+    path = ROOT / relative
+    text = path.read_text(encoding='utf-8').replace(
+        '<meta name="theme-color" content="#080a0c">',
+        '<meta name="theme-color" content="#11151a">',
+    )
+    write(path, text)
 
 # Breadcrumb hierarchy for indexable non-home main pages.
 main_breadcrumbs = {
@@ -91,7 +131,7 @@ needle = '<p>The book connects capital, leverage, ownership, risk, execution, in
 addition = needle + '<p>Continue into the <a class="text-link" href="/insights/">BUILT Insights essay series <span aria-hidden="true">→</span></a> for ten long-form explorations of the framework.</p>'
 if needle in text and 'BUILT Insights essay series' not in text:
     text = text.replace(needle, addition, 1)
-write(built, text)
+write(built, link_person_entity(text))
 
 about = ROOT / 'about' / 'index.html'
 text = about.read_text(encoding='utf-8')
@@ -101,7 +141,24 @@ if needle in text and 'Insights series' not in text:
     text = text.replace(needle, addition, 1)
 write(about, text)
 
-# Article-specific metadata and three-level breadcrumbs.
+# Make homepage semantics correct without JavaScript: real essay destinations and
+# no fake keyboard stops on the explanatory systems diagram.
+home = ROOT / 'index.html'
+text = home.read_text(encoding='utf-8')
+for title, destination in FOUNDATION_DESTINATIONS.items():
+    pattern = re.compile(
+        rf'(<article class="foundation-card reveal">.*?<h3>{re.escape(title)}</h3>.*?<a) href="[^"]*"(?: aria-label="[^"]*")?',
+        flags=re.DOTALL,
+    )
+    replacement = rf'\1 href="{destination}" aria-label="Read the {title} essay in Insights"'
+    text, count = pattern.subn(replacement, text, count=1)
+    if count != 1:
+        raise RuntimeError(f'Could not standardize homepage foundation link for {title}')
+text = re.sub(r'(<span class="node[^"]*") tabindex="0"', r'\1', text)
+text = link_person_entity(text)
+write(home, text)
+
+# Article-specific metadata, linked author entity and three-level breadcrumbs.
 for slug, title, theme in ESSAYS:
     path = ROOT / 'insights' / slug / 'index.html'
     text = path.read_text(encoding='utf-8')
@@ -109,6 +166,7 @@ for slug, title, theme in ESSAYS:
     text = set_or_add_meta(text, 'article:modified_time', '2026-09-13', 'property', 'article:published_time')
     text = set_or_add_meta(text, 'article:section', theme, 'property', 'article:modified_time')
     text = set_or_add_meta(text, 'article:author', f'{SITE}/about/', 'property', 'article:section')
+    text = link_person_entity(text)
     text = add_breadcrumbs(text, [
         ('Home', f'{SITE}/'),
         ('Insights', f'{SITE}/insights/'),
@@ -119,6 +177,6 @@ for slug, title, theme in ESSAYS:
 # Insights already has BreadcrumbList in its @graph. Keep the source theme color aligned.
 insights = ROOT / 'insights' / 'index.html'
 text = insights.read_text(encoding='utf-8').replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#11151a">')
-write(insights, text)
+write(insights, link_person_entity(text))
 
-print('Technical SEO metadata, breadcrumbs and contextual links standardized.')
+print('Technical SEO metadata, breadcrumbs, source semantics and contextual links standardized.')
