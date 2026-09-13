@@ -119,6 +119,48 @@ if (isPremiumInterior) {
   });
 }
 
+const insightSeries = [
+  { path: '/insights/capital-allocation/', title: 'Capital allocation is the operating system of wealth' },
+  { path: '/insights/leverage/', title: 'Leverage should multiply a system, not a weakness' },
+  { path: '/insights/asymmetric-risk/', title: 'Design the shape of the risk before you chase the upside' },
+  { path: '/insights/business-systems/', title: 'A system turns good decisions into repeatable outcomes' },
+  { path: '/insights/decision-making/', title: 'Decision quality depends on the frame before the choice' },
+  { path: '/insights/compounding/', title: 'Compounding rewards continuity more than intensity' },
+  { path: '/insights/information-advantage/', title: 'Information advantage is about better decisions, not more data' },
+  { path: '/insights/ownership/', title: 'Ownership changes the relationship between effort and outcome' },
+  { path: '/insights/scale/', title: 'Scale should expand what already works' },
+  { path: '/insights/strategic-execution/', title: 'Strategy becomes real only when execution has a system' }
+];
+
+const normalizedPath = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
+const currentInsightIndex = insightSeries.findIndex(item => item.path === normalizedPath);
+const articleNav = document.querySelector('.article-nav');
+if (articleNav && currentInsightIndex >= 0) {
+  const links = articleNav.querySelectorAll('a');
+  const previous = currentInsightIndex > 0 ? insightSeries[currentInsightIndex - 1] : null;
+  const next = currentInsightIndex < insightSeries.length - 1 ? insightSeries[currentInsightIndex + 1] : null;
+
+  if (links[0]) {
+    if (previous) {
+      links[0].href = previous.path;
+      links[0].innerHTML = `<span>Previous insight</span><strong>${previous.title}</strong>`;
+    } else {
+      links[0].href = '/insights/';
+      links[0].innerHTML = '<span>Series index</span><strong>Explore all ten insight themes</strong>';
+    }
+  }
+
+  if (links[1]) {
+    if (next) {
+      links[1].href = next.path;
+      links[1].innerHTML = `<span>Next insight</span><strong>${next.title}</strong>`;
+    } else {
+      links[1].href = '/insights/';
+      links[1].innerHTML = '<span>Complete the series</span><strong>Return to the ten-theme Insights index</strong>';
+    }
+  }
+}
+
 const contactForm = document.querySelector('[data-contact-form]');
 if (contactForm) {
   contactForm.addEventListener('submit', async (event) => {
