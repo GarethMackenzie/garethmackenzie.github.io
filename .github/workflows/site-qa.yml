@@ -1,27 +1,22 @@
-# Final production gate: runs after generated CSS/assets are committed.
 name: Site QA
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
-    paths:
-      - '**/*.html'
-      - '**/*.css'
-      - '**/*.js'
-      - 'sitemap.xml'
-      - 'robots.txt'
-      - 'tools/site_qa.py'
-      - 'tools/browser_qa.mjs'
-      - 'tools/semantic_qa.mjs'
-      - 'tools/check_lighthouse.py'
-      - '.github/workflows/site-qa.yml'
   workflow_dispatch:
+
+concurrency:
+  group: site-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
   qa:
+    name: Site QA
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

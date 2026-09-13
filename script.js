@@ -226,36 +226,12 @@ if (articleNav && currentInsightIndex >= 0) {
 
 const contactForm = document.querySelector('[data-contact-form]');
 if (contactForm) {
-  contactForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const status = document.getElementById('form-status');
-    const submitButton = contactForm.querySelector('button[type="submit"]');
+  const status = document.getElementById('form-status');
+  const query = new URLSearchParams(window.location.search);
 
-    if (!contactForm.checkValidity()) {
-      contactForm.reportValidity();
-      if (status) status.textContent = 'Please complete all required fields before sending.';
-      return;
-    }
-
-    if (status) status.textContent = 'Sending your message…';
-    if (submitButton) submitButton.disabled = true;
-
-    try {
-      const response = await fetch(contactForm.dataset.endpoint, {
-        method: 'POST',
-        body: new FormData(contactForm),
-        headers: { Accept: 'application/json' }
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.success === 'false') throw new Error('Submission failed');
-
-      contactForm.reset();
-      if (status) status.textContent = 'Thank you. Your message has been sent successfully.';
-      window.gtag?.('event', 'generate_lead', { form_name: 'contact' });
-    } catch {
-      if (status) status.textContent = 'Your message could not be sent. Please try again or contact Gareth on LinkedIn.';
-    } finally {
-      if (submitButton) submitButton.disabled = false;
-    }
-  });
+  if (query.get('sent') === '1') {
+    if (status) status.textContent = 'Thank you. Your message has been sent successfully.';
+    window.gtag?.('event', 'generate_lead', { form_name: 'contact' });
+    history.replaceState(null, '', `${window.location.pathname}#form`);
+  }
 }
