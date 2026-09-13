@@ -673,6 +673,41 @@ body.premium-page {
   background: #171d23;
 }
 
+/* WCAG AA footer treatment. The old light-theme footer color was too dark on
+   the graphite footer after the premium theme was introduced. */
+.home-premium .premium-footer,
+.home-premium footer,
+.premium-page footer {
+  color: #bfc3c6 !important;
+}
+
+.home-premium .premium-footer .wordmark,
+.home-premium footer .wordmark,
+.premium-page footer .wordmark {
+  color: var(--paper) !important;
+}
+
+.home-premium .premium-footer .wordmark span,
+.home-premium footer .wordmark span,
+.premium-page footer .wordmark span {
+  color: var(--gold-2, #f0cf98) !important;
+}
+
+.home-premium .premium-footer a,
+.home-premium footer a,
+.premium-page footer a,
+.home-premium .premium-footer .legal,
+.home-premium footer .legal,
+.premium-page footer .legal {
+  color: #bfc3c6;
+}
+
+.home-premium .premium-footer a:hover,
+.home-premium footer a:hover,
+.premium-page footer a:hover {
+  color: var(--gold-2, #f0cf98);
+}
+
 /* Homepage authority layer: author and editorial discovery. */
 .home-premium .home-author-layout {
   display: grid;
