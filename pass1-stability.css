@@ -107,7 +107,7 @@ textarea:focus-visible {
   }
 }
 
-/* Full motion opt-out, including reveal effects, transitions and smooth scrolling. */
+/* Full motion opt-out, including reveals, hero entrance, diagrams and smooth scrolling. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto !important;
@@ -124,9 +124,19 @@ textarea:focus-visible {
 
   html.js-ready body .reveal,
   html.js-ready body .reveal.visible,
-  body .reveal {
+  body .reveal,
+  body.home-premium .hero-step {
     opacity: 1 !important;
     transform: none !important;
+    animation: none !important;
+  }
+
+  body.home-premium .rail-line,
+  body.home-premium .shift-row i,
+  body.home-premium .system-map path,
+  body.premium-page .section-label::after,
+  body.premium-page .systems-flow div::after {
+    transition: none !important;
   }
 }
 
