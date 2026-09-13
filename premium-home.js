@@ -9,26 +9,44 @@
 
   requestAnimationFrame(() => body.classList.add('loaded'));
 
+  let progressFrame = 0;
   const updateProgress = () => {
+    progressFrame = 0;
     if (!progress) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
     const ratio = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
     progress.style.width = `${ratio * 100}%`;
   };
+  const scheduleProgressUpdate = () => {
+    if (progressFrame) return;
+    progressFrame = requestAnimationFrame(updateProgress);
+  };
   updateProgress();
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  window.addEventListener('resize', updateProgress, { passive: true });
+  window.addEventListener('scroll', scheduleProgressUpdate, { passive: true });
+  window.addEventListener('resize', scheduleProgressUpdate, { passive: true });
 
-  if (!reducedMotion && bookStage && book && window.matchMedia('(pointer:fine)').matches) {
-    bookStage.addEventListener('pointermove', (event) => {
+  if (!reducedMotion && bookStage && book && window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    let pointerFrame = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+
+    const renderTilt = () => {
+      pointerFrame = 0;
       const rect = bookStage.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
-      const rotateY = x * 5;
-      const rotateX = y * -3.5;
-      book.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
-    });
+      const x = (pointerX - rect.left) / rect.width - 0.5;
+      const y = (pointerY - rect.top) / rect.height - 0.5;
+      book.style.transform = `rotateX(${y * -3.5}deg) rotateY(${x * 5}deg) translateY(-3px)`;
+    };
+
+    bookStage.addEventListener('pointermove', (event) => {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      if (!pointerFrame) pointerFrame = requestAnimationFrame(renderTilt);
+    }, { passive: true });
+
     bookStage.addEventListener('pointerleave', () => {
+      if (pointerFrame) cancelAnimationFrame(pointerFrame);
+      pointerFrame = 0;
       book.style.transform = '';
     });
   }
