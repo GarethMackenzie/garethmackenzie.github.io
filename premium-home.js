@@ -54,10 +54,10 @@
   activateWhenVisible(systemMap, () => systemMap.classList.add('visible'));
 
   const foundationDestinations = {
-    Capital: '/insights/#capital-allocation',
-    Leverage: '/insights/#leverage',
-    Risk: '/insights/#asymmetric-risk',
-    Systems: '/insights/#business-systems',
+    Capital: '/insights/capital-allocation/',
+    Leverage: '/insights/leverage/',
+    Risk: '/insights/asymmetric-risk/',
+    Systems: '/insights/business-systems/',
     Information: '/insights/#information-advantage',
     Scale: '/insights/#scale',
     Compounding: '/insights/#compounding'
