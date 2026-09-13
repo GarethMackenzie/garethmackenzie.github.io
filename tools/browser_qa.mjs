@@ -45,8 +45,10 @@ async function auditViewport(browser, viewport, label) {
         const rect = main.getBoundingClientRect();
         return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
       })(),
+      // A lazy image that has not entered the viewport is intentionally not loaded.
+      // Only a completed request with zero natural width is a genuine broken image.
       brokenImages: [...document.images]
-        .filter((img) => !img.complete || img.naturalWidth === 0)
+        .filter((img) => img.complete && img.naturalWidth === 0)
         .map((img) => img.currentSrc || img.src),
     }));
 
@@ -73,7 +75,12 @@ async function auditViewport(browser, viewport, label) {
       );
       if (blocking.length) {
         for (const violation of blocking) {
-          fail(`axe ${route}: ${violation.id} (${violation.impact}) — ${violation.help}; ${violation.nodes.length} node(s)`);
+          const details = violation.nodes.slice(0, 8).map((node) => {
+            const target = Array.isArray(node.target) ? node.target.join(' ') : String(node.target);
+            const summary = (node.failureSummary || '').replace(/\s+/g, ' ').trim();
+            return `${target}${summary ? ` :: ${summary}` : ''}`;
+          }).join(' | ');
+          fail(`axe ${route}: ${violation.id} (${violation.impact}) — ${violation.help}; ${violation.nodes.length} node(s)${details ? `; ${details}` : ''}`);
         }
       }
     }
