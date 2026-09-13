@@ -11,6 +11,7 @@ on:
       - 'robots.txt'
       - 'tools/site_qa.py'
       - 'tools/browser_qa.mjs'
+      - 'tools/semantic_qa.mjs'
       - 'tools/check_lighthouse.py'
       - '.github/workflows/site-qa.yml'
   workflow_dispatch:
@@ -62,6 +63,11 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/browser_qa.mjs
+
+      - name: Semantic and lazy-load audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/semantic_qa.mjs
 
       - name: Run Lighthouse lab audits
         run: |
