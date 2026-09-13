@@ -58,12 +58,18 @@ update(ROOT / 'index.html', harden_home)
 for rel in ('privacy/index.html', 'terms/index.html'):
     update(ROOT / rel, lambda t: t.replace('content="#080a0c"', 'content="#11151a"'))
 
-# Contact: retain native browser validation when JavaScript is unavailable and announce status changes politely.
+# Contact: retain native browser validation when JavaScript is unavailable and keep
+# the live status announcement idempotent even when this generator runs repeatedly.
 def harden_contact(text: str) -> str:
-    text = text.replace(' data-contact-form data-endpoint=', ' data-contact-form data-endpoint=')
     text = text.replace(' novalidate>', '>')
-    text = text.replace('id="form-status" role="status"', 'id="form-status" role="status" aria-live="polite"')
+    text = re.sub(
+        r'(id="form-status" role="status")(?:\s+aria-live="polite")*',
+        r'\1 aria-live="polite"',
+        text,
+        count=1,
+    )
     return text
+
 
 update(ROOT / 'contact/index.html', harden_contact)
 
@@ -72,6 +78,7 @@ def harden_media(text: str) -> str:
     text = text.replace('href="/assets/book-cover.jpg" download>Download <span aria-hidden="true">↓</span></a>', 'href="/assets/book-cover.jpg" download>Download book cover <span aria-hidden="true">↓</span></a>')
     text = text.replace('href="/assets/gareth-mackenzie-author.jpeg" download>Download <span aria-hidden="true">↓</span></a>', 'href="/assets/gareth-mackenzie-author.jpeg" download>Download author photo <span aria-hidden="true">↓</span></a>')
     return text
+
 
 update(ROOT / 'media/index.html', harden_media)
 
