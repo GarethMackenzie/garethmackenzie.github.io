@@ -1,0 +1,143 @@
+/* Pass 1: critical stability, accessibility, responsive navigation and portrait framing.
+   This layer is intentionally narrow. Broader CSS consolidation belongs to Pass 2. */
+
+/* Progressive enhancement: content is visible by default. JavaScript opts into reveal motion. */
+body .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.js-ready body .reveal {
+  opacity: 0 !important;
+  transform: translateY(24px) !important;
+}
+
+html.js-ready body .reveal.visible {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Permanent author-photo treatment: always show the complete source image, never crop or scale it up. */
+body.home-premium .home-author-portrait,
+body.premium-page .author-portrait {
+  width: min(100%, 540px) !important;
+  max-width: 540px !important;
+  justify-self: center;
+}
+
+body.home-premium .home-author-portrait picture,
+body.premium-page .author-portrait picture {
+  display: block;
+  padding: clamp(10px, 1.35vw, 16px);
+  background: rgba(10, 14, 18, .78);
+  border: 1px solid rgba(240, 207, 152, .14);
+}
+
+body.home-premium .home-author-portrait img,
+body.premium-page .author-portrait img,
+body.premium-page .media-assets-grid figure:last-child img {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+body.home-premium .home-author-portrait img,
+body.premium-page .author-portrait img {
+  box-shadow: none !important;
+}
+
+/* Keep anchored sections clear of the sticky header. */
+main [id] {
+  scroll-margin-top: 96px;
+}
+
+/* Strong, consistent keyboard focus. */
+.menu-button:focus-visible,
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gold-bright, #efd49b) !important;
+  outline-offset: 4px !important;
+}
+
+.skip-link:focus-visible,
+.skip-link:focus {
+  top: 12px;
+  outline-offset: 3px !important;
+}
+
+.menu-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Mobile navigation remains usable if JavaScript is unavailable. */
+@media (max-width: 1024px) {
+  html:not(.nav-ready) .menu-button {
+    display: none !important;
+  }
+
+  html:not(.nav-ready) .nav {
+    display: flex !important;
+  }
+
+  html.nav-ready .nav:not(.open) {
+    display: none !important;
+  }
+
+  html.nav-ready .nav.open {
+    display: flex !important;
+  }
+
+  .nav > a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+
+/* Full motion opt-out, including reveal effects, transitions and smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.js-ready body .reveal,
+  html.js-ready body .reveal.visible,
+  body .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.home-premium .home-author-portrait,
+  body.premium-page .author-portrait {
+    width: min(100%, 480px) !important;
+  }
+
+  body.home-premium .home-author-portrait picture,
+  body.premium-page .author-portrait picture {
+    padding: 8px;
+  }
+}
