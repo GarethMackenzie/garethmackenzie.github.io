@@ -28,6 +28,17 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install deterministic build dependencies
+        run: python -m pip install --disable-pip-version-check Pillow==12.3.0
+
+      - name: Build exact production state
+        run: |
+          python tools/build_performance_assets.py
+          python tools/apply_technical_seo.py
+          python tools/final_hardening.py
+          python tools/generate_social_cards.py
+          git diff --check
+
       - name: Source and structure audit
         run: python tools/site_qa.py
 
@@ -42,7 +53,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Start local site
+      - name: Start generated site
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/built-site.log 2>&1 &
           echo $! > /tmp/built-site.pid
