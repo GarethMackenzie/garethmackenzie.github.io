@@ -92,7 +92,6 @@ class PageParser(HTMLParser):
             self._jsonld_depth = 0
             self._jsonld_parts = []
         if self.stack:
-            # HTML here is well-formed enough for a simple stack pop.
             self.stack.pop()
 
     def handle_data(self, data: str) -> None:
@@ -138,7 +137,6 @@ def target_exists(href: str, current_route: str) -> bool:
     elif href.startswith("/"):
         path = parsed.path
     else:
-        # Resolve simple relative links from the current route.
         base = Path(current_route.lstrip("/"))
         path = "/" + str((base / parsed.path).as_posix())
 
@@ -247,17 +245,12 @@ def audit() -> int:
             if not (has_label or has_aria):
                 failures.append(f"{label}: form control lacks accessible label ({control_id or control.get('name', 'control')})")
 
-        for link in parser.links:
-            # External blank links are anchors, not <link> elements, checked from raw text below.
-            pass
-
         for href in parser.hrefs:
             if not target_exists(href, route):
                 failures.append(f"{label}: broken internal href {href}")
             if href.startswith("#") and href[1:] and href[1:] not in parser.ids:
                 failures.append(f"{label}: fragment target missing for {href}")
 
-        # target=_blank must protect opener.
         for match in re.finditer(r"<a\b([^>]*\btarget=\"_blank\"[^>]*)>", text, flags=re.I):
             attrs = match.group(1)
             rel_match = re.search(r"\brel=\"([^\"]*)\"", attrs, flags=re.I)
@@ -271,7 +264,6 @@ def audit() -> int:
             except Exception as exc:
                 failures.append(f"{label}: invalid JSON-LD ({exc})")
 
-        # Heading jumps are warnings because card grids may intentionally use compact hierarchy.
         previous = None
         for level in parser.headings:
             if previous is not None and level > previous + 1:
@@ -296,7 +288,6 @@ def audit() -> int:
                 if field not in parser.meta_property:
                     failures.append(f"{label}: missing {field}")
 
-    # Global uniqueness for indexable pages.
     indexed = {route: page for route, page in parsed_pages.items() if route not in NOINDEX_ROUTES}
     for attr, getter in (
         ("title", lambda p: p.title),
@@ -311,7 +302,6 @@ def audit() -> int:
             if value and len(routes) > 1:
                 failures.append(f"duplicate {attr} across {routes}: {value!r}")
 
-    # Sitemap must exactly cover indexable canonical pages.
     sitemap_path = ROOT / "sitemap.xml"
     tree = ET.parse(sitemap_path)
     namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
@@ -331,7 +321,6 @@ def audit() -> int:
     if f"Sitemap: {SITE}/sitemap.xml" not in robots:
         failures.append("robots.txt must declare the canonical sitemap")
 
-    # CSS/JS guardrails that protect accessibility and responsive behavior.
     pass1 = (ROOT / "pass1-stability.css").read_text(encoding="utf-8")
     for token in (":focus-visible", "prefers-reduced-motion", "max-width: 1024px", "object-fit: contain"):
         if token not in pass1:
@@ -341,6 +330,31 @@ def audit() -> int:
     for token in ("aria-expanded", "Escape", "inert", "IntersectionObserver", "requestAnimationFrame"):
         if token not in script:
             failures.append(f"script.js missing interaction guardrail: {token}")
+
+    # Responsive image performance guardrails: the mobile DPR2 path should use
+    # the 640px rendition rather than falling through to the 800px file.
+    home_source = (ROOT / "index.html").read_text(encoding="utf-8")
+    cover_640 = ROOT / "assets" / "book-cover-640.webp"
+    if not cover_640.exists():
+        failures.append("missing assets/book-cover-640.webp responsive cover")
+    elif cover_640.stat().st_size > 125_000:
+        failures.append(
+            f"book-cover-640.webp exceeds 125 KB budget ({cover_640.stat().st_size:,} bytes)"
+        )
+    if "book-cover-640.webp 640w" not in home_source:
+        failures.append("homepage responsive srcset is missing the 640w cover")
+    if not re.search(r'<link rel="preload"[^>]+book-cover-640\.webp[^>]+imagesrcset=', home_source):
+        failures.append("homepage cover preload is not using responsive imagesrcset")
+
+    # Operational warnings are intentionally non-blocking because they require a
+    # product/service decision rather than a safe code-only correction.
+    contact_source = (ROOT / "contact" / "index.html").read_text(encoding="utf-8")
+    if re.search(r'formsubmit\.co/(?:ajax/)?[^"\s>]*@', contact_source, flags=re.I):
+        warnings.append("contact form endpoint exposes the recipient email address in public HTML")
+    if 'name="_captcha" value="false"' in contact_source:
+        warnings.append("contact form disables provider CAPTCHA; honeypot is the primary anti-spam control")
+    if not (ROOT / "404.html").exists():
+        warnings.append("no custom 404.html; unknown URLs use the default GitHub Pages error experience")
 
     print(f"Audited {len(parsed_pages)} HTML pages.")
     if warnings:
