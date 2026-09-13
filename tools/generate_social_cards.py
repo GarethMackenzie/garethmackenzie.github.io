@@ -1,6 +1,6 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import os
+import re
 
 W, H = 1200, 630
 OUT = Path('assets/social')
@@ -72,6 +72,33 @@ def index_card():
     d.text((875,555),'garethmackenzie.github.io/insights/',font=font(SANS,14),fill=MUTED)
     img.save(OUT/'insights-series.png','PNG',optimize=True)
 
+def set_meta(text, prop, value, attribute='property'):
+    pattern=rf'<meta {attribute}="{re.escape(prop)}" content="[^"]*">'
+    replacement=f'<meta {attribute}="{prop}" content="{value}">'
+    if re.search(pattern,text): return re.sub(pattern,replacement,text,count=1)
+    return text
+
+def ensure_after(text, anchor_prop, new_tag, attribute='property'):
+    if new_tag in text: return text
+    pattern=rf'(<meta {attribute}="{re.escape(anchor_prop)}" content="[^"]*">)'
+    return re.sub(pattern,rf'\1{new_tag}',text,count=1)
+
+def wire_page(path,image_name,alt):
+    text=path.read_text(encoding='utf-8')
+    image=f'https://garethmackenzie.github.io/assets/social/{image_name}'
+    text=set_meta(text,'og:image',image)
+    text=set_meta(text,'twitter:image',image,attribute='name')
+    text=ensure_after(text,'og:image','<meta property="og:image:width" content="1200">')
+    text=ensure_after(text,'og:image:width','<meta property="og:image:height" content="630">')
+    text=ensure_after(text,'og:image:height',f'<meta property="og:image:alt" content="{alt}">')
+    text=ensure_after(text,'twitter:image',f'<meta name="twitter:image:alt" content="{alt}">',attribute='name')
+    path.write_text(text,encoding='utf-8')
+
 for c in CARDS: card(*c)
 index_card()
-print(f'Generated {len(CARDS)+1} social cards in {OUT}')
+
+for number,theme,title,slug in CARDS:
+    wire_page(Path('insights')/slug/'index.html',f'{slug}.png',f'{title} — BUILT Insight by Gareth Andrew Mackenzie')
+wire_page(Path('insights/index.html'),'insights-series.png','BUILT Insights — ten essay series by Gareth Andrew Mackenzie')
+
+print(f'Generated {len(CARDS)+1} social cards and wired Insights metadata')
