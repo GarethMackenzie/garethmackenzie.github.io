@@ -196,8 +196,8 @@ body.premium-page {
   .premium-page .built-cover-grid,
   .premium-page .author,
   .premium-page .systems-panel,
-  .about-links-grid,
-  .media-assets-grid {
+  .premium-page .about-links-grid,
+  .premium-page .media-assets-grid {
     grid-template-columns: 1fr;
   }
 
