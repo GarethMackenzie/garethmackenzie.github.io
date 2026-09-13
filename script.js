@@ -15,6 +15,11 @@ if (isPremiumInterior) {
   }
 }
 
+const themeColor = document.querySelector('meta[name="theme-color"]');
+if (themeColor && (document.body.classList.contains('home-premium') || document.body.classList.contains('premium-page'))) {
+  themeColor.setAttribute('content', '#11151a');
+}
+
 const updateHeader = () => header?.classList.toggle('scrolled', window.scrollY > 24);
 updateHeader();
 window.addEventListener('scroll', updateHeader, { passive: true });
@@ -48,7 +53,7 @@ if (menuButton && nav) {
   });
 
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 900) closeMenu();
+    if (window.innerWidth > 1024) closeMenu();
   });
 }
 
