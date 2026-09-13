@@ -1,7 +1,7 @@
 name: Final site hardening
 
 on:
-  push:
+  pull_request:
     branches: [main]
     paths:
       - 'tools/final_hardening.py'
@@ -13,11 +13,16 @@ permissions:
 
 jobs:
   harden:
+    name: Update hardening output
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && github.ref_name != 'main')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout change branch
         uses: actions/checkout@v7
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -31,7 +36,9 @@ jobs:
       - name: Validate changes
         run: git diff --check
 
-      - name: Commit hardening updates
+      - name: Commit hardening updates to change branch
+        env:
+          TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           if git diff --quiet; then
             echo "No hardening changes to commit."
@@ -41,4 +48,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html privacy/index.html terms/index.html contact/index.html media/index.html insights/*/index.html
           git commit -m "Apply final website hardening"
-          git push
+          git push origin "HEAD:${TARGET_BRANCH}"
