@@ -1,6 +1,11 @@
 /* Pass 1: critical stability, accessibility, responsive navigation and portrait framing.
    This layer is intentionally narrow. Broader CSS consolidation belongs to Pass 2. */
 
+body.home-premium,
+body.premium-page {
+  color-scheme: dark;
+}
+
 /* Progressive enhancement: content is visible by default. JavaScript opts into reveal motion. */
 body .reveal {
   opacity: 1 !important;
