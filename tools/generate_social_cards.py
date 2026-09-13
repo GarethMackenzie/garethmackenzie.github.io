@@ -90,8 +90,10 @@ def wire_page(path,image_name,alt):
     text=set_meta(text,'twitter:image',image,attribute='name')
     text=ensure_after(text,'og:image','<meta property="og:image:width" content="1200">')
     text=ensure_after(text,'og:image:width','<meta property="og:image:height" content="630">')
-    text=ensure_after(text,'og:image:height',f'<meta property="og:image:alt" content="{alt}">')
+    text=ensure_after(text,'og:image:height','<meta property="og:image:type" content="image/png">')
+    text=ensure_after(text,'og:image:type',f'<meta property="og:image:alt" content="{alt}">')
     text=ensure_after(text,'twitter:image',f'<meta name="twitter:image:alt" content="{alt}">',attribute='name')
+    text=re.sub(r'"image":"https://garethmackenzie\.github\.io/assets/[^"]+"',f'"image":"{image}"',text,count=1)
     path.write_text(text,encoding='utf-8')
 
 for c in CARDS: card(*c)
@@ -101,4 +103,4 @@ for number,theme,title,slug in CARDS:
     wire_page(Path('insights')/slug/'index.html',f'{slug}.png',f'{title} — BUILT Insight by Gareth Andrew Mackenzie')
 wire_page(Path('insights/index.html'),'insights-series.png','BUILT Insights — ten essay series by Gareth Andrew Mackenzie')
 
-print(f'Generated {len(CARDS)+1} social cards and wired Insights metadata')
+print(f'Generated {len(CARDS)+1} social cards and aligned Insights metadata')
