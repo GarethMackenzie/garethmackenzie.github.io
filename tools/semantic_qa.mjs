@@ -23,7 +23,10 @@ try {
   // Raw-source semantics must remain correct with JavaScript disabled.
   const noJs = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
   const page = await noJs.newPage();
-  await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded' });
+
+  // Computed-style assertions depend on external CSS. Wait for network idle so the
+  // test measures the final no-JS fallback rather than the browser's pre-CSS defaults.
+  await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
 
   const home = await page.evaluate(() => ({
     foundations: [...document.querySelectorAll('.foundation-card a')].map((a) => ({ href: a.getAttribute('href'), label: a.getAttribute('aria-label') })),
