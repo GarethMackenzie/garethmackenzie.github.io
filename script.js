@@ -1,6 +1,7 @@
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu-button]');
 const nav = document.querySelector('[data-nav]');
+// Keep the JavaScript menu breakpoint aligned with site-tuning.css.
 
 const isPremiumInterior = !document.body.classList.contains('home-premium');
 if (isPremiumInterior) {
