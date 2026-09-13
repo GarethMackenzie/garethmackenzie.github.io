@@ -6,7 +6,7 @@ const baseURL = process.env.BASE_URL || 'http://127.0.0.1:4173';
 const sitemap = fs.readFileSync('sitemap.xml', 'utf8');
 const routes = [...sitemap.matchAll(/<loc>https:\/\/garethmackenzie\.github\.io([^<]*)<\/loc>/g)]
   .map((match) => match[1] || '/');
-for (const route of ['/privacy/', '/terms/']) {
+for (const route of ['/privacy/', '/terms/', '/404.html']) {
   if (!routes.includes(route)) routes.push(route);
 }
 
@@ -65,7 +65,6 @@ async function auditViewport(browser, viewport, label) {
       fail(`${label} ${route}: broken images ${state.brokenImages.join(', ')}`);
     }
 
-    // Run automated accessibility analysis once per route on desktop.
     if (label === 'desktop') {
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -197,7 +196,7 @@ async function testAuthorPhoto(browser) {
 async function testTextZoom(browser) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
-  const representative = ['/', '/about/', '/built/', '/insights/', '/insights/capital-allocation/', '/contact/'];
+  const representative = ['/', '/about/', '/built/', '/insights/', '/insights/capital-allocation/', '/contact/', '/404.html'];
   for (const route of representative) {
     await page.goto(`${baseURL}${route}`, { waitUntil: 'networkidle' });
     await page.evaluate(() => {
