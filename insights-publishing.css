@@ -25,12 +25,6 @@
   transition: background .22s ease,transform .22s ease;
 }
 
-/* Seven foundations create an intentional full-width closing card on desktop. */
-.premium-page .insights-essay-card:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-  min-height: 260px;
-}
-
 .premium-page .insights-essay-card:hover,
 .premium-page .insights-essay-card:focus-visible {
   background:
@@ -100,9 +94,7 @@
     grid-template-columns: 1fr;
   }
 
-  .premium-page .insights-essay-card,
-  .premium-page .insights-essay-card:last-child:nth-child(odd) {
-    grid-column: auto;
+  .premium-page .insights-essay-card {
     min-height: 250px;
   }
 }
