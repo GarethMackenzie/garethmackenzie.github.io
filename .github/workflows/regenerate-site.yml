@@ -1,0 +1,104 @@
+name: Regenerate site assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'styles.css'
+      - 'cover.css'
+      - 'theme.css'
+      - 'premium-home.css'
+      - 'site-tuning.css'
+      - 'pass1-stability.css'
+      - 'home-editorial.css'
+      - 'performance-tuning.css'
+      - 'premium-pages.css'
+      - 'premium-overrides.css'
+      - 'pages.css'
+      - 'assets/book-cover.jpg'
+      - 'index.html'
+      - 'built/index.html'
+      - 'about/index.html'
+      - 'media/index.html'
+      - 'contact/index.html'
+      - 'privacy/index.html'
+      - 'terms/index.html'
+      - 'insights/**/index.html'
+      - 'tools/build_performance_assets.py'
+      - 'tools/apply_technical_seo.py'
+      - 'tools/generate_social_cards.py'
+      - 'tools/final_hardening.py'
+      - '.github/workflows/regenerate-site.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: regenerate-site-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  regenerate:
+    name: Regenerate derived assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check Pillow
+
+      - name: Regenerate derived site files
+        run: |
+          python tools/build_performance_assets.py
+          python tools/apply_technical_seo.py
+          python tools/generate_social_cards.py
+          python tools/final_hardening.py
+
+      - name: Validate generated source
+        run: |
+          git diff --check
+          python tools/site_qa.py
+
+      - name: Commit generated changes once
+        id: generated
+        run: |
+          if git diff --quiet; then
+            echo 'No generated changes to commit.'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Regenerate derived site assets'
+
+          # Never overwrite a newer human or automation revision.
+          git fetch origin main
+          remote_sha="$(git rev-parse origin/main)"
+          parent_sha="$(git rev-parse HEAD^)"
+          if [ "$remote_sha" != "$parent_sha" ]; then
+            echo "main advanced during regeneration; refusing a non-fast-forward write."
+            exit 1
+          fi
+
+          git push origin HEAD:main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+
+      - name: Run Site QA for generated revision
+        if: steps.generated.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run site-qa.yml --ref main

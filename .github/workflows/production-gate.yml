@@ -19,7 +19,7 @@ jobs:
     name: Deploy verified revision
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') &&
       github.event.workflow_run.head_branch == 'main'
     environment:
       name: github-pages
@@ -31,21 +31,41 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Verify revision is still current main
+        id: current
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          git fetch origin main --depth=1
+          current_sha="$(git rev-parse origin/main)"
+          if [ "$current_sha" = "$EXPECTED_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+            echo "QA-passed revision is current main: $EXPECTED_SHA"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "Skipping stale QA-passed revision $EXPECTED_SHA; current main is $current_sha"
+          fi
 
       - name: Configure GitHub Pages
+        if: steps.current.outputs.current == 'true'
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Build site with Jekyll
+        if: steps.current.outputs.current == 'true'
         uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
           source: ./
           destination: ./_site
 
       - name: Upload verified Pages artifact
+        if: steps.current.outputs.current == 'true'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: ./_site
 
       - name: Deploy verified revision
+        if: steps.current.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
