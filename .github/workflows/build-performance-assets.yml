@@ -11,6 +11,7 @@ on:
       - 'site-tuning.css'
       - 'pass1-stability.css'
       - 'home-editorial.css'
+      - 'performance-tuning.css'
       - 'premium-pages.css'
       - 'premium-overrides.css'
       - 'pages.css'
@@ -53,6 +54,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist index.html built/index.html '**/index.html' assets/book-cover-480.webp assets/book-cover-800.webp assets/book-cover-1200.webp
+          git add dist index.html built/index.html '**/index.html' assets/book-cover-480.webp assets/book-cover-640.webp assets/book-cover-800.webp assets/book-cover-1200.webp
           git commit -m "Build optimized site assets"
           git push
