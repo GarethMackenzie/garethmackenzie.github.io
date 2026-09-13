@@ -58,9 +58,9 @@
     Leverage: '/insights/leverage/',
     Risk: '/insights/asymmetric-risk/',
     Systems: '/insights/business-systems/',
-    Information: '/insights/#information-advantage',
-    Scale: '/insights/#scale',
-    Compounding: '/insights/#compounding'
+    Information: '/insights/information-advantage/',
+    Scale: '/insights/scale/',
+    Compounding: '/insights/compounding/'
   };
 
   const foundationCards = document.querySelectorAll('.foundation-card');
@@ -71,7 +71,7 @@
     const destination = title ? foundationDestinations[title] : null;
     if (link && destination) {
       link.setAttribute('href', destination);
-      link.setAttribute('aria-label', `Explore ${title} in Insights`);
+      link.setAttribute('aria-label', `Read the ${title} essay in Insights`);
     }
   });
 })();
