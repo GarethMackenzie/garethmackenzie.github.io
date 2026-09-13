@@ -1,0 +1,86 @@
+name: Site QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - 'tools/site_qa.py'
+      - 'tools/browser_qa.mjs'
+      - 'tools/check_lighthouse.py'
+      - '.github/workflows/site-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Source and structure audit
+        run: python tools/site_qa.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install browser QA tools
+        run: npm install --no-save playwright @axe-core/playwright lighthouse
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/built-site.log 2>&1 &
+          echo $! > /tmp/built-site.pid
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/built-site.log
+          exit 1
+
+      - name: Browser accessibility and responsive audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/browser_qa.mjs
+
+      - name: Run Lighthouse lab audits
+        run: |
+          mkdir -p qa-reports/lighthouse
+          export CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          echo "Chrome: ${CHROME_PATH:-auto-detect}"
+          npx lighthouse http://127.0.0.1:4173/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/home.json
+          npx lighthouse http://127.0.0.1:4173/built/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/built.json
+          npx lighthouse http://127.0.0.1:4173/insights/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/insights.json
+          npx lighthouse http://127.0.0.1:4173/insights/capital-allocation/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/article.json
+
+      - name: Check Lighthouse budgets
+        run: python tools/check_lighthouse.py
+
+      - name: Upload QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-qa-reports
+          path: qa-reports/
+          if-no-files-found: ignore
+          retention-days: 14
