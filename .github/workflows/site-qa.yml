@@ -1,3 +1,4 @@
+# Final production gate: runs after generated CSS/assets are committed.
 name: Site QA
 
 on:
