@@ -71,25 +71,9 @@
   activateWhenVisible(shiftMap, () => shiftMap.classList.add('activated'));
   activateWhenVisible(systemMap, () => systemMap.classList.add('visible'));
 
-  const foundationDestinations = {
-    Capital: '/insights/capital-allocation/',
-    Leverage: '/insights/leverage/',
-    Risk: '/insights/asymmetric-risk/',
-    Systems: '/insights/business-systems/',
-    Information: '/insights/information-advantage/',
-    Scale: '/insights/scale/',
-    Compounding: '/insights/compounding/'
-  };
-
-  const foundationCards = document.querySelectorAll('.foundation-card');
-  foundationCards.forEach((card, index) => {
+  // Foundation destinations and accessible labels now live in the HTML source.
+  // JavaScript is only responsible for the optional staggered reveal timing.
+  document.querySelectorAll('.foundation-card').forEach((card, index) => {
     card.style.transitionDelay = `${Math.min(index * 55, 330)}ms`;
-    const title = card.querySelector('h3')?.textContent?.trim();
-    const link = card.querySelector('a');
-    const destination = title ? foundationDestinations[title] : null;
-    if (link && destination) {
-      link.setAttribute('href', destination);
-      link.setAttribute('aria-label', `Read the ${title} essay in Insights`);
-    }
   });
 })();
