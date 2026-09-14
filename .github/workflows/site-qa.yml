@@ -65,6 +65,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/product_qa.mjs
 
+      - name: Capture representative screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/capture_screenshots.mjs
+
       - name: Semantic and lazy-load audit
         env:
           BASE_URL: http://127.0.0.1:4173
