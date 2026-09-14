@@ -1,6 +1,13 @@
 const root = document.documentElement;
 root.classList.add('nav-ready');
 
+if (!document.querySelector('link[href="/dist/accessibility.css"]')) {
+  const accessibilityStyles = document.createElement('link');
+  accessibilityStyles.rel = 'stylesheet';
+  accessibilityStyles.href = '/dist/accessibility.css';
+  document.head.appendChild(accessibilityStyles);
+}
+
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu-button]');
 const nav = document.querySelector('[data-nav]');
@@ -171,11 +178,62 @@ if (isPremiumInterior) {
 const contactForm = document.querySelector('[data-contact-form]');
 if (contactForm) {
   const status = document.getElementById('form-status');
-  const query = new URLSearchParams(window.location.search);
+  const submitButton = contactForm.querySelector('button[type="submit"]');
+  const defaultButtonLabel = submitButton?.innerHTML || 'Send message';
 
-  if (query.get('sent') === '1') {
-    if (status) status.textContent = 'Thank you. Your message has been sent successfully.';
-    window.gtag?.('event', 'generate_lead', { form_name: 'contact' });
-    history.replaceState(null, '', `${window.location.pathname}#form`);
-  }
+  contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (contactForm.dataset.submitting === 'true') return;
+    if (!contactForm.checkValidity()) {
+      contactForm.reportValidity();
+      return;
+    }
+
+    contactForm.dataset.submitting = 'true';
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending…';
+    }
+    if (status) status.textContent = 'Sending your message…';
+
+    const endpoint = new URL(contactForm.action);
+    if (!endpoint.pathname.startsWith('/ajax/')) {
+      endpoint.pathname = `/ajax${endpoint.pathname}`;
+    }
+
+    const payload = Object.fromEntries(new FormData(contactForm).entries());
+    delete payload._next;
+
+    try {
+      const response = await fetch(endpoint.toString(), {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      const accepted = response.ok && String(result.success).toLowerCase() === 'true';
+
+      if (!accepted) throw new Error('Provider did not accept the submission');
+
+      if (status) {
+        status.textContent = "FormSubmit accepted your message. Delivery to the recipient's inbox is handled by the provider.";
+      }
+      contactForm.reset();
+      window.builtAnalytics?.trackEvent('generate_lead', { form_name: 'contact' });
+    } catch {
+      if (status) {
+        status.textContent = 'Your message was not accepted. Please review the form and try again, or use LinkedIn.';
+      }
+    } finally {
+      delete contactForm.dataset.submitting;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML = defaultButtonLabel;
+      }
+    }
+  });
 }

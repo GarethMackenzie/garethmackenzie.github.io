@@ -44,11 +44,15 @@ jobs:
 
       - name: Start local site
         run: |
-          python -m http.server 4173 --bind 127.0.0.1 > /tmp/built-site.log 2>&1 &
+          nohup python -m http.server 4173 --bind 127.0.0.1 > /tmp/built-site.log 2>&1 &
           echo $! > /tmp/built-site.pid
           for i in {1..20}; do
             if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
               exit 0
+            fi
+            if ! kill -0 "$(cat /tmp/built-site.pid)" 2>/dev/null; then
+              cat /tmp/built-site.log
+              exit 1
             fi
             sleep 1
           done
@@ -59,6 +63,16 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/browser_qa.mjs
+
+      - name: Product behavior and analytics audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/product_qa.mjs
+
+      - name: Capture representative screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/capture_screenshots.mjs
 
       - name: Semantic and lazy-load audit
         env:
