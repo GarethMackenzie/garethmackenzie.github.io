@@ -60,6 +60,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/browser_qa.mjs
 
+      - name: Product behavior and analytics audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/product_qa.mjs
+
       - name: Semantic and lazy-load audit
         env:
           BASE_URL: http://127.0.0.1:4173
