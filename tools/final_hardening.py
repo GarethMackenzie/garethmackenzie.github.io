@@ -43,7 +43,7 @@ def harden_home(text: str) -> str:
     }
     for title, (href, label) in mapping.items():
         pattern = re.compile(
-            rf'(<article class="foundation-card reveal">.*?<h3>{re.escape(title)}</h3>.*?<a )href="[^"]+"(?: aria-label="[^"]+")?(>Explore <span>→</span></a></article>)',
+            rf'(<article class="foundation-card reveal">.*?<h3>{re.escape(title)}</h3>.*?<a )href="[^"]+"(?: aria-label="[^"]+")?(>Explore <span>\u2192</span></a></article>)',
             re.S,
         )
         text = pattern.sub(rf'\1href="{href}" aria-label="{label}"\2', text, count=1)
@@ -61,7 +61,6 @@ for rel in ('privacy/index.html', 'terms/index.html'):
 # Contact: keep browser-native validation and make status semantics idempotent.
 def harden_contact(text: str) -> str:
     text = text.replace(' novalidate>', '>')
-    text = re.sub(r'\sdata-endpoint="[^"]+"', '', text)
     text = re.sub(
         r'id="form-status" role="status"(?: aria-live="polite")*',
         'id="form-status" role="status" aria-live="polite"',
@@ -75,8 +74,8 @@ update(ROOT / 'contact/index.html', harden_contact)
 
 # Media download links should have meaningful accessible names without requiring surrounding context.
 def harden_media(text: str) -> str:
-    text = text.replace('href="/assets/book-cover.jpg" download>Download <span aria-hidden="true">↓</span></a>', 'href="/assets/book-cover.jpg" download>Download book cover <span aria-hidden="true">↓</span></a>')
-    text = text.replace('href="/assets/gareth-mackenzie-author.jpeg" download>Download <span aria-hidden="true">↓</span></a>', 'href="/assets/gareth-mackenzie-author.jpeg" download>Download author photo <span aria-hidden="true">↓</span></a>')
+    text = text.replace('href="/assets/book-cover.jpg" download>Download <span aria-hidden="true">\u2193</span></a>', 'href="/assets/book-cover.jpg" download>Download book cover <span aria-hidden="true">\u2193</span></a>')
+    text = text.replace('href="/assets/gareth-mackenzie-author.jpeg" download>Download <span aria-hidden="true">\u2193</span></a>', 'href="/assets/gareth-mackenzie-author.jpeg" download>Download author photo <span aria-hidden="true">\u2193</span></a>')
     return text
 
 
