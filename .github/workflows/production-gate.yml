@@ -32,6 +32,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify revision is still current main
         id: current
