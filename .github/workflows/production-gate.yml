@@ -52,12 +52,58 @@ jobs:
         if: steps.current.outputs.current == 'true'
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
-      - name: Build site with Jekyll
+      - name: Stage production-only website
         if: steps.current.outputs.current == 'true'
-        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
-        with:
-          source: ./
-          destination: ./_site
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+
+          runtime_files=(
+            index.html
+            404.html
+            analytics.js
+            script.js
+            premium-home.js
+            robots.txt
+            sitemap.xml
+            insight-article.css
+            insights-publishing.css
+            google5b43e442e1b6a4c0.html
+          )
+
+          runtime_dirs=(
+            about
+            assets
+            built
+            contact
+            dist
+            insights
+            media
+            privacy
+            terms
+          )
+
+          for file in "${runtime_files[@]}"; do
+            test -f "$file"
+            cp "$file" _site/
+          done
+
+          for dir in "${runtime_dirs[@]}"; do
+            test -d "$dir"
+            cp -R "$dir" _site/
+          done
+
+          # Deployment hygiene: repository internals and source-only files must never ship.
+          test ! -e _site/tools
+          test ! -e _site/.github
+          test ! -e _site/README.md
+          test ! -e _site/MIGRATION-NOTES.md
+          test ! -e _site/styles.css
+          test ! -e _site/theme.css
+          test ! -e _site/pages.css
+
+          echo "Production artifact contains $(find _site -type f | wc -l | tr -d ' ') files."
 
       - name: Upload verified Pages artifact
         if: steps.current.outputs.current == 'true'
