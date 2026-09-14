@@ -1,0 +1,75 @@
+/* Focused usability layer for functional text and controls. */
+.home-premium .nav > a:not(.button),
+.premium-page .nav > a:not(.button),
+.home-premium .text-link,
+.premium-page .text-link,
+.home-premium .foundation-card a,
+.home-premium .section-kicker,
+.home-premium .node,
+.home-premium .premium-footer .footer-links,
+.premium-page footer .footer-links,
+.analytics-preferences,
+.consent-decline,
+.consent-banner p,
+.premium-page .form-row label {
+  font-size: max(.875rem, 14px);
+}
+
+.home-premium .eyebrow,
+.premium-page .eyebrow,
+.home-premium .hero-note,
+.home-premium .side-note,
+.home-premium .premium-footer small,
+.premium-page .section-label p {
+  font-size: max(.8125rem, 13px);
+}
+
+.home-premium .button,
+.premium-page .button,
+.consent-banner button,
+.analytics-preferences {
+  min-height: 44px;
+  font-size: max(.875rem, 14px);
+}
+
+.home-premium .foundation-card a,
+.home-premium .text-link,
+.premium-page .text-link,
+.analytics-preferences,
+.consent-decline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.analytics-preferences {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.analytics-preferences:hover,
+.analytics-preferences:focus-visible,
+.consent-decline:focus-visible {
+  color: var(--gold-2, var(--gold));
+}
+
+.analytics-preferences:focus-visible,
+.consent-banner button:focus-visible {
+  outline: 2px solid var(--gold-2, var(--gold));
+  outline-offset: 4px;
+}
+
+@media (max-width: 1024px) {
+  .home-premium .nav > a:not(.button),
+  .premium-page .nav > a:not(.button) {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
