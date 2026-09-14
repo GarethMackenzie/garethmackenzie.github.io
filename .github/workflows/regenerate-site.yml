@@ -37,7 +37,6 @@ concurrency:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   regenerate:
@@ -72,11 +71,9 @@ jobs:
           python tools/site_qa.py
 
       - name: Commit generated changes once
-        id: generated
         run: |
           if git diff --quiet; then
             echo 'No generated changes to commit.'
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -95,10 +92,3 @@ jobs:
           fi
 
           git push origin HEAD:main
-          echo 'changed=true' >> "$GITHUB_OUTPUT"
-
-      - name: Run Site QA for generated revision
-        if: steps.generated.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run site-qa.yml --ref main
