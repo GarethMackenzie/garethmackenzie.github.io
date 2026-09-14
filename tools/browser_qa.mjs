@@ -301,7 +301,7 @@ async function testContactFormSemantics(browser) {
     const status = document.getElementById('form-status');
     const required = [...form.querySelectorAll('[required]')];
     return {
-      endpointIsHttps: String(form?.dataset.endpoint || '').startsWith('https://'),
+      endpointIsHttps: String(form?.action || '').startsWith('https://'),
       statusRole: status?.getAttribute('role'),
       statusLive: status?.getAttribute('aria-live'),
       requiredCount: required.length,
