@@ -1,0 +1,232 @@
+/* Principal polish layer.
+   Deliberately keeps the site zero-webfont for speed/privacy while making
+   typography, small labels, responsive grids, focus states and consent UI
+   deterministic across Windows, macOS and Android. */
+
+:root,
+body.home-premium,
+body.premium-page {
+  --serif: ui-serif, Charter, "Bitstream Charter", "Sitka Text", Cambria, "Noto Serif", "Liberation Serif", Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+}
+
+body.home-premium,
+body.premium-page {
+  font-family: var(--sans);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keep tracked editorial labels readable. Avoid the 8–10 px range that was
+   previously used in several places. */
+.home-premium .nav > a:not(.button),
+.home-premium .eyebrow,
+.home-premium .hero-note,
+.home-premium .section-kicker,
+.home-premium .side-note,
+.home-premium .text-link,
+.home-premium .foundation-card a,
+.home-premium .featured-insight-count span,
+.home-premium .featured-insight-meta,
+.home-premium .featured-insight-side span,
+.home-premium .home-author-portrait figcaption,
+.home-premium .home-author-copy .eyebrow,
+.home-premium .home-insights .eyebrow,
+.home-premium .author-proof span,
+.home-premium .legal,
+.premium-page .nav > a:not(.button),
+.premium-page .eyebrow,
+.premium-page .section-label p,
+.premium-page .article-kicker,
+.premium-page .article-meta-label,
+.premium-page .legal {
+  font-size: .72rem;
+}
+
+.home-premium .section-kicker,
+.home-premium .hero-note,
+.home-premium .side-note,
+.home-premium .featured-insight-count span,
+.home-premium .featured-insight-meta,
+.home-premium .home-author-portrait figcaption,
+.premium-page .article-meta-label {
+  color: #c9cdd0 !important;
+}
+
+.home-premium .side-note {
+  max-width: 170px;
+}
+
+/* SVG foundation icons are deterministic and cannot fall back to tofu glyphs. */
+.home-premium svg.foundation-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 15px 0 10px;
+  color: var(--gold);
+}
+
+.home-premium svg.foundation-icon path,
+.home-premium svg.foundation-icon circle,
+.home-premium svg.foundation-icon rect,
+.home-premium svg.foundation-icon polyline,
+.home-premium svg.foundation-icon line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Make the opening premise a compact thesis interlude rather than another
+   full-height section with the same rhythm as the rest of the homepage. */
+.home-premium .premise {
+  padding-top: 64px;
+  padding-bottom: 74px;
+  background:
+    linear-gradient(90deg, rgba(240,207,152,.035), transparent 42%, rgba(255,255,255,.012)),
+    #11161b;
+}
+
+.home-premium .premise .section-rail {
+  margin-bottom: 24px;
+}
+
+.home-premium .premise .split-grid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+  gap: clamp(44px, 8vw, 110px);
+}
+
+/* The seven-card row was too compressed through tablet widths. */
+@media (max-width: 1180px) {
+  .home-premium .foundation-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .home-premium .foundation-card {
+    min-height: 225px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-premium .premise .split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-premium .foundation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .home-premium .foundation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keep the consent prompt available for the existing opt-in analytics flow,
+   but move it out of the hero's primary conversion area and dramatically
+   reduce its visual footprint. */
+body.home-premium .consent-banner,
+body.premium-page .consent-banner {
+  left: auto;
+  right: clamp(12px, 2vw, 24px);
+  bottom: clamp(12px, 2vw, 24px);
+  width: min(520px, calc(100vw - 32px));
+  max-width: 520px;
+  margin: 0;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  background: rgba(20, 24, 29, .97);
+  border-color: rgba(240, 207, 152, .28);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .34);
+}
+
+body.home-premium .consent-banner strong,
+body.premium-page .consent-banner strong {
+  margin-bottom: 2px;
+  font-size: .9rem;
+  line-height: 1.25;
+}
+
+body.home-premium .consent-banner p,
+body.premium-page .consent-banner p {
+  color: #cfd2d4;
+  font-size: .72rem;
+  line-height: 1.4;
+}
+
+body.home-premium .consent-actions,
+body.premium-page .consent-actions {
+  gap: 8px;
+}
+
+body.home-premium .consent-banner .button,
+body.premium-page .consent-banner .button,
+body.home-premium .consent-decline,
+body.premium-page .consent-decline {
+  min-height: 38px;
+  padding: 8px 11px;
+  font-size: .68rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 680px) {
+  body.home-premium .consent-banner,
+  body.premium-page .consent-banner {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-width: none;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  body.home-premium .consent-actions,
+  body.premium-page .consent-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  body.home-premium .consent-banner .button,
+  body.premium-page .consent-banner .button,
+  body.home-premium .consent-decline,
+  body.premium-page .consent-decline {
+    flex: 1 1 0;
+  }
+}
+
+/* Preserve strong keyboard affordances on the dark/gold palette. */
+.home-premium a:focus-visible,
+.home-premium button:focus-visible,
+.premium-page a:focus-visible,
+.premium-page button:focus-visible {
+  outline: 2px solid var(--gold-2, #f0cf98) !important;
+  outline-offset: 4px !important;
+}
+
+/* The source image already has explicit width/height attributes. Keeping the
+   wrapper stable makes the decorative author frame equally deterministic. */
+.home-premium .home-author-portrait picture {
+  display: block;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-premium .foundation-card,
+  .home-premium .consent-banner,
+  .premium-page .consent-banner {
+    transition: none !important;
+  }
+}
