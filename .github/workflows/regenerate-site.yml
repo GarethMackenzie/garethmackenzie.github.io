@@ -12,6 +12,7 @@ on:
       - 'pass1-stability.css'
       - 'home-editorial.css'
       - 'performance-tuning.css'
+      - 'principal-polish.css'
       - 'premium-pages.css'
       - 'premium-overrides.css'
       - 'pages.css'
