@@ -48,6 +48,7 @@ bundle(
         'pass1-stability.css',
         'home-editorial.css',
         'performance-tuning.css',
+        'principal-polish.css',
     ],
 )
 
@@ -63,6 +64,7 @@ bundle(
         'site-tuning.css',
         'pages.css',
         'pass1-stability.css',
+        'principal-polish.css',
     ],
     strip_pages_imports=True,
 )
@@ -71,6 +73,10 @@ bundle(
 # Wire the generated bundles into existing HTML without disturbing page-specific CSS.
 home = ROOT / 'index.html'
 home_text = home.read_text(encoding='utf-8')
+# During review/PR runs the polish layer is linked directly so browser QA sees
+# it before generated bundles are rebuilt. Production generation folds it into
+# dist/home.css and removes the temporary extra request.
+home_text = home_text.replace('  <link rel="stylesheet" href="/principal-polish.css">\n', '')
 home_pattern = re.compile(
     r'\s*<link rel="stylesheet" href="/styles\.css">\s*'
     r'<link rel="stylesheet" href="/cover\.css">\s*'
@@ -85,11 +91,12 @@ home_text, home_count = home_pattern.subn(home_replacement, home_text, count=1)
 if home_count == 0 and '/dist/home.css' not in home_text:
     raise RuntimeError('Homepage stylesheet sequence was not found')
 
-# Let the preload participate in responsive selection. The 640px variant is the
-# right first-load asset for the common ~390–430px, DPR 2 mobile viewport.
+# Let the preload participate in responsive selection. The 480px href mirrors
+# the common DPR1 desktop candidate while imagesrcset still lets higher-density
+# and wider viewports choose 640/800/1200 without a duplicate download.
 preload_pattern = re.compile(r'<link rel="preload"[^>]*book-cover-[^">]+\.webp[^>]*>')
 preload_tag = (
-    f'<link rel="preload" as="image" type="image/webp" href="/assets/book-cover-640.webp" '
+    f'<link rel="preload" as="image" type="image/webp" href="/assets/book-cover-480.webp" '
     f'imagesrcset="{COVER_SRCSET}" imagesizes="{HOME_COVER_SIZES}" fetchpriority="high">'
 )
 home_text, preload_count = preload_pattern.subn(preload_tag, home_text, count=1)
