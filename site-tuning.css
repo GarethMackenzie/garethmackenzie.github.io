@@ -25,10 +25,6 @@ body.premium-page {
   background: rgba(17,21,26,.92);
 }
 
-
-
-
-
 .home-premium .hero-lead,
 .premium-page .page-hero .hero-lead {
   color: #d1d4d6;
@@ -40,8 +36,6 @@ body.premium-page {
 .premium-page .systems-copy p {
   color: #c4c7ca;
 }
-
-
 
 .premium-page .book-cover {
   filter: grayscale(.62) sepia(.25) brightness(.72) contrast(1.12) saturate(.78);
@@ -67,8 +61,6 @@ body.premium-page {
 .premium-page .systems-flow div {
   background: linear-gradient(180deg, rgba(255,255,255,.032), rgba(255,255,255,.010));
 }
-
-
 
 .premium-page .about-link-card,
 .premium-page .media-assets-grid figure,
@@ -119,40 +111,6 @@ body.premium-page {
 }
 
 /* Homepage authority layer: author and editorial discovery. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .home-premium .closing-band,
 .premium-page .final-cta {
@@ -240,5 +198,3 @@ body.premium-page {
   .premium-page .book-shell {
     will-change: auto;
   }}
-
-
