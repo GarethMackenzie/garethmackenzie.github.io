@@ -7,7 +7,8 @@ const nav = document.querySelector('[data-nav]');
 const compactMenuQuery = window.matchMedia('(max-width: 1024px)');
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-const isPremiumInterior = !document.body.classList.contains('home-premium');
+const isHomePage = document.body.classList.contains('author-home');
+const isPremiumInterior = !isHomePage;
 if (isPremiumInterior) {
   document.body.classList.add('premium-page');
   header?.classList.add('premium-header');
