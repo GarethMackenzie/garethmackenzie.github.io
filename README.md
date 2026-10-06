@@ -25,19 +25,24 @@ Media, Contact, with BUILT as a highlighted CTA — never the site wordmark.
 
 ## Stylesheets
 
-Source stylesheets (`styles.css`, `theme.css`, `premium-pages.css`, etc.)
-are bundled into `dist/home.css` and `dist/interior.css`. **Edit the source
-files, never `dist/*.css` directly** — it's overwritten on every build.
+Which CSS each page actually loads (verified against the HTML on `main`):
+
+| Page(s) | Stylesheet | How it is maintained |
+| --- | --- | --- |
+| `/` (homepage) | `dist/author-home.css` | Edited directly. No build step, no source files. |
+| All other pages except essays and the writing index | `dist/interior.css` | Built from source files: edit those, then run `python3 tools/build_css.py`. |
+| `/insights/<slug>/` (10 essays) | `insight-article.css` (repo root) | Edited directly; also loads `dist/interior.css`. |
+| `/insights/` (writing index) | `insights-publishing.css` (repo root) | Edited directly. |
+
+Not loaded by any page (safe to ignore; do not edit expecting a visible change): `dist/home.css`, `home-editorial.css`, `performance-tuning.css`, `premium-home.css`, `premium-home.js`.
 
 ```
 python3 tools/build_css.py
 ```
 
-Run this after any source CSS change, before committing. It's idempotent —
-safe to run even with nothing changed.
+Idempotent. It only affects `dist/interior.css` in practice (it also still writes the unused `dist/home.css`).
 
-`tools/build_performance_assets.py` is a one-time migration script (HTML
-rewrites + image generation already applied) and should not be rerun.
+`tools/build_performance_assets.py` is a one-time migration script (HTML rewrites + image generation already applied) and should not be rerun.
 
 ## Validation
 
@@ -53,11 +58,5 @@ correct.
 
 ## Known state
 
-This repo has had several rounds of fixes prepared (branding/nav
-consistency, two JS bugs, missing Google Fonts loading that meant the whole
-site was rendering in system-font fallbacks, dead CSS cleanup, a baked-in
-border on the author portrait, and new CSS for `.author-hero` and
-`.contact-strip`, which previously had no styling at all). Check `git log`
-and the current state of `dist/*.css` against this README's date before
-assuming all of the above is live — confirm in a real browser, not an
-in-app webview.
+- The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is cropped inside its baked-in keyline. The JPEG is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it.
+- No rendered visual check has been done in a real desktop or mobile browser. Do that before further CSS changes.
