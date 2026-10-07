@@ -70,7 +70,7 @@
     banner.setAttribute('aria-label', 'Analytics preferences');
     banner.innerHTML = `
       <div>
-        <strong>Help improve the BUILT website</strong>
+        <strong>Help improve this website</strong>
         <p>Optional Google Analytics helps measure page visits and Amazon clicks. Advertising cookies remain disabled.</p>
       </div>
       <div class="consent-actions">
