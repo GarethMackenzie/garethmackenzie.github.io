@@ -3,7 +3,7 @@ import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-SITE = 'https://garethmackenzie.github.io'
+SITE = 'https://mackenziebooks.bbroot.com'
 PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
@@ -89,7 +89,7 @@ def link_person_entity(text: str) -> str:
     )
     # Compact JSON-LD Person author/publisher objects used on interior pages.
     text = text.replace(
-        '{"@type":"Person","name":"Gareth Andrew Mackenzie","url":"https://garethmackenzie.github.io/about/"}',
+        '{"@type":"Person","name":"Gareth Andrew Mackenzie","url":"https://mackenziebooks.bbroot.com/about/"}',
         f'{{"@type":"Person","@id":"{PERSON_ID}","name":"Gareth Andrew Mackenzie","url":"{SITE}/about/"}}',
     )
     text = text.replace(
