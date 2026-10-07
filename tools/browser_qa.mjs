@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 const baseURL = process.env.BASE_URL || 'http://127.0.0.1:4173';
 const sitemap = fs.readFileSync('sitemap.xml', 'utf8');
-const routes = [...sitemap.matchAll(/<loc>https:\/\/garethmackenzie\.github\.io([^<]*)<\/loc>/g)]
+const routes = [...sitemap.matchAll(/<loc>https:\/\/mackenziebooks\.bbroot\.com([^<]*)<\/loc>/g)]
   .map((match) => match[1] || '/');
 for (const route of ['/privacy/', '/terms/', '/404.html']) {
   if (!routes.includes(route)) routes.push(route);
