@@ -47,7 +47,7 @@ def base(draw):
 
 def card(number,theme,title,slug):
     img=Image.new('RGB',(W,H),BG); d=ImageDraw.Draw(img); base(d)
-    d.text((78,72),'BUILT.',font=font(SERIF,34),fill=PAPER); d.text((960,77),f'INSIGHT {number}/10',font=font(SANS,14),fill=GOLD)
+    d.text((78,72),'GARETH MACKENZIE.',font=font(SERIF,34),fill=PAPER); d.text((960,77),f'INSIGHT {number}/10',font=font(SANS,14),fill=GOLD)
     d.text((78,154),theme,font=font(SANS_BOLD,18),fill=GOLD)
     f,lines=wrap(d,title,710); y=206
     for line in lines:
@@ -60,7 +60,7 @@ def card(number,theme,title,slug):
 
 def index_card():
     img=Image.new('RGB',(W,H),BG); d=ImageDraw.Draw(img); base(d)
-    d.text((78,72),'BUILT.',font=font(SERIF,34),fill=PAPER); d.text((875,72),'GARETH ANDREW MACKENZIE',font=font(SANS,14),fill=MUTED)
+    d.text((78,72),'GARETH MACKENZIE.',font=font(SERIF,34),fill=PAPER); d.text((875,72),'AUTHOR OF BUILT',font=font(SANS,14),fill=MUTED)
     d.text((78,155),'INSIGHTS',font=font(SANS_BOLD,18),fill=GOLD)
     f,lines=wrap(d,'Ten themes. One system.',760,max_lines=2,start=76,minimum=58); y=220
     for line in lines:
@@ -113,7 +113,7 @@ for c in CARDS: card(*c)
 index_card()
 
 for number,theme,title,slug in CARDS:
-    wire_page(Path('insights')/slug/'index.html',f'{slug}.png',f'{title} — BUILT Insight by Gareth Andrew Mackenzie')
-wire_page(Path('insights/index.html'),'insights-series.png','BUILT Insights — ten essay series by Gareth Andrew Mackenzie')
+    wire_page(Path('insights')/slug/'index.html',f'{slug}.png',f'{title} — Essay by Gareth Andrew Mackenzie')
+wire_page(Path('insights/index.html'),'insights-series.png','Writing — ten-essay series by Gareth Andrew Mackenzie')
 
 print(f'Generated {len(CARDS)+1} social cards and aligned Insights metadata')
