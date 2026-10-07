@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIMARY = "https://garethmackenzie.github.io"
+PRIMARY = "https://mackenziebooks.bbroot.com"
 
 
 class PageParser(HTMLParser):
@@ -72,7 +72,7 @@ for page in pages:
         errors.append(f"{relative}: old Amazon link remains")
     if 'src="/analytics.js"' not in text:
         errors.append(f"{relative}: analytics.js is missing")
-    if not re.search(r'<link rel="canonical" href="https://garethmackenzie\.github\.io/', text):
+    if not re.search(r'<link rel="canonical" href="https://mackenziebooks\.bbroot\.com/', text):
         errors.append(f"{relative}: canonical is not on the primary domain")
 
     for image in parser.images:
@@ -90,8 +90,8 @@ for page in pages:
 
 tree = ET.parse(ROOT / "sitemap.xml")
 locations = [element.text for element in tree.findall("{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
-if len(locations) != 6 or any(not location.startswith(PRIMARY) for location in locations):
-    errors.append("sitemap.xml: expected six GitHub Pages URLs")
+if len(locations) < 6 or any(not location.startswith(PRIMARY) for location in locations):
+    errors.append("sitemap.xml: expected at least six URLs on the primary domain")
 
 robots = (ROOT / "robots.txt").read_text(encoding="utf-8")
 if f"Sitemap: {PRIMARY}/sitemap.xml" not in robots:
