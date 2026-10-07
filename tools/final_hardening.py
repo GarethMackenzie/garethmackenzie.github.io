@@ -19,16 +19,16 @@ def harden_home(text: str) -> str:
         '<link rel="preload" href="/assets/book-cover-800.webp" as="image" type="image/webp" fetchpriority="high" imagesrcset="/assets/book-cover-480.webp 480w, /assets/book-cover-800.webp 800w, /assets/book-cover-1200.webp 1200w" imagesizes="(max-width: 1024px) 340px, 390px">',
     )
 
-    if '"@id": "https://garethmackenzie.github.io/about/#person"' not in text:
+    if '"@id": "https://mackenziebooks.bbroot.com/about/#person"' not in text:
         text = text.replace(
             '"@type": "Person",\n      "name": "Gareth Andrew Mackenzie",',
-            '"@type": "Person",\n      "@id": "https://garethmackenzie.github.io/about/#person",\n      "name": "Gareth Andrew Mackenzie",',
+            '"@type": "Person",\n      "@id": "https://mackenziebooks.bbroot.com/about/#person",\n      "name": "Gareth Andrew Mackenzie",',
             1,
         )
-    if '"author": {"@id": "https://garethmackenzie.github.io/about/#person"}' not in text:
+    if '"author": {"@id": "https://mackenziebooks.bbroot.com/about/#person"}' not in text:
         text = text.replace(
-            '"image": "https://garethmackenzie.github.io/assets/book-cover.jpg",\n      "sameAs": "https://a.co/d/0gLDcpvu"',
-            '"image": "https://garethmackenzie.github.io/assets/book-cover.jpg",\n      "author": {"@id": "https://garethmackenzie.github.io/about/#person"},\n      "sameAs": "https://a.co/d/0gLDcpvu"',
+            '"image": "https://mackenziebooks.bbroot.com/assets/book-cover.jpg",\n      "sameAs": "https://a.co/d/0gLDcpvu"',
+            '"image": "https://mackenziebooks.bbroot.com/assets/book-cover.jpg",\n      "author": {"@id": "https://mackenziebooks.bbroot.com/about/#person"},\n      "sameAs": "https://a.co/d/0gLDcpvu"',
             1,
         )
 
