@@ -4,7 +4,7 @@ Author website for Gareth Andrew Mackenzie. The author is the brand; *BUILT:
 How Wealth Is Deliberately Constructed* is his current book, not the site's
 identity.
 
-Live site: http://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
+Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 
 ## Domain
 
@@ -12,7 +12,7 @@ Live site: http://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 - DNS (at the registrar/DNS host): a `CNAME` record for `mackenziebooks` pointing to `garethmackenzie.github.io`.
 - GitHub: Settings > Pages > Custom domain, then tick "Enforce HTTPS" once the certificate is issued.
 - With the custom domain set, `garethmackenzie.github.io` redirects to it.
-- Open item: canonical URLs, Open Graph URLs, JSON-LD, `sitemap.xml` and `robots.txt` still use `https://garethmackenzie.github.io/`. Decide which domain is canonical, then update them together.
+- Canonical URLs, Open Graph URLs, JSON-LD, `sitemap.xml` and `robots.txt` use `https://mackenziebooks.bbroot.com/`. The scripts in `tools/` still hardcode the old `garethmackenzie.github.io` address; update them before re-running any of them.
 - Editing this README does not change the site; pages are built from the HTML files.
 
 ## Structure
