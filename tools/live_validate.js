@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 
 (async () => {
-const baseUrl = (process.env.BUILT_SITE_URL || 'https://garethmackenzie.github.io').replace(/\/$/, '');
+const baseUrl = (process.env.BUILT_SITE_URL || 'https://mackenziebooks.bbroot.com').replace(/\/$/, '');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const routes = ['/', '/built/', '/about/', '/insights/', '/media/', '/contact/', '/privacy/', '/terms/'];
 const widths = [320, 390, 768, 1024, 1440];
@@ -40,7 +40,7 @@ for (const width of widths) {
 
     if (result.overflow > 1) failures.push(`${width}px ${route}: overflow ${result.overflow}px`);
     if (result.h1Count !== 1) failures.push(`${width}px ${route}: ${result.h1Count} h1 elements`);
-    if (!result.canonical.startsWith('https://garethmackenzie.github.io')) failures.push(`${width}px ${route}: wrong canonical`);
+    if (!result.canonical.startsWith('https://mackenziebooks.bbroot.com')) failures.push(`${width}px ${route}: wrong canonical`);
     if (!result.analytics) failures.push(`${width}px ${route}: analytics.js missing`);
     if (width <= 768 && (!result.menuVisible || result.menuWidth < 44 || result.menuHeight < 44)) {
       failures.push(`${width}px ${route}: mobile menu is not a 44px target`);
@@ -90,7 +90,7 @@ if (form.action !== 'https://formsubmit.co/gmackenzie199@gmail.com') failures.pu
 if (form.method.toLowerCase() !== 'post') failures.push('Contact form fallback method is not POST');
 if (form.endpoint !== 'https://formsubmit.co/ajax/gmackenzie199@gmail.com') failures.push('Contact AJAX endpoint is wrong');
 if (form.requiredFields.join(',') !== 'name,email,category,message') failures.push('Contact required fields are incomplete');
-if (form.sourceUrl !== 'https://garethmackenzie.github.io/contact/') failures.push('Contact source URL is wrong');
+if (form.sourceUrl !== 'https://mackenziebooks.bbroot.com/contact/') failures.push('Contact source URL is wrong');
 
 await browser.close();
 
