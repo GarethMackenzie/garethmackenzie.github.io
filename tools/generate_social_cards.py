@@ -55,7 +55,7 @@ def card(number,theme,title,slug):
     qy=min(493,y+24); d.line((78,qy,690,qy),fill=GOLD_DIM,width=2); d.text((78,qy+18),'IDEAS FROM BUILT, EXPANDED.',font=font(SANS,14),fill=MUTED)
     cx=1008; d.ellipse((cx-46,178,cx+46,270),outline=GOLD_DIM,width=1); d.line((cx,178,cx,270),fill=GOLD_DIM,width=1); d.line((cx-46,224,cx+46,224),fill=GOLD_DIM,width=1)
     d.multiline_text((955,315),'GARETH ANDREW\nMACKENZIE',font=font(SANS,17),fill=PAPER,spacing=7); d.text((955,395),'AUTHOR OF BUILT',font=font(SANS,13),fill=MUTED)
-    d.text((78,560),'garethmackenzie.github.io/insights/',font=font(SANS,15),fill=MUTED); d.multiline_text((955,555),'HOW WEALTH IS\nDELIBERATELY CONSTRUCTED',font=font(SANS,12),fill=MUTED,spacing=5)
+    d.text((78,560),'mackenziebooks.bbroot.com/insights/',font=font(SANS,15),fill=MUTED); d.multiline_text((955,555),'HOW WEALTH IS\nDELIBERATELY CONSTRUCTED',font=font(SANS,12),fill=MUTED,spacing=5)
     img.save(OUT/f'{slug}.png','PNG',optimize=True)
 
 def index_card():
@@ -69,7 +69,7 @@ def index_card():
     for i in range(10):
         x=78+i*95; d.text((x,520),f'{i+1:02d}',font=font(SERIF,20),fill=GOLD if i in (0,9) else (145,145,145))
         if i<9: d.line((x+32,533,x+82,533),fill=HAIR,width=1)
-    d.text((875,555),'garethmackenzie.github.io/insights/',font=font(SANS,14),fill=MUTED)
+    d.text((875,555),'mackenziebooks.bbroot.com/insights/',font=font(SANS,14),fill=MUTED)
     img.save(OUT/'insights-series.png','PNG',optimize=True)
 
 def meta_pattern(prop, attribute='property'):
@@ -91,7 +91,7 @@ def ensure_after(text, anchor_prop, new_tag, attribute='property'):
 
 def wire_page(path,image_name,alt):
     text=path.read_text(encoding='utf-8')
-    image=f'https://garethmackenzie.github.io/assets/social/{image_name}'
+    image=f'https://mackenziebooks.bbroot.com/assets/social/{image_name}'
 
     text=set_meta(text,'og:image',image)
     text=set_meta(text,'twitter:image',image,attribute='name')
@@ -106,7 +106,7 @@ def wire_page(path,image_name,alt):
     text=ensure_after(text,'og:image:height','<meta property="og:image:type" content="image/png">')
     text=ensure_after(text,'og:image:type',f'<meta property="og:image:alt" content="{alt}">')
     text=ensure_after(text,'twitter:image',f'<meta name="twitter:image:alt" content="{alt}">',attribute='name')
-    text=re.sub(r'"image":"https://garethmackenzie\.github\.io/assets/[^"]+"',f'"image":"{image}"',text,count=1)
+    text=re.sub(r'"image":"https://mackenziebooks\.bbroot\.com/assets/[^"]+"',f'"image":"{image}"',text,count=1)
     path.write_text(text,encoding='utf-8')
 
 for c in CARDS: card(*c)
