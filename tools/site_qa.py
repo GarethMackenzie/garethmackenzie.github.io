@@ -9,7 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-SITE = "https://garethmackenzie.github.io"
+SITE = "https://mackenziebooks.bbroot.com"
 NOINDEX_ROUTES = {"/privacy/", "/terms/"}
 REQUIRED_OG = {
     "og:type",
@@ -129,7 +129,7 @@ def target_exists(href: str, current_route: str) -> bool:
         return True
     parsed = urlparse(href)
     if parsed.scheme in {"http", "https"}:
-        if parsed.netloc != "garethmackenzie.github.io":
+        if parsed.netloc != "mackenziebooks.bbroot.com":
             return True
         path = parsed.path or "/"
     elif href.startswith("#"):
