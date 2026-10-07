@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://garethmackenzie.github.io/sitemap.xml
+Sitemap: https://mackenziebooks.bbroot.com/sitemap.xml
