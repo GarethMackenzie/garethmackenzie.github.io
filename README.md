@@ -4,7 +4,16 @@ Author website for Gareth Andrew Mackenzie. The author is the brand; *BUILT:
 How Wealth Is Deliberately Constructed* is his current book, not the site's
 identity.
 
-Live site: https://garethmackenzie.github.io/
+Live site: http://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
+
+## Domain
+
+- The `CNAME` file in the repo root holds the custom domain (`mackenziebooks.bbroot.com`). Do not delete it: removing it unpublishes the custom domain.
+- DNS (at the registrar/DNS host): a `CNAME` record for `mackenziebooks` pointing to `garethmackenzie.github.io`.
+- GitHub: Settings > Pages > Custom domain, then tick "Enforce HTTPS" once the certificate is issued.
+- With the custom domain set, `garethmackenzie.github.io` redirects to it.
+- Open item: canonical URLs, Open Graph URLs, JSON-LD, `sitemap.xml` and `robots.txt` still use `https://garethmackenzie.github.io/`. Decide which domain is canonical, then update them together.
+- Editing this README does not change the site; pages are built from the HTML files.
 
 ## Structure
 
@@ -59,4 +68,6 @@ correct.
 ## Known state
 
 - The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is cropped inside its baked-in keyline. The JPEG is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it.
-- No rendered visual check has been done in a real desktop or mobile browser. Do that before further CSS changes.
+- The homepage now shares the interior pages' dark palette and type (Playfair Display, Manrope, gold). Its portrait and book cover are separate blocks, not overlapping.
+- Analytics consent banner styles live in `pages.css` (and are bundled into `dist/interior.css`) and at the end of `dist/author-home.css`.
+- Pages were rendered in headless Chromium at 390, 768 and 1415px with no horizontal overflow or distorted images. Fonts were not loaded in that environment, so check real typography in a browser.
