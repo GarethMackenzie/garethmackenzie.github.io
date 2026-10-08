@@ -86,3 +86,6 @@ h2.shift-heading, h2.media-assets-heading, h2.contact-form-heading { margin: 0 0
 .consent-decline:hover{color:#fff}
 .consent-decline:focus-visible{outline:2px solid #f0cf98;outline-offset:4px}
 @media (max-width:650px){.consent-banner{flex-direction:column;align-items:flex-start;gap:14px;bottom:10px;padding:16px}.consent-actions{width:100%;justify-content:space-between}}
+
+/* Legibility floor: small caps labels never drop below ~11.5px on phones and tablets */
+@media (max-width:1024px){.eyebrow,.section-label p,.text-link,.legal,.legal span,figcaption,.systems-flow div,.form-row label,.article-kicker,.article-meta-label,.article-nav a span,.essay-link,.insight-published{font-size:.72rem!important}}
