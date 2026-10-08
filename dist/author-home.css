@@ -101,12 +101,14 @@ footer p{margin:0}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}.reveal.visible{opacity:1;transform:none}
 a:focus-visible,.button:focus-visible,.menu-button:focus-visible{outline:2px solid var(--gold-2);outline-offset:4px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.button,.button span{transition:none}}
-@media (max-width:980px){
+@media (max-width:1024px){
   .site-header{height:72px}.menu-button{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:44px;height:44px}
   .wordmark{font-size:1.25rem}
   .nav{position:absolute;left:0;top:72px;width:100%;display:none;flex-direction:column;align-items:flex-start;gap:6px;padding:28px 5vw;background:#0c0e11;border-bottom:1px solid var(--line)}
   .nav>a:not(.button){min-height:44px;display:inline-flex;align-items:center}
   .nav.open{display:flex}
+}
+@media (max-width:980px){
   .author-hero{grid-template-columns:1fr;padding-top:120px;gap:56px}.hero-title{font-size:clamp(3.4rem,11vw,6rem)}
   .split{grid-template-columns:1fr;gap:48px}
 }
@@ -129,3 +131,6 @@ a:focus-visible,.button:focus-visible,.menu-button:focus-visible{outline:2px sol
 .consent-decline:hover{color:#fff}
 .consent-decline:focus-visible{outline:2px solid #f0cf98;outline-offset:4px}
 @media (max-width:650px){.consent-banner{flex-direction:column;align-items:flex-start;gap:14px;bottom:10px;padding:16px}.consent-actions{width:100%;justify-content:space-between}}
+
+/* Legibility floor: small caps labels never drop below ~11.5px on phones and tablets */
+@media (max-width:1024px){.hero-kicker,.section-kicker,.hero-portrait figcaption,.hero-book-label,.work-card .work-number,.essay span,.legal,.legal span{font-size:.72rem}}
