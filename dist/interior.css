@@ -937,9 +937,9 @@ body.premium-page footer .wordmark{font-size:1rem}
 body.premium-page .button{background:var(--gold);background-image:none;border-color:var(--gold);color:#16120c;box-shadow:none}
 body.premium-page .button:hover{background:var(--gold-2);border-color:var(--gold-2);box-shadow:none}
 body.premium-page .author-portrait{align-self:start;width:min(100%,560px)!important;max-width:560px!important;justify-self:start}
-body.premium-page .author-portrait picture{position:relative;padding:0;background:none;border:0}
+body.premium-page .author-portrait picture{position:relative;padding:0;background:none;border:0;overflow:hidden}
 body.premium-page .author-portrait picture::after{content:"";position:absolute;inset:0;background:#e9e0cd;mix-blend-mode:multiply;pointer-events:none}
-body.premium-page .author-portrait img{aspect-ratio:1278/872;object-fit:cover;filter:none}
+body.premium-page .author-portrait img{aspect-ratio:1278/872;object-fit:cover!important;transform:scale(1.012)!important;filter:none}
 body.premium-page .author-portrait figcaption{display:none}
 
 /* Dark-theme contrast: earlier light-theme text and accent colours survived on the dark ground. */
