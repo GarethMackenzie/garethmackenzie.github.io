@@ -63,7 +63,7 @@ em{font-style:italic}
 /* Header */
 .site-header{position:fixed;z-index:50;top:0;left:0;width:100%;height:var(--header-h);padding-inline:max(var(--gutter),(100% - var(--page-max))/2);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid transparent;transition:background .3s,border-color .3s}
 .site-header.scrolled{background:rgba(14,18,22,.92);backdrop-filter:blur(14px);border-color:var(--rule)}
-.wordmark{font:500 1.15rem/1 var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.wordmark{display:inline-flex;align-items:center;min-height:44px;font:500 1.15rem/1 var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
 .wordmark span{color:var(--gold)}
 .nav{display:flex;align-items:center;gap:2.25rem;font:500 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
 .nav>a{position:relative;padding:.5rem 0;color:var(--ink-2);transition:color .2s}
