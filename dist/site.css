@@ -41,6 +41,8 @@ body{margin:0;min-height:100vh;background:var(--ground);color:var(--ink);font-fa
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%;height:auto}
 h1,h2,h3,p,ol,ul,figure{margin:0}
+/* Newsreader's word space is tight against capitals at display sizes (e.g. "How Wealth"). */
+h1,h2,h3,.book-title{word-spacing:.06em}
 ol,ul{padding:0;list-style:none}
 em{font-style:italic}
 
