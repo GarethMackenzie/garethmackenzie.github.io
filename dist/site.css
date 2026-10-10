@@ -53,8 +53,8 @@ em{font-style:italic}
 
 /* Type roles */
 .eyebrow{font:600 .6875rem/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
-.text-link{display:inline-flex;align-items:center;gap:.6rem;min-height:44px;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);text-decoration:underline;text-decoration-color:var(--rule-gold);text-decoration-thickness:1px;text-underline-offset:.7em;transition:text-decoration-color .2s,color .2s}
-.text-link:hover{text-decoration-color:var(--gold-hi);color:var(--ink)}
+.text-link{--line:var(--rule-gold);display:inline-flex;align-items:center;gap:.6rem;min-height:44px;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);background:linear-gradient(var(--line),var(--line)) 0 calc(50% + .95em)/100% 1px no-repeat;transition:color .2s}
+.text-link:hover{--line:var(--gold-hi);color:var(--ink)}
 .button{display:inline-flex;align-items:center;justify-content:center;gap:.8rem;min-height:48px;padding:0 1.6rem;background:var(--gold);border:1px solid var(--gold);color:#16120c;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .2s,border-color .2s}
 .button:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
 .text-link span,.button span{transition:transform .2s}
