@@ -6,7 +6,7 @@
 @font-face{font-family:"Instrument Sans";src:url(/assets/fonts/instrument-sans-latin-wght-normal.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
 /* Metric-matched fallbacks: headlines keep their composition while the web fonts load. */
 @font-face{font-family:"Newsreader Display Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:108%;ascent-override:68%;descent-override:24.5%;line-gap-override:0%}
-@font-face{font-family:"Newsreader Text Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:99.5%;ascent-override:73.9%;descent-override:26.6%;line-gap-override:0%}
+@font-face{font-family:"Newsreader Text Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:98.6%;ascent-override:74.5%;descent-override:26.9%;line-gap-override:0%}
 @font-face{font-family:"Instrument Sans Fallback";src:local("Arial"),local("Liberation Sans"),local("Arimo");size-adjust:102%;ascent-override:95%;descent-override:24.5%;line-gap-override:0%}
 
 :root{
