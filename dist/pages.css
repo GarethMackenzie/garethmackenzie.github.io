@@ -1,0 +1,193 @@
+/* Interior pages. Shared tokens, header, footer and buttons come from site.css.
+   Two-column compositions use one split everywhere: a left rail in columns 1-5 and content in columns 6-12. */
+
+/* Page hero */
+.page-hero{width:var(--wrap);margin-inline:auto;padding:calc(var(--header-h) + clamp(3rem,8vw,6.5rem)) 0 clamp(3.5rem,7vw,6rem)}
+.page-hero h1,.author-copy h1,.legal-page h1{margin:1.1rem 0 1.5rem;font:400 clamp(2.6rem,6vw,5.25rem)/1.02 var(--display);letter-spacing:-.025em;max-width:14em}
+.page-hero h1 em{font-style:normal;color:var(--gold-hi)}
+.hero-lead{max-width:34rem;font:400 clamp(1.2rem,1.75vw,1.5rem)/1.5 var(--serif);color:var(--ink-2)}
+.hero-actions{display:flex;align-items:center;gap:1.75rem;flex-wrap:wrap;margin-top:2rem}
+
+/* Numbered section rail */
+.section-label{display:flex;align-items:center;gap:1.25rem;margin-bottom:clamp(2rem,4vw,3.25rem)}
+.section-label::after{content:"";order:1;flex:1;height:1px;background:var(--rule-gold)}
+.section-label span{font:400 1.5rem/1 var(--display);color:var(--gold)}
+.section-label p{order:2;font:600 .6875rem/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.section h2,.final-cta h2{font:400 clamp(1.9rem,3.3vw,3rem)/1.1 var(--display);letter-spacing:-.015em}
+
+/* Prose */
+.prose{max-width:var(--measure);font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+.prose p+p,.prose p+ul,.prose ul+p{margin-top:1.1rem}
+.prose strong{font-weight:500;color:var(--ink)}
+.prose h2{margin:2.25rem 0 .7rem;font:400 1.6rem/1.2 var(--display);color:var(--ink)}
+.prose .text-link,.prose .button{margin-top:1rem}
+.prose li{padding:.9rem 0;border-top:1px solid var(--rule);font:400 1.25rem/1.4 var(--serif);color:var(--ink)}
+.prose li:last-child{border-bottom:1px solid var(--rule)}
+.prose ul.topic-list{margin-top:1.75rem}
+
+/* Two-column compositions */
+.overview-grid,.audience-grid,.faq-grid,.systems-panel,.author,.contact-form-section,.book-hero-grid,.media-assets-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);row-gap:2rem}
+.overview-grid>:first-child,.audience-heading,.faq-grid>h2,.systems-copy,.contact-form-heading{grid-column:1/6}
+.overview-grid>:last-child,.audience-content,.accordion,.systems-flow,.contact-form{grid-column:6/13}
+.overview-grid>img,.overview-grid>div:first-child:has(img){grid-column:1/5}
+.overview-grid>h2{max-width:14ch}
+
+/* About */
+.author{padding-top:calc(var(--header-h) + clamp(2.5rem,6vw,5rem));border-top:0;align-items:center}
+.author-portrait{grid-column:1/6}
+.author-portrait picture{display:block;position:relative;overflow:hidden}
+.author-portrait picture::after{content:"";position:absolute;inset:0;background:#e9e0cd;mix-blend-mode:multiply;pointer-events:none}
+.author-portrait img{width:100%;aspect-ratio:1278/872;object-fit:cover;transform:scale(1.012)}
+.author-copy{grid-column:7/13}
+.author-copy>p:not(.eyebrow){max-width:var(--measure);font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+.author-copy>p+p{margin-top:1rem}
+.author-copy>p .text-link{min-height:0;font:inherit;letter-spacing:0;text-transform:none;color:var(--gold-hi);text-underline-offset:.3em}
+.author-copy>.text-link{margin-top:1rem}
+.systems-copy h2{margin:1rem 0 1.25rem}
+.systems-copy p:not(.eyebrow){max-width:30rem;font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+.systems-flow{counter-reset:flow}
+.systems-flow div{counter-increment:flow;display:flex;align-items:baseline;gap:1.25rem;padding:1.1rem 0;border-top:1px solid var(--rule);font:400 clamp(1.4rem,2.2vw,1.9rem)/1.2 var(--display);color:var(--ink)}
+.systems-flow div:last-child{border-bottom:1px solid var(--rule)}
+.systems-flow div::before{content:counter(flow,decimal-leading-zero);font:500 .8125rem/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--gold)}
+
+/* Continue-exploring links: ruled rows, not cards */
+.about-links{padding-block:clamp(3rem,6vw,5rem)}
+.about-links-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--col-gap)}
+.about-link-card{display:block;padding:2rem 0 2.25rem;border-top:1px solid var(--rule)}
+.about-link-card h3{margin:.6rem 0 .5rem;font:400 clamp(1.5rem,2.4vw,2rem)/1.15 var(--display);transition:color .2s}
+.about-link-card p{max-width:34rem;color:var(--ink-2)}
+.about-link-card:hover h3{color:var(--gold-hi)}
+
+/* BUILT: flagship book page. Title, cover, copy and action read as one composition. */
+.book-hero{width:var(--wrap);margin-inline:auto;padding:calc(var(--header-h) + clamp(2.5rem,6vw,5rem)) 0 clamp(3.5rem,7vw,6rem)}
+.book-hero-grid{align-items:center}
+.book-hero-text{grid-column:1/8}
+.book-hero h1{margin:1.1rem 0 1.75rem}
+.book-title{display:block;font:400 clamp(4.5rem,11vw,9.5rem)/.9 var(--display);letter-spacing:-.035em;color:var(--ink)}
+.book-hero h1 em{display:block;margin-top:1.1rem;font:400 clamp(1.5rem,2.8vw,2.4rem)/1.2 var(--display);letter-spacing:-.01em;color:var(--gold-hi)}
+.book-hero .hero-lead{max-width:30rem}
+.book-stage{grid-column:9/13;perspective:1200px}
+.book-shell{position:relative;transition:transform .3s ease;box-shadow:0 40px 70px -28px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.07)}
+.book-shell::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,255,255,0) 2.5%,rgba(0,0,0,.2) 4%,rgba(0,0,0,0) 8%)}
+.book-cover{width:100%;aspect-ratio:1600/2560;object-fit:cover}
+
+/* Ten shifts and other numbered lists */
+.section-intro{max-width:var(--measure);margin-bottom:clamp(2rem,4vw,3rem)}
+.section-intro h2{margin-bottom:1rem}
+.section-intro p{font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+.learning-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--col-gap)}
+.learning-grid li{display:grid;grid-template-columns:3rem minmax(0,1fr);column-gap:1rem;padding:1.6rem 0;border-top:1px solid var(--rule);scroll-margin-top:calc(var(--header-h) + 1rem)}
+.learning-grid li>span{font:500 .8125rem/1.9 var(--sans);font-variant-numeric:tabular-nums;color:var(--gold)}
+.learning-grid h3{font:400 clamp(1.3rem,1.9vw,1.55rem)/1.2 var(--display)}
+.learning-grid p{margin-top:.4rem;color:var(--ink-2)}
+.learning-grid li>*:not(span){grid-column:2}
+.learning-grid li:target{background:linear-gradient(90deg,rgba(217,178,115,.08),transparent)}
+.insight-published{display:inline-flex;align-items:center;min-height:44px;margin-top:.25rem;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+.insight-published:hover{color:var(--ink)}
+
+/* Audience */
+.audience-heading h2{margin-top:1rem}
+.audience-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--col-gap);margin-bottom:2rem}
+.audience-types li{display:flex;align-items:baseline;gap:1rem;padding:1.1rem 0;border-top:1px solid var(--rule);font:400 clamp(1.3rem,2vw,1.6rem)/1.2 var(--display)}
+.audience-types span{font:500 .8125rem/1 var(--sans);color:var(--gold)}
+.audience-copy{max-width:var(--measure);font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+.audience-copy p+p{margin-top:1rem}
+
+/* FAQ accordion */
+.faq-grid>h2{max-width:10ch}
+.accordion details{border-top:1px solid var(--rule)}
+.accordion details:last-child{border-bottom:1px solid var(--rule)}
+.accordion summary{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;min-height:56px;padding:1rem 0;font:400 clamp(1.2rem,1.8vw,1.45rem)/1.3 var(--display);cursor:pointer;list-style:none}
+.accordion summary::-webkit-details-marker{display:none}
+.accordion summary::after{content:"+";flex:none;font:300 1.75rem/1 var(--sans);color:var(--gold)}
+.accordion details[open] summary::after{content:"\2013"}
+.accordion summary:hover{color:var(--gold-hi)}
+.accordion details p{max-width:var(--measure);padding-bottom:1.5rem;font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+
+/* Closing call to action */
+.final-cta{width:var(--wrap);margin-inline:auto;padding-block:var(--section-y);border-top:1px solid var(--rule)}
+.final-cta h2{max-width:16ch;margin:1rem 0 2rem;font-size:clamp(2rem,4.2vw,3.75rem);line-height:1.08;letter-spacing:-.02em}
+
+/* Books catalogue. Entries carry a status, so the flagship can become published work beside later titles. */
+.catalogue{display:grid;row-gap:clamp(3rem,6vw,5rem)}
+.catalogue-entry{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);align-items:center}
+.catalogue-entry+.catalogue-entry{padding-top:clamp(3rem,6vw,5rem);border-top:1px solid var(--rule)}
+.catalogue-cover{grid-column:1/3;display:block;box-shadow:0 30px 50px -24px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.07)}
+.catalogue-body{grid-column:4/11}
+.catalogue-entry--flagship .catalogue-cover{grid-column:1/5}
+.catalogue-entry--flagship .catalogue-body{grid-column:6/12}
+.catalogue-body h2{margin:.6rem 0 .4rem;font:400 clamp(2.4rem,5vw,4.25rem)/1 var(--display);letter-spacing:-.025em}
+.catalogue-body h2 a:hover{color:var(--gold-hi)}
+.catalogue-sub{font:italic 400 clamp(1.15rem,1.8vw,1.4rem)/1.35 var(--serif);color:var(--gold-hi)}
+.catalogue-body p:not(.eyebrow):not(.catalogue-sub){max-width:34rem;margin-top:1.1rem;font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
+
+/* Media */
+.routes{border-top:1px solid var(--rule)}
+.routes li{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);align-items:baseline;padding:1.6rem 0;border-bottom:1px solid var(--rule)}
+.routes h3{grid-column:1/5;font:400 clamp(1.4rem,2.2vw,1.8rem)/1.2 var(--display)}
+.routes p{grid-column:5/10;color:var(--ink-2)}
+.routes .text-link{grid-column:10/13;justify-self:end}
+.media-assets-grid{align-items:end}
+.media-assets-grid figure:first-child{grid-column:1/5}
+.media-assets-grid figure:last-child{grid-column:6/13}
+.media-assets-grid img{width:100%;height:auto;box-shadow:0 0 0 1px rgba(255,255,255,.07)}
+.media-assets-grid figcaption{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem;font:600 .6875rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.media-assets-grid figcaption a{display:inline-flex;align-items:center;min-height:44px;color:var(--gold-hi);text-decoration:underline;text-decoration-color:var(--rule-gold);text-underline-offset:.5em}
+.media-assets-grid figcaption a:hover{color:var(--ink)}
+.media-kit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--col-gap);row-gap:2rem}
+.media-kit-card{padding-top:1.5rem;border-top:1px solid var(--rule)}
+.media-kit-card h3{margin:.6rem 0 .8rem;font:400 clamp(1.5rem,2.4vw,2rem)/1.15 var(--display)}
+.media-kit-card p:not(.eyebrow){max-width:34rem;font:400 1.125rem/1.7 var(--serif);color:var(--ink-2)}
+
+/* Writing index */
+.insights-essay-grid{border-top:1px solid var(--rule)}
+.insights-essay-card{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr) minmax(0,2fr);column-gap:var(--col-gap);align-items:baseline;padding:1.9rem 0;border-bottom:1px solid var(--rule)}
+.essay-number{font:600 .6875rem/1.5 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.insights-essay-card h3{font:400 clamp(1.4rem,2.2vw,1.9rem)/1.2 var(--display);transition:color .2s}
+.insights-essay-card p{margin-top:.4rem;max-width:44rem;color:var(--ink-2)}
+.essay-link{justify-self:end;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+.insights-essay-card:hover h3{color:var(--gold-hi)}
+.insights-note{margin-top:2rem;color:var(--ink-2)}
+
+/* Contact form */
+.contact-form-heading{align-self:start}
+.contact-form{display:grid;gap:1.5rem;max-width:38rem}
+.form-note{color:var(--ink-2);font-size:.9375rem}
+.form-row label{display:block;margin-bottom:.5rem;font:600 .75rem/1.4 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.form-row input,.form-row select,.form-row textarea{width:100%;min-height:48px;padding:.8rem 1rem;background:rgba(244,238,226,.04);border:1px solid var(--field);border-radius:0;color:var(--ink);font:400 1rem/1.4 var(--sans)}
+.form-row textarea{min-height:10rem;resize:vertical}
+.form-row select{appearance:none;padding-right:2.75rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23d9b273' stroke-width='1.5'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center}
+.form-row option{background:var(--ground);color:var(--ink)}
+.form-row input:focus-visible,.form-row select:focus-visible,.form-row textarea:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px;border-color:var(--gold-hi)}
+.form-row :user-invalid{border-color:#f0a28d}
+.contact-form .button{justify-self:start}
+
+/* Legal pages and 404 */
+.legal-page{padding-top:calc(var(--header-h) + clamp(2.5rem,6vw,5rem));border-top:0}
+.legal-page h1{max-width:none}
+.legal-page .prose{max-width:var(--measure)}
+
+/* Tablet and phone */
+@media (max-width:959px){
+  .overview-grid,.audience-grid,.faq-grid,.systems-panel,.author,.contact-form-section,.book-hero-grid,.media-assets-grid{display:block}
+  .overview-grid>:last-child,.audience-content,.accordion,.systems-flow,.contact-form,.author-copy,.book-stage,.media-assets-grid figure:last-child{margin-top:2rem}
+  .book-stage{max-width:300px;margin-top:2.5rem}
+  .author-portrait{max-width:520px}
+  .learning-grid{grid-template-columns:1fr}
+  .about-links-grid,.media-kit-grid{grid-template-columns:1fr}
+  .catalogue-entry{display:flex;flex-direction:column;align-items:flex-start;gap:1.75rem}
+  .catalogue-cover{width:min(46%,220px)}
+  .catalogue-entry--flagship .catalogue-cover{width:min(60%,280px)}
+  .routes li{grid-template-columns:1fr;row-gap:.5rem}
+  .routes h3,.routes p,.routes .text-link{grid-column:1;justify-self:start}
+  .insights-essay-card{grid-template-columns:1fr;row-gap:.6rem}
+  .essay-link{justify-self:start;margin-top:.5rem}
+  .media-assets-grid figure:first-child{max-width:300px;margin-bottom:2.5rem}
+}
+@media (max-width:640px){
+  .audience-types{grid-template-columns:1fr}
+  .hero-actions{flex-direction:column;align-items:stretch;gap:.25rem}
+  .hero-actions .button{width:100%}
+  .hero-actions .text-link{justify-content:center}
+  .section-label p{font-size:.72rem}
+}

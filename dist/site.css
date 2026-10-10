@@ -1,0 +1,114 @@
+/* Site foundation shared by every page: fonts, tokens, base, type roles, buttons, header, footer, consent banner.
+   Page-specific layout lives in author-home.css (homepage), pages.css (interior) and insight-article.css (essays). */
+
+@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-opsz-normal.woff2) format("woff2");font-weight:300 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-wght-italic.woff2) format("woff2");font-weight:300 700;font-style:italic;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(/assets/fonts/instrument-sans-latin-wght-normal.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+/* Metric-matched fallbacks: headlines keep their composition while the web fonts load. */
+@font-face{font-family:"Newsreader Display Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:108%;ascent-override:68%;descent-override:24.5%;line-gap-override:0%}
+@font-face{font-family:"Newsreader Text Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:99.5%;ascent-override:73.9%;descent-override:26.6%;line-gap-override:0%}
+@font-face{font-family:"Instrument Sans Fallback";src:local("Arial"),local("Liberation Sans"),local("Arimo");size-adjust:102%;ascent-override:95%;descent-override:24.5%;line-gap-override:0%}
+
+:root{
+  --ground:#0e1216;
+  --ground-2:#0a0d10;
+  --ink:#f4eee2;
+  --ink-2:#c3c5c6;
+  --ink-3:#8e939a;
+  --gold:#d9b273;
+  --gold-hi:#efcf9b;
+  --rule:rgba(244,238,226,.14);
+  --rule-gold:rgba(217,178,115,.34);
+  --field:rgba(244,238,226,.42);
+  --display:"Newsreader","Newsreader Display Fallback","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --serif:"Newsreader","Newsreader Text Fallback","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Instrument Sans","Instrument Sans Fallback","Helvetica Neue",Arial,sans-serif;
+
+  /* Layout grid: one content width, one gutter, twelve columns, shared by every page. */
+  --page-max:1320px;
+  --gutter:clamp(24px,5vw,72px);
+  --col-gap:clamp(16px,2vw,28px);
+  --wrap:min(var(--page-max),100% - 2*var(--gutter));
+  --section-y:clamp(4.5rem,9vw,7.5rem);
+  --measure:40rem;
+  --header-h:80px;
+}
+@media (max-width:1024px){:root{--header-h:72px}}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 16px);color-scheme:dark}
+body{margin:0;min-height:100vh;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%;height:auto}
+h1,h2,h3,p,ol,ul,figure{margin:0}
+ol,ul{padding:0;list-style:none}
+em{font-style:italic}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:fixed;left:16px;top:-60px;z-index:100;padding:10px 16px;background:var(--gold-hi);color:#16120c}
+.skip-link:focus{top:12px}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:4px}
+
+.section{width:var(--wrap);margin-inline:auto;padding-block:var(--section-y);border-top:1px solid var(--rule)}
+
+/* Type roles */
+.eyebrow{font:600 .6875rem/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.text-link{display:inline-flex;align-items:center;gap:.6rem;min-height:44px;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);text-decoration:underline;text-decoration-color:var(--rule-gold);text-decoration-thickness:1px;text-underline-offset:.7em;transition:text-decoration-color .2s,color .2s}
+.text-link:hover{text-decoration-color:var(--gold-hi);color:var(--ink)}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:.8rem;min-height:48px;padding:0 1.6rem;background:var(--gold);border:1px solid var(--gold);color:#16120c;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .2s,border-color .2s}
+.button:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
+.text-link span,.button span{transition:transform .2s}
+.text-link:hover span,.button:hover span{transform:translateX(3px)}
+
+/* Header */
+.site-header{position:fixed;z-index:50;top:0;left:0;width:100%;height:var(--header-h);padding-inline:max(var(--gutter),(100% - var(--page-max))/2);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid transparent;transition:background .3s,border-color .3s}
+.site-header.scrolled{background:rgba(14,18,22,.92);backdrop-filter:blur(14px);border-color:var(--rule)}
+.wordmark{font:500 1.15rem/1 var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.wordmark span{color:var(--gold)}
+.nav{display:flex;align-items:center;gap:2.25rem;font:500 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.nav>a{position:relative;padding:.5rem 0;color:var(--ink-2);transition:color .2s}
+.nav>a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--gold);transition:right .25s}
+.nav>a:hover{color:var(--ink)}
+.nav>a:hover::after,.nav>a[aria-current]::after{right:0}
+.nav>a[aria-current]{color:var(--ink)}
+.menu-button{display:none;background:none;border:0;color:var(--ink);cursor:pointer}
+.menu-button span:not(.sr-only){display:block;width:22px;height:1px;background:currentColor}
+.reading-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;pointer-events:none}
+.reading-progress span{display:block;width:0;height:100%;background:var(--gold)}
+
+/* Footer */
+footer{width:var(--wrap);margin-inline:auto;padding:3.5rem 0 2rem;border-top:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr auto;gap:1.75rem;color:var(--ink-3);font-size:.8125rem}
+footer .wordmark{font-size:1rem}
+footer p{margin:.4rem 0 0}
+.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
+.footer-links a{padding:.5rem 0}
+.footer-links a:hover{color:var(--gold-hi)}
+.legal{grid-column:1/-1;margin:0;padding-top:1.5rem;border-top:1px solid var(--rule);font-size:.75rem}
+
+/* Scroll reveal. Content stays visible if scripting fails. */
+.nav-ready .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.nav-ready .reveal.visible{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav-ready .reveal{opacity:1;transform:none;transition:none}.button span,.text-link span{transition:none}}
+
+/* Analytics consent banner (injected by analytics.js) */
+.consent-banner{position:fixed;z-index:90;left:max(16px,2vw);right:max(16px,2vw);bottom:16px;max-width:880px;margin:0 auto;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:22px;background:var(--ground-2);color:var(--ink);border:1px solid var(--rule-gold);box-shadow:0 18px 50px rgba(0,0,0,.5);font:400 .875rem/1.55 var(--sans)}
+.consent-banner strong{display:block;margin-bottom:4px;font:400 1.1rem/1.3 var(--serif)}
+.consent-banner p{color:var(--ink-2)}
+.consent-actions{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.consent-banner .button{white-space:nowrap;min-height:44px;padding:0 1.1rem}
+.consent-decline{background:none;border:0;padding:8px 2px;color:var(--gold-hi);font:600 .75rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--gold);cursor:pointer}
+.consent-decline:hover{color:var(--ink)}
+
+/* Compact navigation (matches the breakpoint in script.js) */
+@media (max-width:1024px){
+  .menu-button{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:44px;height:44px;margin-right:-10px}
+  .nav{position:absolute;left:0;top:var(--header-h);width:100%;display:none;flex-direction:column;align-items:flex-start;gap:0;padding:1rem var(--gutter) 1.75rem;background:var(--ground-2);border-bottom:1px solid var(--rule-gold)}
+  .nav>a{min-height:48px;display:inline-flex;align-items:center;padding:0}
+  .nav.open{display:flex}
+  .eyebrow{font-size:.72rem}
+}
+@media (max-width:959px){footer{grid-template-columns:1fr}}
+@media (max-width:640px){
+  .consent-banner{flex-direction:column;align-items:flex-start;gap:14px;bottom:10px;padding:16px}
+  .consent-actions{width:100%;justify-content:space-between}
+}

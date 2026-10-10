@@ -180,3 +180,9 @@ if (contactForm) {
     history.replaceState(null, '', `${window.location.pathname}#form`);
   }
 }
+
+(() => {
+  const select = document.getElementById('category');
+  const wanted = new URLSearchParams(window.location.search).get('category');
+  if (select && wanted && [...select.options].some((o) => o.value === wanted)) select.value = wanted;
+})();

@@ -1,80 +1,24 @@
-/* Homepage. Author-led composition: Gareth is the brand, the current flagship book is the featured work.
-   Interior pages still load their own stylesheets. */
-
-:root{
-  --ground:#0e1216;
-  --ground-2:#0a0d10;
-  --ink:#f4eee2;
-  --ink-2:#c3c5c6;
-  --ink-3:#8e939a;
-  --gold:#d9b273;
-  --gold-hi:#efcf9b;
-  --rule:rgba(244,238,226,.14);
-  --rule-gold:rgba(217,178,115,.34);
-  --serif:"Newsreader","Iowan Old Style","Palatino Linotype",Georgia,serif;
-  --sans:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
-  --wrap:1320px;
-  --gutter:clamp(24px,5vw,72px);
-  --col-gap:clamp(16px,2vw,28px);
-}
-
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:96px;color-scheme:dark}
-body{margin:0;min-height:100vh;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-a{color:inherit;text-decoration:none}
-img{display:block;max-width:100%;height:auto}
-h1,h2,h3,p,ol{margin:0}
-ol{padding:0;list-style:none}
-
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.skip-link{position:fixed;left:16px;top:-60px;z-index:100;padding:10px 16px;background:var(--gold-hi);color:#16120c}
-.skip-link:focus{top:12px}
-a:focus-visible,button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:4px}
-
-/* Type roles */
-.eyebrow{font:600 .6875rem/1.4 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
-.text-link{display:inline-flex;align-items:center;gap:.6rem;min-height:44px;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);text-decoration:underline;text-decoration-color:var(--rule-gold);text-decoration-thickness:1px;text-underline-offset:.7em;transition:text-decoration-color .2s,color .2s}
-.text-link:hover{text-decoration-color:var(--gold-hi);color:var(--ink)}
-.text-link span{transition:transform .2s}
-.text-link:hover span{transform:translateX(3px)}
-.button{display:inline-flex;align-items:center;justify-content:center;gap:.8rem;min-height:48px;padding:0 1.6rem;background:var(--gold);border:1px solid var(--gold);color:#16120c;font:600 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;transition:background .2s,border-color .2s}
-.button:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
-.button span{transition:transform .2s}
-.button:hover span{transform:translateX(3px)}
-
-/* Header */
-.site-header{position:fixed;z-index:50;top:0;left:0;width:100%;height:80px;padding:0 var(--gutter);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid transparent;transition:background .3s,border-color .3s}
-.site-header.scrolled{background:rgba(14,18,22,.92);backdrop-filter:blur(14px);border-color:var(--rule)}
-.wordmark{font:500 1.15rem/1 var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
-.wordmark span{color:var(--gold)}
-.nav{display:flex;align-items:center;gap:2.25rem;font:500 .75rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
-.nav>a{position:relative;padding:.5rem 0;color:var(--ink-2);transition:color .2s}
-.nav>a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--gold);transition:right .25s}
-.nav>a:hover{color:var(--ink)}
-.nav>a:hover::after,.nav>a[aria-current="page"]::after{right:0}
-.nav>a[aria-current="page"]{color:var(--ink)}
-.menu-button{display:none;background:none;border:0;color:var(--ink)}
-.menu-button span:not(.sr-only){display:block;width:22px;height:1px;background:currentColor}
-.reading-progress{display:none}
+/* Homepage composition. Author-led: Gareth is the brand, the current flagship book is the featured work.
+   Shared tokens, header, footer and buttons come from site.css. */
 
 /* Hero: portrait and flagship cover interlock on one spread */
-.stage{width:min(var(--wrap),100% - 2*var(--gutter));margin-inline:auto;padding:clamp(7rem,13vh,8.75rem) 0 clamp(4rem,9vh,6.5rem);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap)}
+.stage{width:var(--wrap);margin-inline:auto;padding:clamp(7rem,13vh,8.75rem) 0 clamp(4rem,9vh,6.5rem);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap)}
 .stage-text{grid-column:1/6;display:flex;flex-direction:column;justify-content:space-between;gap:3rem}
-.stage-name{margin:1.25rem 0 1.75rem;font:400 clamp(3rem,5.2vw,4.7rem)/.98 var(--serif);letter-spacing:-.025em;color:var(--ink)}
+.stage-name{margin:1.25rem 0 1.75rem;font:400 clamp(3rem,5.2vw,4.7rem)/.98 var(--display);letter-spacing:-.025em;color:var(--ink)}
 .stage-name span{display:block;color:var(--gold-hi)}
 .stage-lead{max-width:30ch;font:400 clamp(1.2rem,1.75vw,1.5rem)/1.45 var(--serif);color:var(--ink-2)}
 .stage-lead em{color:var(--ink)}
 .stage-actions{display:flex;align-items:center;gap:1.75rem;flex-wrap:wrap}
 
 .stage-visual{grid-column:6/13;position:relative;padding-bottom:25%}
-.stage-plate{margin:0;width:86%;position:relative}
+.stage-plate{width:86%;position:relative}
 .stage-plate img{width:100%;aspect-ratio:1278/872;object-fit:cover}
 .stage-plate::after{content:"";position:absolute;inset:0;background:#e9e0cd;mix-blend-mode:multiply;pointer-events:none}
 .stage-cover{position:absolute;right:0;bottom:0;width:38%;display:block;box-shadow:0 36px 60px -24px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.07)}
 .stage-cover::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,255,255,0) 2.5%,rgba(0,0,0,.2) 4%,rgba(0,0,0,0) 8%)}
 .stage-cover img{width:100%;aspect-ratio:1600/2560;object-fit:cover}
 .stage-caption{position:absolute;left:0;bottom:0;width:54%;display:flex;flex-direction:column;align-items:flex-start}
-.stage-book{margin:.5rem 0 .15rem;font:400 clamp(2.25rem,3.4vw,3.1rem)/1 var(--serif);letter-spacing:-.01em}
+.stage-book{margin:.5rem 0 .15rem;font:400 clamp(2.25rem,3.4vw,3.1rem)/1 var(--display);letter-spacing:-.01em}
 .stage-book a:hover{color:var(--gold-hi)}
 .stage-sub{margin-bottom:.35rem;font:italic 400 1.0625rem/1.35 var(--serif);color:var(--ink-2)}
 
@@ -85,37 +29,36 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--gold-hi);outline-of
   .stage-cover,.stage-caption{animation:rise .8s .28s cubic-bezier(.2,.7,.2,1) both}
 }
 
-/* Sections */
-.section{width:min(var(--wrap),100% - 2*var(--gutter));margin-inline:auto;padding:clamp(4.5rem,9vw,7.5rem) 0;border-top:1px solid var(--rule)}
+/* Section heads: eyebrow in columns 1-3, heading from column 4 */
 .section-head{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);align-items:end;margin-bottom:clamp(2rem,4vw,3.5rem)}
 .section-head .eyebrow{grid-column:1/4}
-.section-head h2{grid-column:4/12;font:400 clamp(1.9rem,3.3vw,3rem)/1.1 var(--serif);letter-spacing:-.015em;max-width:22ch}
+.section-head h2{grid-column:4/12;font:400 clamp(1.9rem,3.3vw,3rem)/1.1 var(--display);letter-spacing:-.015em;max-width:22ch}
 
 /* Ideas: an index, not a grid of cards */
 .ledger{border-top:1px solid var(--rule)}
 .ledger li{border-bottom:1px solid var(--rule)}
-.ledger a{display:grid;grid-template-columns:3.25rem 11rem minmax(0,1fr) 2rem;column-gap:var(--col-gap);align-items:baseline;padding:1.75rem 0;transition:background .25s}
+.ledger a{display:grid;grid-template-columns:3.25rem 11rem minmax(0,1fr) 2rem;column-gap:var(--col-gap);align-items:baseline;padding:1.75rem 0}
 .ledger-no{font:500 .8125rem/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--gold)}
 .ledger-topic{font:500 .6875rem/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
-.ledger h3{font:400 clamp(1.4rem,2.1vw,1.85rem)/1.2 var(--serif);letter-spacing:-.01em;transition:color .2s}
+.ledger h3{font:400 clamp(1.4rem,2.1vw,1.85rem)/1.2 var(--display);letter-spacing:-.01em;transition:color .2s}
 .ledger p{margin-top:.4rem;max-width:56ch;color:var(--ink-2)}
 .ledger-go{justify-self:end;color:var(--ink-3);transition:color .2s,transform .2s}
 .ledger a:hover h3,.ledger a:hover .ledger-go{color:var(--gold-hi)}
 .ledger a:hover .ledger-go{transform:translateX(4px)}
 .section-foot{margin-top:1.25rem}
 
-/* Work: catalogue entries. Status is data, so the flagship can become published work later. */
+/* Work: catalogue entry. Status is data, so the flagship can become published work later. */
 .entry{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);align-items:center}
 .entry-cover{grid-column:4/7;box-shadow:0 30px 50px -24px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.07)}
 .entry-body{grid-column:8/13}
-.entry h3{margin:.75rem 0 1rem;font:400 clamp(1.7rem,2.6vw,2.35rem)/1.15 var(--serif);letter-spacing:-.01em}
+.entry h3{margin:.75rem 0 1rem;font:400 clamp(1.7rem,2.6vw,2.35rem)/1.15 var(--display);letter-spacing:-.01em}
 .entry h3 a:hover{color:var(--gold-hi)}
 .entry p:not(.eyebrow){max-width:44ch;color:var(--ink-2);margin-bottom:1rem}
 
 /* About */
 .about{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);row-gap:2rem}
 .about .eyebrow{grid-column:1/4}
-.about h2{grid-column:4/9;font:400 clamp(1.9rem,3.3vw,3rem)/1.1 var(--serif);letter-spacing:-.015em}
+.about h2{grid-column:4/9;font:400 clamp(1.9rem,3.3vw,3rem)/1.1 var(--display);letter-spacing:-.015em}
 .about-body{grid-column:9/13;color:var(--ink-2)}
 .about-body p+p{margin-top:1rem}
 .about-body strong{font-weight:500;color:var(--ink)}
@@ -124,42 +67,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--gold-hi);outline-of
 /* Contact */
 .contact{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);row-gap:2rem;align-items:end}
 .contact .eyebrow{grid-column:1/13}
-.contact h2{grid-column:1/9;font:400 clamp(2rem,4.2vw,3.75rem)/1.08 var(--serif);letter-spacing:-.02em}
+.contact h2{grid-column:1/9;font:400 clamp(2rem,4.2vw,3.75rem)/1.08 var(--display);letter-spacing:-.02em}
 .contact-side{grid-column:9/13;color:var(--ink-2)}
 .contact-actions{display:flex;align-items:center;gap:1.75rem;flex-wrap:wrap;margin-top:1.5rem}
-
-/* Footer */
-footer{width:min(var(--wrap),100% - 2*var(--gutter));margin-inline:auto;padding:3.5rem 0 2rem;border-top:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr auto;gap:1.75rem;color:var(--ink-3);font-size:.8125rem}
-footer .wordmark{font-size:1rem}
-footer p{margin:.4rem 0 0}
-.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
-.footer-links a{padding:.35rem 0}
-.footer-links a:hover{color:var(--gold-hi)}
-.legal{grid-column:1/-1;margin:0;padding-top:1.5rem;border-top:1px solid var(--rule);font-size:.75rem}
-
-/* Scroll reveal below the hero. Content stays visible if scripting fails. */
-.nav-ready .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
-.nav-ready .reveal.visible{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav-ready .reveal{opacity:1;transform:none;transition:none}.button span,.text-link span,.ledger-go{transition:none}}
-
-/* Analytics consent banner (injected by analytics.js) */
-.consent-banner{position:fixed;z-index:90;left:max(16px,2vw);right:max(16px,2vw);bottom:16px;max-width:880px;margin:0 auto;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:22px;background:var(--ground-2);color:var(--ink);border:1px solid var(--rule-gold);box-shadow:0 18px 50px rgba(0,0,0,.5);font:400 .875rem/1.55 var(--sans)}
-.consent-banner strong{display:block;margin-bottom:4px;font:400 1.1rem/1.3 var(--serif)}
-.consent-banner p{color:var(--ink-2)}
-.consent-actions{display:flex;align-items:center;gap:16px;flex-shrink:0}
-.consent-banner .button{white-space:nowrap;min-height:44px;padding:0 1.1rem}
-.consent-decline{background:none;border:0;padding:8px 2px;color:var(--gold-hi);font:600 .75rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--gold);cursor:pointer}
-.consent-decline:hover{color:var(--ink)}
-
-/* Compact navigation (matches script.js breakpoint) */
-@media (max-width:1024px){
-  .site-header{height:72px}
-  .menu-button{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:44px;height:44px;margin-right:-10px}
-  .nav{position:absolute;left:0;top:72px;width:100%;display:none;flex-direction:column;align-items:flex-start;gap:0;padding:1rem var(--gutter) 1.75rem;background:var(--ground-2);border-bottom:1px solid var(--rule-gold)}
-  .nav>a{min-height:48px;display:inline-flex;align-items:center;padding:0}
-  .nav.open{display:flex}
-  .eyebrow,.ledger-topic{font-size:.72rem}
-}
 
 /* Tablet and phone: a separate composition, not a squeezed desktop. Order: author, portrait, flagship, action. */
 @media (max-width:959px){
@@ -176,15 +86,12 @@ footer p{margin:.4rem 0 0}
   .stage-caption{width:calc(64% - 1.5rem)}
   .section-head,.about,.contact{display:block}
   .section-head h2{margin-top:.9rem}
-  .about h2{margin:.9rem 0 1.5rem}
-  .contact h2{margin:.9rem 0 1.5rem}
+  .about h2,.contact h2{margin:.9rem 0 1.5rem}
   .entry{display:flex;flex-direction:column;align-items:flex-start;gap:1.75rem}
   .entry-cover{width:min(52%,200px)}
   .ledger a{grid-template-columns:2.5rem minmax(0,1fr);row-gap:.5rem}
-  .ledger-topic{grid-column:2}
-  .ledger a>div{grid-column:2}
+  .ledger-topic,.ledger a>div{grid-column:2}
   .ledger-go{display:none}
-  footer{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   .stage{padding-top:5.25rem}
@@ -198,6 +105,4 @@ footer p{margin:.4rem 0 0}
   .stage-actions{flex-direction:column;align-items:stretch;gap:.25rem}
   .stage-actions .button{width:100%}
   .stage-actions .text-link{justify-content:center}
-  .consent-banner{flex-direction:column;align-items:flex-start;gap:14px;bottom:10px;padding:16px}
-  .consent-actions{width:100%;justify-content:space-between}
 }
