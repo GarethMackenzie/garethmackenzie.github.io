@@ -188,6 +188,6 @@
   .audience-types{grid-template-columns:1fr}
   .hero-actions{flex-direction:column;align-items:stretch;gap:.25rem}
   .hero-actions .button{width:100%}
-  .hero-actions .text-link{justify-content:center}
+  .hero-actions .text-link{align-self:center}
   .section-label p{font-size:.72rem}
 }
