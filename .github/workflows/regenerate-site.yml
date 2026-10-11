@@ -4,17 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'styles.css'
-      - 'cover.css'
-      - 'theme.css'
-      - 'premium-home.css'
-      - 'site-tuning.css'
-      - 'pass1-stability.css'
-      - 'home-editorial.css'
-      - 'performance-tuning.css'
-      - 'premium-pages.css'
-      - 'premium-overrides.css'
-      - 'pages.css'
       - 'assets/book-cover.jpg'
       - 'index.html'
       - 'built/index.html'
@@ -24,7 +13,7 @@ on:
       - 'privacy/index.html'
       - 'terms/index.html'
       - 'insights/**/index.html'
-      - 'tools/build_performance_assets.py'
+      - 'tools/build_cover_images.py'
       - 'tools/apply_technical_seo.py'
       - 'tools/generate_social_cards.py'
       - 'tools/final_hardening.py'
@@ -60,7 +49,7 @@ jobs:
 
       - name: Regenerate derived site files
         run: |
-          python tools/build_performance_assets.py
+          python tools/build_cover_images.py
           python tools/apply_technical_seo.py
           python tools/generate_social_cards.py
           python tools/final_hardening.py

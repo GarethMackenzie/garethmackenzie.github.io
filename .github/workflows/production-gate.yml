@@ -69,11 +69,11 @@ jobs:
             robots.txt
             sitemap.xml
             insight-article.css
-            insights-publishing.css
             google5b43e442e1b6a4c0.html
           )
 
           runtime_dirs=(
+            books
             about
             assets
             built
