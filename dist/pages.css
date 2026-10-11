@@ -169,9 +169,9 @@
 
 /* Tablet and phone */
 @media (max-width:959px){
-  .overview-grid,.audience-grid,.faq-grid,.systems-panel,.author,.contact-form-section,.book-hero-grid,.media-assets-grid{display:block}
-  .overview-grid>:last-child,.audience-content,.accordion,.systems-flow,.contact-form,.author-copy,.book-stage,.media-assets-grid figure:last-child{margin-top:2rem}
-  .book-stage{max-width:300px;margin-top:2.5rem}
+  .overview-grid,.audience-grid,.faq-grid,.systems-panel,.author,.contact-form-section,.media-assets-grid{display:block}
+  .overview-grid>:last-child,.audience-content,.accordion,.systems-flow,.contact-form,.author-copy,.media-assets-grid figure:last-child{margin-top:2rem}
+  .book-stage{grid-column:8/13}
   .author-portrait{max-width:520px}
   .learning-grid{grid-template-columns:1fr}
   .about-links-grid,.media-kit-grid{grid-template-columns:1fr}
@@ -183,6 +183,10 @@
   .insights-essay-card{grid-template-columns:1fr;row-gap:.6rem}
   .essay-link{justify-self:start;margin-top:.5rem}
   .media-assets-grid figure:first-child{max-width:300px;margin-bottom:2.5rem}
+}
+@media (max-width:699px){
+  .book-hero-grid{display:block}
+  .book-stage{max-width:300px;margin-top:2.5rem}
 }
 @media (max-width:640px){
   .audience-types{grid-template-columns:1fr}

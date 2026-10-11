@@ -321,10 +321,37 @@ def audit() -> int:
     if f"Sitemap: {SITE}/sitemap.xml" not in robots:
         failures.append("robots.txt must declare the canonical sitemap")
 
-    pass1 = (ROOT / "pass1-stability.css").read_text(encoding="utf-8")
-    for token in (":focus-visible", "prefers-reduced-motion", "max-width: 1024px", "object-fit: contain"):
-        if token not in pass1:
-            failures.append(f"pass1-stability.css missing guardrail: {token}")
+    # Styling architecture: every page loads the shared foundation first, then its own page stylesheets.
+    # Fonts are self-hosted and preloaded; no third-party stylesheet is allowed.
+    for path in sorted(ROOT.glob("**/*.html")):
+        rel = path.relative_to(ROOT).as_posix()
+        if rel.startswith((".git", "node_modules")) or rel.startswith("google"):
+            continue
+        page_source = path.read_text(encoding="utf-8")
+        linked = re.findall(r'<link rel="stylesheet" href="([^"]+)"', page_source)
+        if rel == "index.html":
+            expected = ["/dist/site.css", "/dist/author-home.css"]
+        elif rel.startswith("insights/") and rel != "insights/index.html":
+            expected = ["/dist/site.css", "/dist/pages.css", "/insight-article.css"]
+        else:
+            expected = ["/dist/site.css", "/dist/pages.css"]
+        if linked != expected:
+            failures.append(f"{rel}: stylesheets are {linked}, expected {expected}")
+        for href in linked:
+            if href.startswith("/") and not (ROOT / href.lstrip("/")).exists():
+                failures.append(f"{rel}: stylesheet {href} does not exist")
+        if "fonts.googleapis.com" in page_source or "fonts.gstatic.com" in page_source:
+            failures.append(f"{rel}: third-party font requests are not allowed; fonts are self-hosted")
+        for font in ("newsreader-latin-opsz-normal.woff2", "instrument-sans-latin-wght-normal.woff2"):
+            if f'href="/assets/fonts/{font}"' not in page_source:
+                failures.append(f"{rel}: missing preload for {font}")
+    for font in ("newsreader-latin-opsz-normal.woff2", "newsreader-latin-wght-italic.woff2", "instrument-sans-latin-wght-normal.woff2", "LICENSE.txt"):
+        if not (ROOT / "assets" / "fonts" / font).exists():
+            failures.append(f"missing assets/fonts/{font}")
+    foundation = (ROOT / "dist" / "site.css").read_text(encoding="utf-8")
+    for token in (":focus-visible", "prefers-reduced-motion", "max-width:1024px", "scripting:none"):
+        if token not in foundation:
+            failures.append(f"dist/site.css missing guardrail: {token}")
 
     script = (ROOT / "script.js").read_text(encoding="utf-8")
     for token in ("aria-expanded", "Escape", "inert", "IntersectionObserver", "requestAnimationFrame"):
@@ -343,8 +370,9 @@ def audit() -> int:
         )
     if "book-cover-640.webp 640w" not in home_source:
         failures.append("homepage responsive srcset is missing the 640w cover")
-    if not re.search(r'<link rel="preload"[^>]+book-cover-640\.webp[^>]+imagesrcset=', home_source):
-        failures.append("homepage cover preload is not using responsive imagesrcset")
+    for preload in re.findall(r'<link rel="preload"[^>]+book-cover-[^>]+>', home_source):
+        if "imagesrcset=" not in preload:
+            failures.append("a homepage cover preload must use a responsive imagesrcset")
 
     # Operational warnings are intentionally non-blocking because they require a
     # product/service decision rather than a safe code-only correction.

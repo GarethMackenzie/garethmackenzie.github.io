@@ -50,7 +50,7 @@ All of these are edited directly. There is no build step for them.
 
 **Books catalogue.** `/books/` is a list of `.catalogue-entry` items. Each carries `data-status`. To add a title, add another `li.catalogue-entry`; when BUILT is no longer the flagship, remove the `catalogue-entry--flagship` modifier and change its status label to "Published work".
 
-**Legacy build pipeline (not used by any page).** `dist/interior.css`, `dist/home.css`, the source files they are bundled from (`styles.css`, `cover.css`, `theme.css`, `premium-*.css`, `pages.css`, `site-tuning.css`, `pass1-stability.css` and others), `insights-publishing.css`, `tools/build_css.py`, `tools/build_performance_assets.py` and `.github/workflows/regenerate-site.yml` are left in place because CI still references them. `tools/site_qa.py` checks `pass1-stability.css`, and the Production Gate workflow lists `insight-article.css` and `insights-publishing.css`. Retiring this pipeline needs a change to those workflows and checks.
+**Retired CSS pipeline.** The old generated bundles (`dist/interior.css`, `dist/home.css`), their source stylesheets and `tools/build_css.py` were removed. `tools/build_cover_images.py` regenerates the cover WebP renditions, `tools/apply_technical_seo.py`, `tools/generate_social_cards.py` and `tools/final_hardening.py` still run in the regeneration workflow, and `tools/site_qa.py` now checks the stylesheet architecture (shared foundation first, one page stylesheet, self-hosted fonts).
 
 ## Validation
 

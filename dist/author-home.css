@@ -23,7 +23,7 @@
 .stage-sub{margin-bottom:.35rem;font:italic 400 1.0625rem/1.35 var(--serif);color:var(--ink-2)}
 
 @media (prefers-reduced-motion:no-preference){
-  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes rise{from{transform:translateY(14px)}to{transform:none}}
   .stage-text{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
   .stage-plate{animation:rise .8s .12s cubic-bezier(.2,.7,.2,1) both}
   .stage-cover,.stage-caption{animation:rise .8s .28s cubic-bezier(.2,.7,.2,1) both}

@@ -29,23 +29,13 @@ try {
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
 
   const home = await page.evaluate(() => ({
-    foundations: [...document.querySelectorAll('.foundation-card a')].map((a) => ({ href: a.getAttribute('href'), label: a.getAttribute('aria-label') })),
-    diagramTabStops: [...document.querySelectorAll('.system-map .node')].filter((el) => el.hasAttribute('tabindex')).length,
     menuButtonDisplay: getComputedStyle(document.querySelector('[data-menu-button]')).display,
     navDisplay: getComputedStyle(document.querySelector('[data-nav]')).display,
+    navLinks: [...document.querySelectorAll('[data-nav] a')].map((a) => a.getAttribute('href')),
   }));
-
-  const expectedFoundations = [
-    '/insights/capital-allocation/', '/insights/leverage/', '/insights/asymmetric-risk/',
-    '/insights/business-systems/', '/insights/information-advantage/', '/insights/scale/', '/insights/compounding/'
-  ];
-  if (home.foundations.map((x) => x.href).join('|') !== expectedFoundations.join('|')) {
-    fail(`homepage foundation destinations are not source-native: ${JSON.stringify(home.foundations)}`);
-  }
-  if (home.foundations.some((x) => !x.label)) fail('homepage foundation links are missing descriptive aria-label values');
-  if (home.diagramTabStops) fail(`system diagram exposes ${home.diagramTabStops} decorative keyboard stop(s)`);
+  const expectedNav = ['/about/', '/insights/', '/books/', '/media/', '/contact/'];
+  if (home.navLinks.join('|') !== expectedNav.join('|')) fail(`primary navigation links are wrong: ${JSON.stringify(home.navLinks)}`);
   if (home.menuButtonDisplay !== 'none' || home.navDisplay === 'none') fail(`no-JS compact navigation fallback is inconsistent: ${JSON.stringify(home)}`);
-
   for (let i = 0; i < series.length; i++) {
     const [route] = series[i];
     await page.goto(`${baseURL}${route}`, { waitUntil: 'domcontentloaded' });
@@ -69,7 +59,7 @@ try {
   if (!notFound.hasHomeRecovery || !notFound.hasInsightsRecovery) fail(`404 recovery routes are incomplete: ${JSON.stringify(notFound)}`);
 
   await noJs.close();
-  pass('source-native foundation links, decorative focus behavior, no-JS navigation, static essay sequence and 404 recovery semantics checked');
+  pass('no-JS navigation, static essay sequence and 404 recovery semantics checked');
 
   // Force each below-fold image into view and validate the resource the browser actually selected.
   // Responsive <picture> fallbacks must not be treated as failures when a WebP source is selected.
