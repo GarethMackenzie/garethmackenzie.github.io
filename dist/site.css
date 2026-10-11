@@ -1,9 +1,9 @@
 /* Site foundation shared by every page: fonts, tokens, base, type roles, buttons, header, footer, consent banner.
    Page-specific layout lives in author-home.css (homepage), pages.css (interior) and insight-article.css (essays). */
 
-@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-opsz-normal.woff2) format("woff2");font-weight:300 700;font-style:normal;font-display:swap}
-@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-wght-italic.woff2) format("woff2");font-weight:300 700;font-style:italic;font-display:swap}
-@font-face{font-family:"Instrument Sans";src:url(/assets/fonts/instrument-sans-latin-wght-normal.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-opsz-normal.woff2) format("woff2");font-weight:400 600;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/assets/fonts/newsreader-latin-wght-italic.woff2) format("woff2");font-weight:400 600;font-style:italic;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(/assets/fonts/instrument-sans-latin-wght-normal.woff2) format("woff2");font-weight:400 600;font-style:normal;font-display:swap}
 /* Metric-matched fallbacks: headlines keep their composition while the web fonts load. */
 @font-face{font-family:"Newsreader Display Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:108%;ascent-override:68%;descent-override:24.5%;line-gap-override:0%}
 @font-face{font-family:"Newsreader Text Fallback";src:local("Times New Roman"),local("Liberation Serif"),local("Tinos");size-adjust:98.6%;ascent-override:74.5%;descent-override:26.9%;line-gap-override:0%}
