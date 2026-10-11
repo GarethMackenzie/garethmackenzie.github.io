@@ -50,6 +50,7 @@ em{font-style:italic}
 .skip-link{position:fixed;left:16px;top:-60px;z-index:100;padding:10px 16px;background:var(--gold-hi);color:#16120c}
 .skip-link:focus{top:12px}
 :focus-visible{outline:2px solid var(--gold-hi);outline-offset:4px}
+main:focus{outline:none}
 
 .section{width:var(--wrap);margin-inline:auto;padding-block:var(--section-y);border-top:1px solid var(--rule)}
 
@@ -120,5 +121,5 @@ footer p{margin:.4rem 0 0}
   :root{--header-h:0px}
   .site-header{position:relative;height:auto;flex-wrap:wrap;gap:.25rem 1.5rem;padding-block:.75rem}
   .menu-button{display:none}
-  .nav,.nav.open{position:static;display:flex;flex-wrap:wrap;width:auto;gap:0 1.5rem;padding:0;background:none;border:0}
+  .nav,.nav.open{position:static;display:flex;flex-direction:row;flex-wrap:wrap;width:100%;gap:0 1.25rem;padding:0;background:none;border:0}
 }
