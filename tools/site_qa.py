@@ -321,10 +321,87 @@ def audit() -> int:
     if f"Sitemap: {SITE}/sitemap.xml" not in robots:
         failures.append("robots.txt must declare the canonical sitemap")
 
-    pass1 = (ROOT / "pass1-stability.css").read_text(encoding="utf-8")
-    for token in (":focus-visible", "prefers-reduced-motion", "max-width: 1024px", "object-fit: contain"):
-        if token not in pass1:
-            failures.append(f"pass1-stability.css missing guardrail: {token}")
+    # Styling architecture: every page loads the shared foundation first, then its own page stylesheets.
+    # Fonts are self-hosted and preloaded; no third-party stylesheet is allowed.
+    for path in sorted(ROOT.glob("**/*.html")):
+        rel = path.relative_to(ROOT).as_posix()
+        if rel.startswith((".git", "node_modules")) or rel.startswith("google"):
+            continue
+        page_source = path.read_text(encoding="utf-8")
+        linked = re.findall(r'<link rel="stylesheet" href="([^"]+)"', page_source)
+        if rel == "index.html":
+            expected = ["/dist/site.css", "/dist/author-home.css"]
+        elif rel.startswith("insights/") and rel != "insights/index.html":
+            expected = ["/dist/site.css", "/dist/pages.css", "/insight-article.css"]
+        else:
+            expected = ["/dist/site.css", "/dist/pages.css"]
+        if linked != expected:
+            failures.append(f"{rel}: stylesheets are {linked}, expected {expected}")
+        for href in linked:
+            if href.startswith("/") and not (ROOT / href.lstrip("/")).exists():
+                failures.append(f"{rel}: stylesheet {href} does not exist")
+        if "fonts.googleapis.com" in page_source or "fonts.gstatic.com" in page_source:
+            failures.append(f"{rel}: third-party font requests are not allowed; fonts are self-hosted")
+        for font in ("newsreader-latin-opsz-normal.woff2", "instrument-sans-latin-wght-normal.woff2"):
+            if f'href="/assets/fonts/{font}"' not in page_source:
+                failures.append(f"{rel}: missing preload for {font}")
+    for font in ("newsreader-latin-opsz-normal.woff2", "newsreader-latin-wght-italic.woff2", "instrument-sans-latin-wght-normal.woff2", "LICENSE.txt"):
+        if not (ROOT / "assets" / "fonts" / font).exists():
+            failures.append(f"missing assets/fonts/{font}")
+    # Social cards: every referenced card must exist, be the declared size, and carry alt text.
+    import struct
+
+    def image_size(image_path: Path):
+        data = image_path.read_bytes()
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            return struct.unpack(">II", data[16:24])
+        position = 2
+        while position + 9 < len(data):
+            if data[position] != 0xFF:
+                position += 1
+                continue
+            marker = data[position + 1]
+            if marker in (0xC0, 0xC1, 0xC2):
+                height, width = struct.unpack(">HH", data[position + 5:position + 9])
+                return width, height
+            position += 2 + struct.unpack(">H", data[position + 2:position + 4])[0]
+        return None
+
+    for path in sorted(ROOT.glob("**/*.html")):
+        rel = path.relative_to(ROOT).as_posix()
+        if rel.startswith((".git", "node_modules")) or rel.startswith("google"):
+            continue
+        page_source = path.read_text(encoding="utf-8")
+        og = re.search(r'<meta property="og:image" content="([^"]+)">', page_source)
+        if not og:
+            continue
+        tw = re.search(r'<meta name="twitter:image" content="([^"]+)">', page_source)
+        if not tw or tw.group(1) != og.group(1):
+            failures.append(f"{rel}: twitter:image must match og:image")
+        local = ROOT / urlparse(og.group(1)).path.lstrip("/")
+        if not local.exists():
+            failures.append(f"{rel}: social image {og.group(1)} does not exist")
+            continue
+        width = re.search(r'<meta property="og:image:width" content="(\d+)">', page_source)
+        height = re.search(r'<meta property="og:image:height" content="(\d+)">', page_source)
+        size = image_size(local)
+        if not (width and height and size == (int(width.group(1)), int(height.group(1)))):
+            failures.append(f"{rel}: {local.name} is {size}, declared {width and width.group(1)}x{height and height.group(1)}")
+        if local.stat().st_size > 600_000:
+            failures.append(f"{rel}: {local.name} is larger than 600 KB")
+        alt = re.search(r'<meta property="og:image:alt" content="([^"]*)">', page_source)
+        if not alt or not (20 <= len(alt.group(1)) <= 420):
+            failures.append(f"{rel}: og:image:alt is missing or outside 20-420 characters")
+    home_card = (ROOT / "index.html").read_text(encoding="utf-8")
+    if "social-card-home.jpg" not in home_card:
+        failures.append("homepage must use the author-led social-card-home.jpg")
+    if "social-card.jpg" not in (ROOT / "built" / "index.html").read_text(encoding="utf-8"):
+        failures.append("the BUILT page must keep the book-led social-card.jpg")
+
+    foundation = (ROOT / "dist" / "site.css").read_text(encoding="utf-8")
+    for token in (":focus-visible", "prefers-reduced-motion", "max-width:1024px", "scripting:none"):
+        if token not in foundation:
+            failures.append(f"dist/site.css missing guardrail: {token}")
 
     script = (ROOT / "script.js").read_text(encoding="utf-8")
     for token in ("aria-expanded", "Escape", "inert", "IntersectionObserver", "requestAnimationFrame"):
@@ -343,8 +420,9 @@ def audit() -> int:
         )
     if "book-cover-640.webp 640w" not in home_source:
         failures.append("homepage responsive srcset is missing the 640w cover")
-    if not re.search(r'<link rel="preload"[^>]+book-cover-640\.webp[^>]+imagesrcset=', home_source):
-        failures.append("homepage cover preload is not using responsive imagesrcset")
+    for preload in re.findall(r'<link rel="preload"[^>]+book-cover-[^>]+>', home_source):
+        if "imagesrcset=" not in preload:
+            failures.append("a homepage cover preload must use a responsive imagesrcset")
 
     # Operational warnings are intentionally non-blocking because they require a
     # product/service decision rather than a safe code-only correction.

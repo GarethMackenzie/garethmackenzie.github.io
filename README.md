@@ -29,29 +29,28 @@ Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 /privacy/ /terms/ Legal
 ```
 
-Navigation order/labels are the same on every page: About, Books, Writing,
-Media, Contact, with BUILT as a highlighted CTA — never the site wordmark.
+Navigation order/labels are the same on every page: About, Writing, Books, Media, Contact.
+There is no BUILT button in the global navigation: BUILT is the current flagship inside Books, so the structure still works when later titles arrive.
 
 ## Stylesheets
 
-Which CSS each page actually loads (verified against the HTML on `main`):
+Every page loads `dist/site.css` first (fonts, layout tokens, header, footer, buttons, consent banner), then one page stylesheet:
 
-| Page(s) | Stylesheet | How it is maintained |
-| --- | --- | --- |
-| `/` (homepage) | `dist/author-home.css` | Edited directly. No build step, no source files. |
-| All other pages except essays and the writing index | `dist/interior.css` | Built from source files: edit those, then run `python3 tools/build_css.py`. |
-| `/insights/<slug>/` (10 essays) | `insight-article.css` (repo root) | Edited directly; also loads `dist/interior.css`. |
-| `/insights/` (writing index) | `insights-publishing.css` (repo root) | Edited directly. |
+| Pages | Page stylesheet |
+|---|---|
+| `/` | `dist/author-home.css` |
+| About, Books, BUILT, Media, Contact, Writing index, Privacy, Terms, 404 | `dist/pages.css` |
+| `/insights/<slug>/` (10 essays) | `dist/pages.css` + `insight-article.css` |
 
-Not loaded by any page (safe to ignore; do not edit expecting a visible change): `dist/home.css`, `home-editorial.css`, `performance-tuning.css`, `premium-home.css`, `premium-home.js`.
+All of these are edited directly. There is no build step for them.
 
-```
-python3 tools/build_css.py
-```
+**Layout grid.** One set of tokens in `dist/site.css` drives every page: `--page-max` (1320px content width), `--gutter` (page margin, 24px on small screens up to 72px), `--col-gap`, twelve columns, `--section-y` (section spacing), `--measure` (40rem reading column) and `--header-h`. The header, footer and every section align to the same left edge. Two-column pages use one split: a left rail in columns 1-5 and content in columns 6-12. Essays keep the narrower `--measure` column inside the same 12-column grid.
 
-Idempotent. It only affects `dist/interior.css` in practice (it also still writes the unused `dist/home.css`).
+**Fonts.** Newsreader (variable, optical size) and Instrument Sans (variable) are self-hosted as trimmed WOFF2 subsets in `assets/fonts/` (weights 400-600 and only the characters the site uses; rebuild them with `tools/subset_fonts.py`), under the SIL Open Font License 1.1 (full text in `assets/fonts/LICENSE.txt`). They are preloaded in every page head. `dist/site.css` also declares metric-adjusted local fallbacks so headlines keep their line breaks while the web fonts load. GitHub Pages serves static files with `Cache-Control: max-age=600`, so returning visitors revalidate the font files after ten minutes.
 
-`tools/build_performance_assets.py` is a one-time migration script (HTML rewrites + image generation already applied) and should not be rerun.
+**Books catalogue.** `/books/` is a list of `.catalogue-entry` items. Each carries `data-status`. To add a title, add another `li.catalogue-entry`; when BUILT is no longer the flagship, remove the `catalogue-entry--flagship` modifier and change its status label to "Published work".
+
+**Retired CSS pipeline.** The old generated bundles (`dist/interior.css`, `dist/home.css`), their source stylesheets and `tools/build_css.py` were removed. `tools/build_cover_images.py` regenerates the cover WebP renditions, `tools/apply_technical_seo.py`, `tools/generate_social_cards.py` and `tools/final_hardening.py` still run in the regeneration workflow, and `tools/site_qa.py` now checks the stylesheet architecture (shared foundation first, one page stylesheet, self-hosted fonts).
 
 ## Validation
 
@@ -65,9 +64,16 @@ coverage. Note: as of this commit it reports one known false positive
 before the site had a Books page and ten essays; the sitemap itself is
 correct.
 
+## Release documents
+
+- `docs/deployment.md`: switching GitHub Pages to GitHub Actions, pre-flight evidence, procedure and rollback.
+- `docs/contact-form.md`: replacing the visible recipient address with FormSubmit's random alias (owner action required).
+- `docs/manual-testing.md`: real-device and screen-reader checklist.
+- `tools/verify_artifact.py`: verifies the staged production artifact (also run by the Production Gate).
+- `tools/build_home_social_card.py`: regenerates the author-led homepage social card.
+
 ## Known state
 
-- The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is cropped inside its baked-in keyline. The JPEG is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it.
-- The homepage now shares the interior pages' dark palette and type (Playfair Display, Manrope, gold). Its portrait and book cover are separate blocks, not overlapping.
-- Analytics consent banner styles live in `pages.css` (and are bundled into `dist/interior.css`) and at the end of `dist/author-home.css`.
-- Pages were rendered in headless Chromium at 390, 768 and 1415px with no horizontal overflow or distorted images. Fonts were not loaded in that environment, so check real typography in a browser.
+- The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it. The JPEG has a 1px grey column on its left edge; on `/about/` the image is scaled up 1.2% inside a clipped frame so that column is not visible.
+- Analytics consent banner styles live in `dist/site.css`.
+- Verify real typography in a browser after changes: the font files are served from `assets/fonts/`.

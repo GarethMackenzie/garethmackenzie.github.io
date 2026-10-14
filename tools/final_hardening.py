@@ -12,47 +12,6 @@ def update(path: Path, transform):
         print(f'Updated {path.relative_to(ROOT)}')
 
 
-# Homepage: make critical navigation/SEO semantics correct without JavaScript.
-def harden_home(text: str) -> str:
-    text = text.replace(
-        '<link rel="preload" href="/assets/book-cover-800.webp" as="image" type="image/webp" fetchpriority="high">',
-        '<link rel="preload" href="/assets/book-cover-800.webp" as="image" type="image/webp" fetchpriority="high" imagesrcset="/assets/book-cover-480.webp 480w, /assets/book-cover-800.webp 800w, /assets/book-cover-1200.webp 1200w" imagesizes="(max-width: 1024px) 340px, 390px">',
-    )
-
-    if '"@id": "https://mackenziebooks.bbroot.com/about/#person"' not in text:
-        text = text.replace(
-            '"@type": "Person",\n      "name": "Gareth Andrew Mackenzie",',
-            '"@type": "Person",\n      "@id": "https://mackenziebooks.bbroot.com/about/#person",\n      "name": "Gareth Andrew Mackenzie",',
-            1,
-        )
-    if '"author": {"@id": "https://mackenziebooks.bbroot.com/about/#person"}' not in text:
-        text = text.replace(
-            '"image": "https://mackenziebooks.bbroot.com/assets/book-cover.jpg",\n      "sameAs": "https://a.co/d/0gLDcpvu"',
-            '"image": "https://mackenziebooks.bbroot.com/assets/book-cover.jpg",\n      "author": {"@id": "https://mackenziebooks.bbroot.com/about/#person"},\n      "sameAs": "https://a.co/d/0gLDcpvu"',
-            1,
-        )
-
-    mapping = {
-        'Capital': ('/insights/capital-allocation/', 'Read the Capital allocation insight'),
-        'Leverage': ('/insights/leverage/', 'Read the Leverage insight'),
-        'Risk': ('/insights/asymmetric-risk/', 'Read the Asymmetric risk insight'),
-        'Systems': ('/insights/business-systems/', 'Read the Business systems insight'),
-        'Information': ('/insights/information-advantage/', 'Read the Information advantage insight'),
-        'Scale': ('/insights/scale/', 'Read the Scale insight'),
-        'Compounding': ('/insights/compounding/', 'Read the Compounding insight'),
-    }
-    for title, (href, label) in mapping.items():
-        pattern = re.compile(
-            rf'(<article class="foundation-card reveal">.*?<h3>{re.escape(title)}</h3>.*?<a )href="[^"]+"(?: aria-label="[^"]+")?(>Explore <span>\u2192</span></a></article>)',
-            re.S,
-        )
-        text = pattern.sub(rf'\1href="{href}" aria-label="{label}"\2', text, count=1)
-
-    text = re.sub(r'(<span class="node [^"]+") tabindex="0"', r'\1', text)
-    return text
-
-
-update(ROOT / 'index.html', harden_home)
 
 # Legal pages: match the production dark palette in browser chrome/form controls.
 for rel in ('privacy/index.html', 'terms/index.html'):
@@ -101,35 +60,35 @@ for i, (slug, title) in enumerate(series):
     def nav_transform(text: str, i=i):
         if i == 0:
             left_href = '/insights/'
-            left_span = 'Series index'
-            left_title = 'Explore all ten insight themes'
-            left_label = 'Return to the Insights series index'
+            left_span = 'All essays'
+            left_title = 'Explore all ten essays'
+            left_label = 'Return to all essays'
         else:
             pslug, ptitle = series[i - 1]
             left_href = f'/insights/{pslug}/'
-            left_span = 'Previous insight'
+            left_span = 'Previous essay'
             left_title = ptitle
-            left_label = f'Previous insight: {ptitle}'
+            left_label = f'Previous essay: {ptitle}'
 
         if i == len(series) - 1:
             right_href = '/insights/'
             right_span = 'Complete the series'
-            right_title = 'Return to the ten-theme Insights index'
-            right_label = 'Return to the complete Insights series index'
+            right_title = 'Return to the full list of essays'
+            right_label = 'Return to all essays'
         else:
             nslug, ntitle = series[i + 1]
             right_href = f'/insights/{nslug}/'
-            right_span = 'Next insight'
+            right_span = 'Next essay'
             right_title = ntitle
-            right_label = f'Next insight: {ntitle}'
+            right_label = f'Next essay: {ntitle}'
 
         nav = (
-            '<nav class="article-nav" aria-label="More BUILT insights">'
+            '<nav class="article-nav" aria-label="More essays">'
             f'<a href="{left_href}" aria-label="{left_label}"><span>{left_span}</span><strong>{left_title}</strong></a>'
             f'<a href="{right_href}" aria-label="{right_label}"><span>{right_span}</span><strong>{right_title}</strong></a>'
             '</nav>'
         )
-        return re.sub(r'<nav class="article-nav" aria-label="More BUILT insights">.*?</nav>', nav, text, count=1, flags=re.S)
+        return re.sub(r'<nav class="article-nav" aria-label="More essays">.*?</nav>', nav, text, count=1, flags=re.S)
 
     update(path, nav_transform)
 

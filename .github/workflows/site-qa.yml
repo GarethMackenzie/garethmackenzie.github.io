@@ -65,6 +65,14 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/semantic_qa.mjs
 
+      - name: Install Firefox and WebKit
+        run: npx playwright install --with-deps firefox webkit
+
+      - name: Cross-browser audit (Firefox and WebKit)
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/cross_browser_qa.mjs
+
       - name: Run Lighthouse lab audits
         run: |
           mkdir -p qa-reports/lighthouse

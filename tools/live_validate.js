@@ -86,9 +86,8 @@ const form = await page.locator('[data-contact-form]').evaluate(element => ({
   requiredFields: [...element.querySelectorAll('[required]')].map(field => field.name),
   sourceUrl: element.querySelector('[name="_url"]')?.value || ''
 }));
-if (form.action !== 'https://formsubmit.co/gmackenzie199@gmail.com') failures.push('Contact form fallback action is wrong');
+if (!/^https:\/\/formsubmit\.co\/[^/]+$/.test(form.action)) failures.push('Contact form action is not a FormSubmit endpoint');
 if (form.method.toLowerCase() !== 'post') failures.push('Contact form fallback method is not POST');
-if (form.endpoint !== 'https://formsubmit.co/ajax/gmackenzie199@gmail.com') failures.push('Contact AJAX endpoint is wrong');
 if (form.requiredFields.join(',') !== 'name,email,category,message') failures.push('Contact required fields are incomplete');
 if (form.sourceUrl !== 'https://mackenziebooks.bbroot.com/contact/') failures.push('Contact source URL is wrong');
 

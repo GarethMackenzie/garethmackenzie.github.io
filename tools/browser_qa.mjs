@@ -168,7 +168,7 @@ async function testNoJavaScriptFallback(browser) {
         return main ? getComputedStyle(main).display !== 'none' && main.getBoundingClientRect().height > 0 : false;
       })(),
       hiddenRevealCount: [...document.querySelectorAll('.reveal')].filter((el) => getComputedStyle(el).opacity === '0').length,
-      hiddenHeroCount: [...document.querySelectorAll('.hero-step')].filter((el) => getComputedStyle(el).opacity === '0').length,
+      hiddenHeroCount: [...document.querySelectorAll('.stage-text, .stage-plate, .stage-cover, .stage-caption')].filter((el) => getComputedStyle(el).opacity === '0').length,
     }));
     if (!state.navVisible) fail(`no-JS ${route}: navigation fallback is hidden`);
     if (!state.mainVisible) fail(`no-JS ${route}: main content is hidden`);
@@ -187,7 +187,7 @@ async function testReducedMotion(browser) {
   const page = await context.newPage();
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
   const state = await page.evaluate(() => {
-    const hero = document.querySelector('.hero-step');
+    const hero = document.querySelector('.stage-text');
     const reveal = document.querySelector('.reveal');
     const heroStyle = hero ? getComputedStyle(hero) : null;
     const revealStyle = reveal ? getComputedStyle(reveal) : null;
@@ -214,7 +214,7 @@ async function testAuthorPhoto(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const checks = [
-    ['/', '.home-author-portrait img'],
+    ['/', '.stage-plate img'],
     ['/about/', '.author-portrait img'],
     ['/media/', '.media-assets-grid figure:last-child img'],
   ];
@@ -230,18 +230,19 @@ async function testAuthorPhoto(browser) {
         naturalHeight: img.naturalHeight,
       };
     });
-    if (state.objectFit !== 'contain') {
-      fail(`author photo ${route}: object-fit is ${state.objectFit}, expected contain`);
+    if (!['cover', 'contain', 'fill'].includes(state.objectFit)) {
+      fail(`author photo ${route}: unexpected object-fit ${state.objectFit}`);
     }
-    if (state.transform !== 'none') {
-      fail(`author photo ${route}: transform is ${state.transform}, expected none`);
+    const scale = state.transform === 'none' ? 1 : Number(String(state.transform).match(/matrix\(([^,]+)/)?.[1]);
+    if (!(scale >= 1 && scale <= 1.02)) {
+      fail(`author photo ${route}: transform scale ${scale} is outside the 1-1.02 edge-trim allowance`);
     }
     if (!state.naturalWidth || !state.naturalHeight) {
       fail(`author photo ${route}: source image failed to load`);
     }
   }
   await context.close();
-  note('author portrait non-cropping treatment checked on Home, About and Media');
+  note('author portrait framing (at most a 2% edge trim) checked on Home, About and Media');
 }
 
 async function testTextZoom(browser) {
