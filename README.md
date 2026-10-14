@@ -64,6 +64,14 @@ coverage. Note: as of this commit it reports one known false positive
 before the site had a Books page and ten essays; the sitemap itself is
 correct.
 
+## Release documents
+
+- `docs/deployment.md`: switching GitHub Pages to GitHub Actions, pre-flight evidence, procedure and rollback.
+- `docs/contact-form.md`: replacing the visible recipient address with FormSubmit's random alias (owner action required).
+- `docs/manual-testing.md`: real-device and screen-reader checklist.
+- `tools/verify_artifact.py`: verifies the staged production artifact (also run by the Production Gate).
+- `tools/build_home_social_card.py`: regenerates the author-led homepage social card.
+
 ## Known state
 
 - The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it. The JPEG has a 1px grey column on its left edge; on `/about/` the image is scaled up 1.2% inside a clipped frame so that column is not visible.

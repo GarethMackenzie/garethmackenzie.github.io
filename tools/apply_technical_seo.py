@@ -7,6 +7,8 @@ SITE = 'https://mackenziebooks.bbroot.com'
 PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
+HOME_SOCIAL = f'{SITE}/assets/social-card-home.jpg'
+HOME_SOCIAL_ALT = 'Portrait of Gareth Andrew Mackenzie, author, writer and systems thinker, beside the cover of his book BUILT: How Wealth Is Deliberately Constructed'
 
 ESSAYS = [
     ('capital-allocation', 'Capital Allocation Is the Operating System of Wealth', 'Capital allocation'),
@@ -59,8 +61,11 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding='utf-8')
 
 
-def standardize_social(path: Path, alt: str = SOCIAL_ALT) -> None:
+def standardize_social(path: Path, alt: str = SOCIAL_ALT, image: str | None = None) -> None:
     text = path.read_text(encoding='utf-8')
+    if image:
+        text = set_or_add_meta(text, 'og:image', image, 'property')
+        text = set_or_add_meta(text, 'twitter:image', image, 'name')
     text = text.replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#11151a">')
     text = set_or_add_meta(text, 'og:image:width', '1200', 'property', 'og:image')
     text = set_or_add_meta(text, 'og:image:height', '630', 'property', 'og:image:width')
@@ -91,7 +96,8 @@ def link_person_entity(text: str) -> str:
 
 
 # Main-page social metadata consistency.
-for relative in ['index.html', 'built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
+standardize_social(ROOT / 'index.html', HOME_SOCIAL_ALT, HOME_SOCIAL)
+for relative in ['built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
     standardize_social(ROOT / relative)
 
 # Keep legal pages visually consistent while intentionally remaining noindex.

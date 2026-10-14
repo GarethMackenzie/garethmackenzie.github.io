@@ -106,6 +106,9 @@ jobs:
 
           echo "Production artifact contains $(find _site -type f | wc -l | tr -d ' ') files."
 
+      - name: Verify staged artifact
+        if: steps.current.outputs.current == 'true'
+        run: python3 tools/verify_artifact.py _site
       - name: Upload verified Pages artifact
         if: steps.current.outputs.current == 'true'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
