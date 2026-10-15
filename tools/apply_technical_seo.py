@@ -7,6 +7,8 @@ SITE = 'https://mackenziebooks.bbroot.com'
 PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
+HOME_SOCIAL = f'{SITE}/assets/social-card-home.jpg'
+HOME_SOCIAL_ALT = 'Portrait of Gareth Andrew Mackenzie, author, writer and systems thinker, beside the cover of his book BUILT: How Wealth Is Deliberately Constructed'
 
 ESSAYS = [
     ('capital-allocation', 'Capital Allocation Is the Operating System of Wealth', 'Capital allocation'),
@@ -21,15 +23,6 @@ ESSAYS = [
     ('strategic-execution', 'Strategy Becomes Real Only When Execution Has a System', 'Strategic execution'),
 ]
 
-FOUNDATION_DESTINATIONS = {
-    'Capital': '/insights/capital-allocation/',
-    'Leverage': '/insights/leverage/',
-    'Risk': '/insights/asymmetric-risk/',
-    'Systems': '/insights/business-systems/',
-    'Information': '/insights/information-advantage/',
-    'Scale': '/insights/scale/',
-    'Compounding': '/insights/compounding/',
-}
 
 
 def set_or_add_meta(text: str, key: str, value: str, attr: str = 'property', after: str | None = None) -> str:
@@ -68,8 +61,11 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding='utf-8')
 
 
-def standardize_social(path: Path, alt: str = SOCIAL_ALT) -> None:
+def standardize_social(path: Path, alt: str = SOCIAL_ALT, image: str | None = None) -> None:
     text = path.read_text(encoding='utf-8')
+    if image:
+        text = set_or_add_meta(text, 'og:image', image, 'property')
+        text = set_or_add_meta(text, 'twitter:image', image, 'name')
     text = text.replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#11151a">')
     text = set_or_add_meta(text, 'og:image:width', '1200', 'property', 'og:image')
     text = set_or_add_meta(text, 'og:image:height', '630', 'property', 'og:image:width')
@@ -100,7 +96,8 @@ def link_person_entity(text: str) -> str:
 
 
 # Main-page social metadata consistency.
-for relative in ['index.html', 'built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
+standardize_social(ROOT / 'index.html', HOME_SOCIAL_ALT, HOME_SOCIAL)
+for relative in ['built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
     standardize_social(ROOT / relative)
 
 # Keep legal pages visually consistent while intentionally remaining noindex.
@@ -128,35 +125,19 @@ for relative, items in main_breadcrumbs.items():
 built = ROOT / 'built' / 'index.html'
 text = built.read_text(encoding='utf-8')
 needle = '<p>The book connects capital, leverage, ownership, risk, execution, information, scale, and compounding into one framework instead of presenting them as isolated tactics.</p>'
-addition = needle + '<p>Continue into the <a class="text-link" href="/insights/">BUILT Insights essay series <span aria-hidden="true">→</span></a> for ten long-form explorations of the framework.</p>'
-if needle in text and 'BUILT Insights essay series' not in text:
+addition = needle + '<p>Continue into the <a class="text-link" href="/insights/">essay series <span aria-hidden="true">→</span></a> for ten long-form explorations of the framework.</p>'
+if needle in text and 'essay series' not in text:
     text = text.replace(needle, addition, 1)
 write(built, link_person_entity(text))
 
 about = ROOT / 'about' / 'index.html'
 text = about.read_text(encoding='utf-8')
 needle = '<p>BUILT applies that same lens to wealth, ownership, leverage, resilience, and choice.</p>'
-addition = needle + '<p>The <a class="text-link" href="/insights/">Insights series <span aria-hidden="true">→</span></a> develops that systems lens across ten connected essays.</p>'
-if needle in text and 'Insights series' not in text:
+addition = needle + '<p>The <a class="text-link" href="/insights/">writing <span aria-hidden="true">→</span></a> develops that systems lens across ten connected essays.</p>'
+if needle in text and 'href="/insights/"' not in text:
     text = text.replace(needle, addition, 1)
 write(about, text)
 
-# Make homepage semantics correct without JavaScript: real essay destinations and
-# no fake keyboard stops on the explanatory systems diagram.
-home = ROOT / 'index.html'
-text = home.read_text(encoding='utf-8')
-for title, destination in FOUNDATION_DESTINATIONS.items():
-    pattern = re.compile(
-        rf'(<article class="foundation-card reveal">.*?<h3>{re.escape(title)}</h3>.*?<a) href="[^"]*"(?: aria-label="[^"]*")?',
-        flags=re.DOTALL,
-    )
-    replacement = rf'\1 href="{destination}" aria-label="Read the {title} essay in Insights"'
-    text, count = pattern.subn(replacement, text, count=1)
-    if count != 1:
-        raise RuntimeError(f'Could not standardize homepage foundation link for {title}')
-text = re.sub(r'(<span class="node[^"]*") tabindex="0"', r'\1', text)
-text = link_person_entity(text)
-write(home, text)
 
 # Article-specific metadata, linked author entity and three-level breadcrumbs.
 for slug, title, theme in ESSAYS:
@@ -169,7 +150,7 @@ for slug, title, theme in ESSAYS:
     text = link_person_entity(text)
     text = add_breadcrumbs(text, [
         ('Home', f'{SITE}/'),
-        ('Insights', f'{SITE}/insights/'),
+        ('Writing', f'{SITE}/insights/'),
         (title, f'{SITE}/insights/{slug}/'),
     ])
     write(path, text)
