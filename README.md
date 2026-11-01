@@ -1,8 +1,8 @@
 # Gareth Andrew Mackenzie
 
 Author website for Gareth Andrew Mackenzie. The author is the brand; *BUILT:
-How Wealth Is Deliberately Constructed* is his current book, not the site's
-identity.
+How Wealth Is Deliberately Constructed* is his current flagship book and
+*When Advantage Expires* is listed beside it; neither is the site's identity.
 
 Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 
@@ -20,7 +20,7 @@ Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 ```
 /                 Homepage
 /about/           Author bio
-/books/           Books index (currently: BUILT)
+/books/           Books index (currently: BUILT, When Advantage Expires)
 /built/           BUILT book page
 /insights/        Writing index
 /insights/<slug>/ Individual essays (10)
@@ -48,7 +48,7 @@ All of these are edited directly. There is no build step for them.
 
 **Fonts.** Newsreader (variable, optical size) and Instrument Sans (variable) are self-hosted as trimmed WOFF2 subsets in `assets/fonts/` (weights 400-600 and only the characters the site uses; rebuild them with `tools/subset_fonts.py`), under the SIL Open Font License 1.1 (full text in `assets/fonts/LICENSE.txt`). They are preloaded in every page head. `dist/site.css` also declares metric-adjusted local fallbacks so headlines keep their line breaks while the web fonts load. GitHub Pages serves static files with `Cache-Control: max-age=600`, so returning visitors revalidate the font files after ten minutes.
 
-**Books catalogue.** `/books/` is a list of `.catalogue-entry` items. Each carries `data-status`. To add a title, add another `li.catalogue-entry`; when BUILT is no longer the flagship, remove the `catalogue-entry--flagship` modifier and change its status label to "Published work".
+**Books catalogue.** `/books/` is a list of `.catalogue-entry` items. Each carries `data-status`. It currently lists BUILT (flagship) and *When Advantage Expires* (`data-status="new"`). The second title has no dedicated page and no purchase link yet, so its cover is a plain `div` rather than a link, and its single 400x600 WebP (`assets/when-advantage-expires-cover-400.webp`) is not produced by `tools/build_cover_images.py`. When a purchase link or page exists, add it to that entry using the BUILT entry as the pattern (and add any new page to `sitemap.xml`). To add a title, add another `li.catalogue-entry`; when BUILT is no longer the flagship, remove the `catalogue-entry--flagship` modifier and change its status label to "Published work".
 
 **Retired CSS pipeline.** The old generated bundles (`dist/interior.css`, `dist/home.css`), their source stylesheets and `tools/build_css.py` were removed. `tools/build_cover_images.py` regenerates the cover WebP renditions, `tools/apply_technical_seo.py`, `tools/generate_social_cards.py` and `tools/final_hardening.py` still run in the regeneration workflow, and `tools/site_qa.py` now checks the stylesheet architecture (shared foundation first, one page stylesheet, self-hosted fonts).
 
