@@ -4,7 +4,7 @@ const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-r
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
 let turnTween;
 const experience=document.getElementById("experience");
-let regionVisible=true,contextFailed=false,lastRender=0;
+let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
 const mix=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 function progress(value){
@@ -75,7 +75,7 @@ const particleFragment=`
 uniform float uDark,uOpacity;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
 vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity);}`;
 function pointCloud(){
- const n=innerWidth<=760?24000:60000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),b=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
+ const n=innerWidth<=959?24000:60000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),b=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
  let seed=81273;const rand=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);
  for(let i=0;i<n;i++){
  const u=rand(),y=-1.5+u*3.9;
@@ -115,7 +115,7 @@ function fallback(message){
 }
 function initScene(){
  renderer=new T.WebGLRenderer({canvas:rendererCanvas,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
- renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(36,1,.1,60);camera.position.z=7;
+ renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
 BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);document.body.classList.add('gl');document.body.dataset.codexReady='true';if(reading)makeRig();
@@ -145,13 +145,13 @@ function pose(p,f){f=clamp(f);p.userData.f=f;const bones=p.userData.bones;
 }
 function layout(dt){
  if(!renderer)return;
- const mobile=innerWidth<=760,half=Math.tan(camera.fov*Math.PI/360)*7,wide=half*camera.aspect;
+ const mobile=innerWidth<=959,half=Math.tan(camera.fov*Math.PI/360)*camera.position.z,wide=half*camera.aspect;
  const speed=reduced.matches?1:1-Math.exp(-dt*8);
  const heroX=mobile?-.22:wide*.32,backX=mobile?wide*.62:wide*.78;
  books.forEach((g,i)=>{
   const focus=reading&&i===selected,weight=i<2?1-Math.abs(i-desired):0;
   const scrollSize=(.85+.30*weight)*(mobile?Math.min(.62,wide*.57):1);
-  const size=focus?(mobile?Math.min(.70,wide*.60):Math.min(1.04,wide*.44)):scrollSize;
+  const size=focus?(mobile?Math.min(.70,wide*.60):Math.min(1.04,wide*.34)):scrollSize;
   const targetScale=reading?(focus?size:.001):(i<2?size:.001);
   const x=focus?(mobile?.76*size:wide*.37+.72*size):mix(backX,heroX,weight);
   const y=focus?(mobile?half*.28:0):(mobile?-half*.35:0);
@@ -184,9 +184,9 @@ function animate(ms){
   first:{z:first.position.z,scale:first.scale.x},
   second:{z:second.position.z,scale:second.scale.x},reading
  });
- if(!reduced.matches)frame=requestAnimationFrame(animate);
+ if(!reduced.matches&&ms<activeUntil)frame=requestAnimationFrame(animate);
 }
-function restart(){if(!frame&&renderer&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
+function restart(){activeUntil=performance.now()+1500;if(!frame&&renderer&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
 
 function cue(){
  if(muted)return;
@@ -284,7 +284,7 @@ $('drag').addEventListener('pointerup',release);
 $('drag').addEventListener('pointercancel',e=>release(e,true));
 addEventListener('resize',()=>{fit();ScrollTrigger.refresh()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0}else restart()});
-rendererCanvas.addEventListener('webglcontextlost',event=>{event.preventDefault();turnTween?.kill();transitioning=false;fallback('WebGL context lost. Text reader is active.');});
+rendererCanvas.addEventListener('webglcontextlost',event=>{event.preventDefault();turnTween?.kill();transitioning=false;pages.forEach((p,i)=>pose(p,i<folio?1:0));fallback('WebGL context lost. Text reader is active.');});
 rendererCanvas.addEventListener('webglcontextrestored',()=>{
  contextFailed=false;rendererCanvas.style.visibility='';document.body.classList.remove('no-gl');document.body.classList.add('gl');fit();restart();
 });

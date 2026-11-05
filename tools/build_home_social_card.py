@@ -1,9 +1,5 @@
-"""Build the author-led homepage social card (assets/social-card-home.jpg, 1200x630).
-
-Gareth's portrait and name lead; BUILT sits beside the portrait as the current flagship work, echoing the
-homepage hero. The dedicated BUILT page keeps its book-led card (assets/social-card.jpg).
-Uses the site's own fonts (assets/fonts, converted to temporary static TTFs) and portrait/cover assets.
-Requires: pip install pillow fonttools brotli. Run from the repository root: python tools/build_home_social_card.py
+"""Build the obsidian two-book homepage social card from original covers and site fonts.
+Requires Pillow, fonttools and brotli. Run from the repository root.
 """
 import tempfile
 from pathlib import Path

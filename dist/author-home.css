@@ -100,7 +100,7 @@ body.reader-open{overflow:hidden}
 .no-gl .page-copy{width:min(40rem,85vw);left:50%;transform:translateX(-50%)}
 #reader [hidden]{display:none!important}
 @media(max-width:1024px){.edition-index{grid-template-columns:repeat(3,minmax(0,1fr));gap:.2rem}.edition-index .hint{display:none}}
-@media(max-width:760px){
+@media(max-width:959px){
  .folio{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);align-items:start;padding-top:calc(var(--header-h) + 1.5rem);padding-bottom:6rem}
  .copy h1,.copy h2{font-size:clamp(2.5rem,8vw,3.8rem);margin:.25em 0 .2em}
  .syn{font-size:18px;line-height:1.65;max-width:42ch}
