@@ -8,7 +8,7 @@ PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
 HOME_SOCIAL = f'{SITE}/assets/social-card-home.jpg'
-HOME_SOCIAL_ALT = 'Portrait of Gareth Andrew Mackenzie, author, writer and systems thinker, beside the cover of his book BUILT: How Wealth Is Deliberately Constructed'
+HOME_SOCIAL_ALT = 'Gareth Andrew Mackenzie — BUILT and When Advantage Expires'
 
 ESSAYS = [
     ('capital-allocation', 'Capital Allocation Is the Operating System of Wealth', 'Capital allocation'),

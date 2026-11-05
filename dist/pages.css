@@ -195,3 +195,8 @@
   .hero-actions .text-link{align-self:center}
   .section-label p{font-size:.72rem}
 }
+
+.renewal h1{font:400 clamp(2.7rem,5.5vw,5.5rem)/1 var(--display)}
+.sample h2{max-width:22ch;margin:1rem 0 2rem;font:400 clamp(2rem,4vw,3.5rem)/1.12 var(--display)}
+.sample p:not(.eyebrow){max-width:var(--measure);margin:1rem 0;font:400 1.2rem/1.65 var(--serif)}
+.sample .text-link,.renewal .text-link{margin-top:1.5rem}

@@ -55,6 +55,11 @@ jobs:
           cat /tmp/built-site.log
           exit 1
 
+      - name: Codex rendered interaction and capture audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tools/codex_qa.mjs
+
       - name: Browser accessibility and responsive audit
         env:
           BASE_URL: http://127.0.0.1:4173

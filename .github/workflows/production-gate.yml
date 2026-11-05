@@ -74,6 +74,7 @@ jobs:
 
           runtime_dirs=(
             books
+            when-advantage-expires
             about
             assets
             built
