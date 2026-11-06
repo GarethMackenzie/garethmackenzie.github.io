@@ -89,7 +89,7 @@
 #reader button{min-height:44px;padding:.5rem;color:var(--gold);background:none;border:0;font:500 .875rem var(--sans);cursor:pointer}
 #reader button:disabled{opacity:.5;cursor:default}
 .reader-head strong{font:400 clamp(1.1rem,2vw,1.6rem)/1.2 var(--serif)}
-.page-copy{position:absolute;left:var(--gutter);top:19%;width:27%;max-height:65%;overflow:auto;overscroll-behavior:contain;background:var(--ground);z-index:2;padding:0 .6rem 1rem 0}
+.page-copy{position:absolute;left:var(--gutter);top:19%;width:27%;max-height:65%;overflow:auto;overscroll-behavior:contain;background:transparent;z-index:2;padding:0 .6rem 1rem 0}
 .page-copy h2{font:400 clamp(1.8rem,3vw,3rem)/1.05 var(--display);color:var(--gold);margin:.6em 0}
 .page-copy p:not(.eyebrow){font:400 1.15rem/1.6 var(--serif);margin:1rem 0}
 .page-copy .text-link{display:flex;font-size:.7rem;line-height:1.5;margin-top:1rem}
@@ -116,3 +116,6 @@ body.reader-open{overflow:hidden}
 }
 @media(max-height:540px){.codex-ready #experience{min-height:38rem}.page-copy{left:var(--gutter);right:auto;width:38%;top:19%;max-height:62%}.viewer{inset:4rem 0 4rem 43%}}
 @media(prefers-reduced-motion:reduce){.codex-home .cta,.codex-home .nav a{transition:none}}
+
+/* Lenis owns interpolation while active; native smooth scrolling would compete with it. */
+html.lenis{scroll-behavior:auto!important}

@@ -4,11 +4,12 @@ const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-r
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
 let turnTween;
 const experience=document.getElementById("experience");
-let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0;
+let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
 const mix=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 function progress(value){
- desired=clamp(value,0,1);active=desired<.5?0:1;
+ const next=clamp(value,0,1);if(panelsReady&&Math.abs(next-desired)<.00001)return;
+ panelsReady=true;desired=next;active=desired<.5?0:1;
  document.querySelectorAll('.folio').forEach((panel,i)=>{
   panel.setAttribute('aria-hidden',String(i!==active));panel.inert=i!==active;
  });
@@ -16,7 +17,7 @@ function progress(value){
  if(particles)particles.material.uniforms.uTransitionProgress.value=desired;
  restart();
 }
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger);gsap.ticker.lagSmoothing(0);
 function initScroll(){
  scroller=new Lenis({smoothWheel:!reduced.matches,lerp:.13,prevent:node=>Boolean(node.closest('#reader,.nav,.consent-banner'))});
  scroller.on('scroll',ScrollTrigger.update);
@@ -31,12 +32,12 @@ function initScroll(){
  progress(clamp((trigger.progress-.25)/.5));
 }
 function coverTexture(url){
- const canvas=document.createElement('canvas');canvas.width=800;canvas.height=1200;
- const context=canvas.getContext('2d');context.fillStyle='#EFECE4';context.fillRect(0,0,800,1200);
+ const canvas=document.createElement('canvas');const width=innerWidth<=959?400:800,height=width*1.5;canvas.width=width;canvas.height=height;
+ const context=canvas.getContext('2d');context.fillStyle='#EFECE4';context.fillRect(0,0,width,height);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
  const image=new Image();image.onload=()=>{
-  const scale=Math.min(800/image.width,1200/image.height),w=image.width*scale,h=image.height*scale;
-  context.drawImage(image,(800-w)/2,(1200-h)/2,w,h);texture.needsUpdate=true;restart();
+  const scale=Math.min(width/image.width,height/image.height),w=image.width*scale,h=image.height*scale;
+  context.drawImage(image,(width-w)/2,(height-h)/2,w,h);texture.needsUpdate=true;restart();
  };image.onerror=()=>fallback('A cover could not be loaded.');image.src=url;return texture;
 }
 function box(w,h,d,mat){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.castShadow=m.receiveShadow=true;return m}
@@ -57,14 +58,9 @@ const particleVertex=`
 uniform float uTransitionProgress,uTime,uDpr;
 attribute vec3 aSand,aHalo;attribute float aSeed;
 varying float vSeed;
-float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
-float noise3(vec3 p){
- vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
- return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
- mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);
-}
-vec3 field(vec3 p){return vec3(noise3(p),noise3(p+vec3(31.4,47.1,11.7)),noise3(p+vec3(83.2,7.1,29.4)));}
-vec3 curl(vec3 p){float e=.045;vec3 dx=field(p+vec3(e,0,0))-field(p-vec3(e,0,0)),dy=field(p+vec3(0,e,0))-field(p-vec3(0,e,0)),dz=field(p+vec3(0,0,e))-field(p-vec3(0,0,e));return vec3(dy.z-dz.y,dz.x-dx.z,dx.y-dy.x)/(2.0*e);}
+// Analytic curl of a smooth 3D vector potential. Divergence-free motion avoids
+// the many finite-difference noise samples that stalled low-powered renderers.
+vec3 curl(vec3 p){return vec3(cos(p.y)+sin(p.z),cos(p.z)+sin(p.x),cos(p.x)+sin(p.y));}
 void main(){float t=uTransitionProgress;float a=smoothstep(0.,1.,t),b=smoothstep(1.,2.,t);vec3 sand=aSand;
 float y=fract(aSeed+uTime*.10)*2.-1.;sand.y=-y*1.65;sand.xz*=.12+abs(y)*.34;
 vec3 p=position+sin(3.14159*a)*(sand-position)*.35;
@@ -102,7 +98,7 @@ function dimensions(){return reading?{width:innerWidth,height:innerHeight}:{widt
 function fit(){
  if(!renderer)return;
  const size=dimensions();
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<=959?1.5:2));
  renderer.setSize(size.width,size.height,false);camera.aspect=size.width/size.height;camera.updateProjectionMatrix();
  particles.material.uniforms.uDpr.value=renderer.getPixelRatio();restart();
 }
@@ -120,7 +116,6 @@ function initScene(){
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
 BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);document.body.classList.add('gl');document.body.dataset.codexReady='true';if(reading)makeRig();
 }
-rendererCanvas.addEventListener('codex-capture',()=>{renderer.render(scene,camera);rendererCanvas.dataset.snapshot=rendererCanvas.toDataURL()});
 function textTexture(title,body,n){
  const cv=document.createElement('canvas');cv.width=768;cv.height=1152;const g=cv.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,768,1152);
  g.strokeStyle='#bfa36b';g.beginPath();g.moveTo(52,105);g.lineTo(715,105);g.stroke();g.fillStyle='#806a36';g.font='20px Instrument Sans, sans-serif';g.fillText('M A C K E N Z I E   /   E D I T I O N S',52,76);

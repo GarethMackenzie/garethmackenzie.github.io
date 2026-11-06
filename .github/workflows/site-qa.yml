@@ -28,6 +28,16 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Verify generated assets are current
+        run: |
+          python -m pip install --disable-pip-version-check Pillow fonttools brotli
+          python tools/build_home_social_card.py
+          python tools/build_cover_images.py
+          python tools/apply_technical_seo.py
+          python tools/generate_social_cards.py
+          python tools/final_hardening.py
+          git diff --exit-code
+
       - name: Source and structure audit
         run: python tools/site_qa.py
 
@@ -58,7 +68,9 @@ jobs:
       - name: Codex rendered interaction and capture audit
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: node tools/codex_qa.mjs
+        run: |
+          node tools/codex_qa.mjs
+          python tools/check_reader_captures.py
 
       - name: Upload Codex visual review
         if: always()
