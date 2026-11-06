@@ -168,7 +168,7 @@ function layout(dt){
   shadow.scale.setScalar(g.scale.x);shadow.material.opacity=mix(shadow.material.opacity,reading?0:1,speed);
  });
  particles.position.set(heroX,mobile?-half*.35:0,-1.3);
- particles.rotation.y=.3;particles.scale.setScalar(mobile?.62:1.07);
+ particles.rotation.y=.3;particles.scale.setScalar(mobile?.45:1.07);
  particles.material.uniforms.uOpacity.value=mix(particles.material.uniforms.uOpacity.value,reading?0:1,speed);
 }
 function animate(ms){

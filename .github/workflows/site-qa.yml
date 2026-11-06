@@ -60,25 +60,39 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/codex_qa.mjs
 
+      - name: Upload Codex visual review
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: codex-visual-review
+          path: qa-reports/codex/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Browser accessibility and responsive audit
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/browser_qa.mjs
 
       - name: Semantic and lazy-load audit
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/semantic_qa.mjs
 
       - name: Install Firefox and WebKit
+        if: ${{ !cancelled() }}
         run: npx playwright install --with-deps firefox webkit
 
       - name: Cross-browser audit (Firefox and WebKit)
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/cross_browser_qa.mjs
 
       - name: Run Lighthouse lab audits
+        if: ${{ !cancelled() }}
         run: |
           mkdir -p qa-reports/lighthouse
           export CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
@@ -89,6 +103,7 @@ jobs:
           npx lighthouse http://127.0.0.1:4173/insights/capital-allocation/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/article.json
 
       - name: Check Lighthouse budgets
+        if: ${{ !cancelled() }}
         run: python tools/check_lighthouse.py
 
       - name: Upload QA reports

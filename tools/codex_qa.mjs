@@ -10,12 +10,12 @@ async function test(name,fn){try{await fn();results.push(name);console.log('PASS
 const settle=page=>page.waitForTimeout(1300);
 async function start(context){
  await context.addInitScript(()=>localStorage.setItem('built-analytics-consent','declined'));
- const page=await context.newPage();await page.goto(url,{waitUntil:'networkidle'});return page;
+ const page=await context.newPage();page.testErrors=[];page.on('pageerror',e=>page.testErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')page.testErrors.push(m.text())});page.on('requestfailed',r=>page.testErrors.push(r.url()+': '+r.failure()?.errorText));await page.goto(url,{waitUntil:'networkidle'});return page;
 }
 for(const width of [320,390,768,1024,1440,1920]){
  await test(`${width}px: scene, two-way scroll, all readers, focus and screenshots`,async()=>{
  const context=await browser.newContext({viewport:{width,height:width<768?844:1000},recordVideo:width===1440?{dir:`${out}/recording`,size:{width:1440,height:1000}}:undefined,hasTouch:width<768});
- const page=await start(context),errors=[];
+ const page=await start(context),errors=page.testErrors;
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`)});
  try{
  await page.waitForFunction(()=>document.body.dataset.codexReady==='true',{},{timeout:20000});await settle(page);
