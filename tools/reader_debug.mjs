@@ -7,7 +7,7 @@ await p.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await p.waitFor
 await p.screenshot({path:'qa-reports/reader-debug/initial.png'});
 const snap=await p.evaluate(()=>{const cv=document.getElementById('stage');cv.dispatchEvent(new Event('codex-capture'));return cv.dataset.snapshot});
 fs.writeFileSync('qa-reports/reader-debug/canvas.png',Buffer.from(snap.split(',')[1],'base64'));
-await p.addStyleTag({content:'#paper{overflow:visible!important}'});await p.screenshot({path:'qa-reports/reader-debug/overflow-visible.png'});
-await p.addStyleTag({content:'#paper{overflow:auto!important;transform:translateZ(0);contain:paint}'});await p.screenshot({path:'qa-reports/reader-debug/paper-layer.png'});
-await p.addStyleTag({content:'#paper{display:none!important}'});await p.screenshot({path:'qa-reports/reader-debug/no-paper.png'});
+await p.addStyleTag({content:'#paper{background:transparent!important}'});await p.screenshot({path:'qa-reports/reader-debug/transparent.png'});
+await p.addStyleTag({content:'#paper{background:#0d0d0c!important;clip-path:inset(0)}'});await p.screenshot({path:'qa-reports/reader-debug/clipped.png'});
+await p.addStyleTag({content:'#paper{position:fixed!important;clip-path:none}'});await p.screenshot({path:'qa-reports/reader-debug/fixed.png'});
 await b.close();
