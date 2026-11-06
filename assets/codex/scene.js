@@ -114,12 +114,13 @@ function fallback(message){
  $('status').textContent='The text reader remains available.';
 }
 function initScene(){
- renderer=new T.WebGLRenderer({canvas:rendererCanvas,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
+ renderer=new T.WebGLRenderer({canvas:rendererCanvas,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
 BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);document.body.classList.add('gl');document.body.dataset.codexReady='true';if(reading)makeRig();
 }
+rendererCanvas.addEventListener('codex-capture',()=>{renderer.render(scene,camera);rendererCanvas.dataset.snapshot=rendererCanvas.toDataURL()});
 function textTexture(title,body,n){
  const cv=document.createElement('canvas');cv.width=768;cv.height=1152;const g=cv.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,768,1152);
  g.strokeStyle='#bfa36b';g.beginPath();g.moveTo(52,105);g.lineTo(715,105);g.stroke();g.fillStyle='#806a36';g.font='20px Instrument Sans, sans-serif';g.fillText('M A C K E N Z I E   /   E D I T I O N S',52,76);
@@ -160,7 +161,7 @@ function layout(dt){
   g.scale.setScalar(mix(g.scale.x,targetScale,speed));g.visible=g.scale.x>.008;
   g.rotation.y=mix(g.rotation.y,focus?.035:(i===1?-.42:-.45),speed);
   g.rotation.x=mix(g.rotation.x,focus?-.085:-.035,speed);
-  g.userData.hinge.rotation.y=mix(g.userData.hinge.rotation.y,focus?-Math.PI+.045:0,speed);
+  g.userData.hinge.rotation.y=mix(g.userData.hinge.rotation.y,focus?-Math.PI-.06:0,speed);
   const brightness=focus?1:mix(.48,1,weight);
   g.userData.materials.forEach((m,j)=>m.color.lerp(g.userData.baseColors[j].clone().multiplyScalar(brightness),speed));
   const shadow=g.userData.shadow;shadow.visible=g.visible;
@@ -227,7 +228,7 @@ function turn(dir){
 }
 function openReader(index){
  if(reading)return;
- savedFocus=document.activeElement;selected=index;folio=0;reading=true;
+ savedFocus=document.activeElement;selected=index;folio=0;reading=true;if(renderer)renderer.shadowMap.enabled=true;
  scroller?.stop();document.body.classList.add('reader-open');
  $('bookLabel').textContent=BOOKS[index].title;
  if(renderer&&!contextFailed)makeRig();
@@ -236,7 +237,7 @@ function openReader(index){
 function closeReader(){
  if(!reading)return;
  turnTween?.kill();
- reading=false;transitioning=false;dragging=null;
+ reading=false;transitioning=false;dragging=null;if(renderer)renderer.shadowMap.enabled=false;
  dialog.close();experience.prepend(rendererCanvas);document.body.classList.remove('reader-open');scroller?.start();
  // The reader meshes disappear immediately, while the case eases closed.
  dropRig();fit();restart();savedFocus?.focus({preventScroll:true});
