@@ -32,6 +32,17 @@ for (const [name, engine] of [['firefox', firefox], ['webkit', webkit]]) {
       if (state.webFontsLoaded < 2) fail(`${name} ${width}px ${route}: web fonts did not load (${state.webFontsLoaded})`);
       if (state.brokenImages) fail(`${name} ${width}px ${route}: ${state.brokenImages} broken image(s)`);
     }
+    await page.goto(`${baseURL}/`, {waitUntil:'networkidle'});
+    for(const book of [0,1,2]) {
+      await page.locator(`.edition-index [data-open="${book}"]`).click();
+      if(!(await page.locator('#reader').evaluate(el=>el.open))) fail(`${name}: reader ${book} failed to open`);
+      if(book<2) {
+        await page.keyboard.press('ArrowRight');
+        await page.waitForFunction(()=>document.getElementById('folioNo').textContent.startsWith('Page 2'));
+      }
+      await page.keyboard.press('Escape');
+      if(!(await page.locator(`.edition-index [data-open="${book}"]`).evaluate(el=>el===document.activeElement))) fail(`${name}: reader focus was not restored`);
+    }
     if (errors.length) fail(`${name} ${width}px: script errors ${errors.slice(0, 3).join(' | ')}`);
     if (width === 390) {
       await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });

@@ -214,7 +214,6 @@ async function testAuthorPhoto(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const checks = [
-    ['/', '.stage-plate img'],
     ['/about/', '.author-portrait img'],
     ['/media/', '.media-assets-grid figure:last-child img'],
   ];
@@ -242,7 +241,7 @@ async function testAuthorPhoto(browser) {
     }
   }
   await context.close();
-  note('author portrait framing (at most a 2% edge trim) checked on Home, About and Media');
+  note('author portrait framing (at most a 2% edge trim) checked on About and Media');
 }
 
 async function testTextZoom(browser) {

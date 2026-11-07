@@ -8,7 +8,7 @@ PERSON_ID = f'{SITE}/about/#person'
 SOCIAL = f'{SITE}/assets/social-card.jpg'
 SOCIAL_ALT = 'BUILT: How Wealth Is Deliberately Constructed by Gareth Andrew Mackenzie'
 HOME_SOCIAL = f'{SITE}/assets/social-card-home.jpg'
-HOME_SOCIAL_ALT = 'Portrait of Gareth Andrew Mackenzie, author, writer and systems thinker, beside the cover of his book BUILT: How Wealth Is Deliberately Constructed'
+HOME_SOCIAL_ALT = 'Gareth Andrew Mackenzie — BUILT and When Advantage Expires'
 
 ESSAYS = [
     ('capital-allocation', 'Capital Allocation Is the Operating System of Wealth', 'Capital allocation'),
@@ -63,6 +63,8 @@ def write(path: Path, text: str) -> None:
 
 def standardize_social(path: Path, alt: str = SOCIAL_ALT, image: str | None = None) -> None:
     text = path.read_text(encoding='utf-8')
+    if path.relative_to(ROOT).as_posix() in ('about/index.html', 'books/index.html', 'media/index.html'):
+        image, alt = HOME_SOCIAL, HOME_SOCIAL_ALT
     if image:
         text = set_or_add_meta(text, 'og:image', image, 'property')
         text = set_or_add_meta(text, 'twitter:image', image, 'name')
@@ -97,7 +99,7 @@ def link_person_entity(text: str) -> str:
 
 # Main-page social metadata consistency.
 standardize_social(ROOT / 'index.html', HOME_SOCIAL_ALT, HOME_SOCIAL)
-for relative in ['built/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
+for relative in ['built/index.html', 'books/index.html', 'about/index.html', 'media/index.html', 'contact/index.html']:
     standardize_social(ROOT / relative)
 
 # Keep legal pages visually consistent while intentionally remaining noindex.

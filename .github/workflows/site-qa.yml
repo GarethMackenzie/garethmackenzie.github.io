@@ -28,6 +28,16 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Verify generated assets are current
+        run: |
+          python -m pip install --disable-pip-version-check Pillow fonttools brotli
+          python tools/build_home_social_card.py
+          python tools/build_cover_images.py
+          python tools/apply_technical_seo.py
+          python tools/generate_social_cards.py
+          python tools/final_hardening.py
+          git diff --exit-code
+
       - name: Source and structure audit
         run: python tools/site_qa.py
 
@@ -55,36 +65,43 @@ jobs:
           cat /tmp/built-site.log
           exit 1
 
+      - name: Codex rendered interaction and capture audit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node tools/codex_qa.mjs
+          python tools/check_reader_captures.py
+
+      - name: Upload Codex visual review
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: codex-visual-review
+          path: qa-reports/codex/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Browser accessibility and responsive audit
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/browser_qa.mjs
 
       - name: Semantic and lazy-load audit
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/semantic_qa.mjs
 
       - name: Install Firefox and WebKit
+        if: ${{ !cancelled() }}
         run: npx playwright install --with-deps firefox webkit
 
       - name: Cross-browser audit (Firefox and WebKit)
+        if: ${{ !cancelled() }}
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node tools/cross_browser_qa.mjs
-
-      - name: Run Lighthouse lab audits
-        run: |
-          mkdir -p qa-reports/lighthouse
-          export CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
-          echo "Chrome: ${CHROME_PATH:-auto-detect}"
-          npx lighthouse http://127.0.0.1:4173/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/home.json
-          npx lighthouse http://127.0.0.1:4173/built/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/built.json
-          npx lighthouse http://127.0.0.1:4173/insights/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/insights.json
-          npx lighthouse http://127.0.0.1:4173/insights/capital-allocation/ --quiet --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/article.json
-
-      - name: Check Lighthouse budgets
-        run: python tools/check_lighthouse.py
 
       - name: Upload QA reports
         if: always()
@@ -93,4 +110,54 @@ jobs:
           name: site-qa-reports
           path: qa-reports/
           if-no-files-found: ignore
+          retention-days: 14
+
+  performance:
+    name: Performance budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+      - name: Install Lighthouse
+        run: npm install --no-save lighthouse
+      - name: Start site
+        run: |
+          python3 -m http.server 4173 > /tmp/performance-site.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Run Lighthouse lab audits
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p qa-reports/lighthouse
+          export CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          echo "Chrome: ${CHROME_PATH:-auto-detect}"
+          npx lighthouse http://127.0.0.1:4173/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/home.json
+          npx lighthouse http://127.0.0.1:4173/built/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/built.json
+          npx lighthouse http://127.0.0.1:4173/insights/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/insights.json
+          npx lighthouse http://127.0.0.1:4173/insights/capital-allocation/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/article.json
+
+      - name: Separate raw traces from score reports
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p qa-reports/lighthouse/traces
+          mv qa-reports/lighthouse/*-0.trace.json qa-reports/lighthouse/*-0.devtoolslog.json qa-reports/lighthouse/traces/
+
+      - name: Check Lighthouse budgets
+        if: ${{ !cancelled() }}
+        run: python tools/check_lighthouse.py
+
+      - name: Upload performance traces
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: performance-reports
+          path: qa-reports/lighthouse/
           retention-days: 14
