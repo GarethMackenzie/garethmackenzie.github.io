@@ -2,7 +2,8 @@
 const BOOKS=window.MACKENZIE_BOOKS;
 const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
-let turnTween;
+let turnTween, sceneReady=false;
+const coverLoads=[];
 const experience=document.getElementById("experience");
 let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
@@ -35,10 +36,10 @@ function coverTexture(url){
  const canvas=document.createElement('canvas');const width=innerWidth<=959?400:800,height=width*1.5;canvas.width=width;canvas.height=height;
  const context=canvas.getContext('2d');context.fillStyle='#EFECE4';context.fillRect(0,0,width,height);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
- const image=new Image();image.onload=()=>{
+ const image=new Image();let loaded;coverLoads.push(new Promise(resolve=>loaded=resolve));image.onload=()=>{
   const scale=Math.min(width/image.width,height/image.height),w=image.width*scale,h=image.height*scale;
-  context.drawImage(image,(width-w)/2,(height-h)/2,w,h);texture.needsUpdate=true;restart();
- };image.onerror=()=>fallback('A cover could not be loaded.');image.src=url;return texture;
+  context.drawImage(image,(width-w)/2,(height-h)/2,w,h);texture.needsUpdate=true;loaded();
+ };image.onerror=()=>{loaded();fallback('A cover could not be loaded.');};image.src=url;return texture;
 }
 function box(w,h,d,mat){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.castShadow=m.receiveShadow=true;return m}
 function makeBook(b,index){
@@ -109,12 +110,20 @@ function fallback(message){
  rendererCanvas.style.visibility='hidden';
  $('status').textContent='The text reader remains available.';
 }
-function initScene(){
+async function initScene(){
  renderer=new T.WebGLRenderer({canvas:rendererCanvas,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
-BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);document.body.classList.add('gl');document.body.dataset.codexReady='true';if(reading)makeRig();
+BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);
+ await Promise.all(coverLoads);
+ // Compile off the render path where KHR_parallel_shader_compile is available.
+ // Keep the semantic covers visible until a complete frame is ready.
+ await renderer.compileAsync(scene,camera);
+ if(contextFailed)return;
+ sceneReady=true;layout(100);renderer.render(scene,camera);
+ document.body.classList.add('gl');document.body.dataset.codexReady='true';
+ if(reading){makeRig();restart()}else{activeUntil=0;frame=requestAnimationFrame(animate);}
 }
 function textTexture(title,body,n){
  const cv=document.createElement('canvas');cv.width=768;cv.height=1152;const g=cv.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,768,1152);
@@ -169,7 +178,7 @@ function layout(dt){
 }
 function animate(ms){
  frame=0;
- if(!renderer||contextFailed||document.hidden||(!regionVisible&&!reading))return;
+ if(!renderer||!sceneReady||contextFailed||document.hidden||(!regionVisible&&!reading))return;
  if(!reduced.matches&&ms-lastRender<33){frame=requestAnimationFrame(animate);return;}
  const dt=Math.min(.05,(ms-previous)/1000||.016);previous=ms;lastRender=ms;
  if(!reduced.matches&&!reading)time+=dt;
@@ -182,7 +191,7 @@ function animate(ms){
  });
  if(!reduced.matches&&ms<activeUntil)frame=requestAnimationFrame(animate);
 }
-function restart(){activeUntil=performance.now()+1500;if(!frame&&renderer&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
+function restart(){activeUntil=performance.now()+1500;if(!frame&&renderer&&sceneReady&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
 
 function cue(){
  if(muted)return;
@@ -287,7 +296,7 @@ rendererCanvas.addEventListener('webglcontextrestored',()=>{
 reduced.addEventListener('change',()=>{scroller.options.smoothWheel=!reduced.matches;restart()});
 initScroll();
 document.fonts.ready.then(()=>{
- const start=()=>{try{initScene();restart()}catch(error){renderer?.dispose();renderer=null;fallback(error);}};
+ const start=async()=>{try{await initScene()}catch(error){renderer?.dispose();renderer=null;fallback(error);}};
  if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1200});else setTimeout(start,100);
 });
 addEventListener('pagehide',event=>{
