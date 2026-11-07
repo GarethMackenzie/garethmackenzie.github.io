@@ -84,8 +84,8 @@ for i, (slug, title) in enumerate(series):
 
         nav = (
             '<nav class="article-nav" aria-label="More essays">'
-            f'<a href="{left_href}" aria-label="{left_label}"><span>{left_span}</span><strong>{left_title}</strong></a>'
-            f'<a href="{right_href}" aria-label="{right_label}"><span>{right_span}</span><strong>{right_title}</strong></a>'
+            f'<a href="{left_href}"><span>{left_span}</span><strong>{left_title}</strong></a>'
+            f'<a href="{right_href}"><span>{right_span}</span><strong>{right_title}</strong></a>'
             '</nav>'
         )
         return re.sub(r'<nav class="article-nav" aria-label="More essays">.*?</nav>', nav, text, count=1, flags=re.S)

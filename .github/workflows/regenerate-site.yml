@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'assets/book-cover.jpg'
+      - 'assets/when-advantage-expires.jpg'
+      - 'when-advantage-expires/index.html'
+      - 'books/index.html'
+      - 'tools/build_home_social_card.py'
       - 'index.html'
       - 'built/index.html'
       - 'about/index.html'
@@ -45,10 +49,11 @@ jobs:
           python-version: '3.12'
 
       - name: Install image tooling
-        run: python -m pip install --disable-pip-version-check Pillow
+        run: python -m pip install --disable-pip-version-check Pillow fonttools brotli
 
       - name: Regenerate derived site files
         run: |
+          python tools/build_home_social_card.py
           python tools/build_cover_images.py
           python tools/apply_technical_seo.py
           python tools/generate_social_cards.py

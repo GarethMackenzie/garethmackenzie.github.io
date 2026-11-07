@@ -1,9 +1,5 @@
-"""Build the author-led homepage social card (assets/social-card-home.jpg, 1200x630).
-
-Gareth's portrait and name lead; BUILT sits beside the portrait as the current flagship work, echoing the
-homepage hero. The dedicated BUILT page keeps its book-led card (assets/social-card.jpg).
-Uses the site's own fonts (assets/fonts, converted to temporary static TTFs) and portrait/cover assets.
-Requires: pip install pillow fonttools brotli. Run from the repository root: python tools/build_home_social_card.py
+"""Build the obsidian two-book homepage social card from original covers and site fonts.
+Requires Pillow, fonttools and brotli. Run from the repository root.
 """
 import tempfile
 from pathlib import Path
@@ -14,7 +10,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 W, H = 1200, 630
-GROUND, INK, INK2, GOLD, GOLD_HI = (14, 18, 22), (244, 238, 226), (195, 197, 198), (217, 178, 115), (239, 207, 155)
+GROUND, INK, INK2, GOLD, GOLD_HI = (13, 13, 12), (244, 238, 226), (195, 197, 198), (217, 178, 115), (239, 207, 155)
 
 
 def static_font(name: str, axes: dict, directory: Path) -> Path:
@@ -52,38 +48,18 @@ def main() -> None:
         tracked(draw, (72, 100), "AUTHOR · WRITER · SYSTEMS THINKER", f_label, GOLD, 3.2)
         draw.text((72, 134), "Gareth Andrew", font=f_name, fill=INK)
         draw.text((72, 212), "Mackenzie.", font=f_name, fill=GOLD_HI)
-        draw.text((72, 336), "Author of BUILT, writing about wealth,", font=f_lead, fill=INK2)
-        draw.text((72, 372), "systems, risk and decision-making.", font=f_lead, fill=INK2)
+        draw.text((72, 336), "On wealth, advantage", font=f_lead, fill=INK2)
+        draw.text((72, 372), "and what comes next.", font=f_lead, fill=INK2)
         draw.line([(72, 520), (140, 520)], fill=GOLD, width=2)
         tracked(draw, (72, 536), "MACKENZIEBOOKS.BBROOT.COM", f_url, (142, 147, 154), 2.4)
 
-        # Right: portrait plate, tinted like the homepage (multiply with warm paper).
-        portrait = Image.open(ROOT / "assets" / "gareth-mackenzie-author.jpeg").convert("RGB")
-        pw = 450
-        ph = round(pw * portrait.height / portrait.width)
-        portrait = portrait.resize((pw, ph), Image.LANCZOS)
-        portrait = ImageChops.multiply(portrait, Image.new("RGB", portrait.size, (233, 224, 205)))
-        px, py = 610, 100
-        canvas.paste(portrait, (px, py))
-
-        # Flagship cover overlapping the plate's lower right, with a soft contact shadow.
-        cover = Image.open(ROOT / "assets" / "book-cover.jpg").convert("RGB")
-        cw = 170
-        ch = round(cw * cover.height / cover.width)
-        cover = cover.resize((cw, ch), Image.LANCZOS)
-        cx, cy = 1140 - cw, py + ph - 150
-        shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        ImageDraw.Draw(shadow).rectangle([cx + 6, cy + 34, cx + cw - 2, cy + ch + 26], fill=(0, 0, 0, 215))
-        shadow = shadow.filter(ImageFilter.GaussianBlur(24))
-        canvas = Image.alpha_composite(canvas.convert("RGBA"), shadow).convert("RGB")
-        canvas.paste(cover, (cx, cy))
-        draw = ImageDraw.Draw(canvas)
-        draw.rectangle([cx - 1, cy - 1, cx + cw, cy + ch], outline=(70, 74, 78), width=1)
-
-        # Book caption under the portrait: secondary to the author, same hierarchy as the hero.
-        tracked(draw, (px, py + ph + 38), "CURRENT FLAGSHIP WORK", f_label, GOLD, 2.8)
-        draw.text((px, py + ph + 60), "BUILT", font=f_book, fill=INK)
-        draw.text((px, py + ph + 116), "How Wealth Is Deliberately Constructed", font=f_sub, fill=INK2)
+        # Both verified covers, contained at their original proportions.
+        for filename, x, y, width in [('book-cover.jpg', 640, 125, 210), ('when-advantage-expires.jpg', 900, 155, 210)]:
+            cover = Image.open(ROOT / 'assets' / filename).convert('RGB')
+            height = round(width * cover.height / cover.width)
+            cover = cover.resize((width, height), Image.LANCZOS)
+            canvas.paste(cover, (x, y))
+        tracked(draw, (640, 530), 'TWO BOOKS · ONE CONTINUING INQUIRY', f_label, GOLD, 1.3)
 
         out = ROOT / "assets" / "social-card-home.jpg"
         canvas.save(out, "JPEG", quality=88, optimize=True, progressive=True, subsampling=0)
