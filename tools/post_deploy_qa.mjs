@@ -11,12 +11,12 @@ let served=false;
 for(let i=0;i<60;i++){
  try{
   const response=await fetch(`${base}/release.json?rev=${expected}&attempt=${i}`,{signal:AbortSignal.timeout(10000)});
-  if(response.ok()&&(await response.json()).commit===expected){
+  if(response.ok&&(await response.json()).commit===expected){
    let identical=true;
    for(const route of [...routes,...assets]){
     const response=await fetch(base+route+'?rev='+expected,{signal:AbortSignal.timeout(10000)});
     const local=route.endsWith('/')?route.slice(1)+'index.html':route.slice(1);
-    if(!response.ok()||hash(Buffer.from(await response.arrayBuffer()))!==hash(fs.readFileSync(local))){identical=false;break}
+    if(!response.ok||hash(Buffer.from(await response.arrayBuffer()))!==hash(fs.readFileSync(local))){identical=false;break}
    }
    if(identical){served=true;break}
   }

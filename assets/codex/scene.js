@@ -22,7 +22,14 @@ gsap.registerPlugin(ScrollTrigger);gsap.ticker.lagSmoothing(0);
 function initScroll(){
  scroller=new Lenis({smoothWheel:!reduced.matches,lerp:.13,prevent:node=>Boolean(node.closest('#reader,.nav,.consent-banner'))});
  scroller.on('scroll',ScrollTrigger.update);
- gsap.ticker.add(t=>scroller.raf(t*1000));
+ // Lenis needs frames only while input is settling, not an always-on GSAP ticker.
+ let scrollFrame=0;
+ const scrollTick=ms=>{scrollFrame=0;scroller.raf(ms);if(scroller.isScrolling)scrollFrame=requestAnimationFrame(scrollTick)};
+ const wakeScroll=()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(scrollTick)};
+ for(const event of ['wheel','touchmove','keydown','scroll'])addEventListener(event,wakeScroll,{passive:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(scrollFrame);scrollFrame=0}else wakeScroll()});
+ addEventListener('pagehide',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=0});
+ wakeScroll();
  document.body.classList.add('codex-ready');
  trigger=ScrollTrigger.create({
   trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*2,
