@@ -144,6 +144,12 @@ jobs:
           npx lighthouse http://127.0.0.1:4173/insights/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/insights.json
           npx lighthouse http://127.0.0.1:4173/insights/capital-allocation/ --quiet --save-assets --chrome-flags="--headless --no-sandbox --disable-gpu" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=qa-reports/lighthouse/article.json
 
+      - name: Separate raw traces from score reports
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p qa-reports/lighthouse/traces
+          mv qa-reports/lighthouse/*-0.trace.json qa-reports/lighthouse/*-0.devtoolslog.json qa-reports/lighthouse/traces/
+
       - name: Check Lighthouse budgets
         if: ${{ !cancelled() }}
         run: python tools/check_lighthouse.py

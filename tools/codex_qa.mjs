@@ -8,9 +8,9 @@ const browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});
 const results=[],failures=[];
 async function test(name,fn){try{await fn();results.push(name);console.log('PASS',name)}catch(e){failures.push(`${name}: ${e.stack}`);console.error('FAIL',name,e.message)}}
 const settle=page=>page.waitForTimeout(1300);
-async function start(context){
+async function start(context,{enable3D=true}={}){
  await context.addInitScript(()=>localStorage.setItem('built-analytics-consent','declined'));
- const page=await context.newPage();page.testErrors=[];page.on('pageerror',e=>page.testErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')page.testErrors.push(m.text())});page.on('requestfailed',r=>page.testErrors.push(r.url()+': '+r.failure()?.errorText));await page.goto(url,{waitUntil:'networkidle'});return page;
+ const page=await context.newPage();page.testErrors=[];page.on('pageerror',e=>page.testErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')page.testErrors.push(m.text())});page.on('requestfailed',r=>page.testErrors.push(r.url()+': '+r.failure()?.errorText));await page.goto(url,{waitUntil:'networkidle'});if(enable3D){await page.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));const opt=page.locator('.enable-3d');if(await opt.count())await opt.click()}return page;
 }
 for(const width of [320,390,768,1024,1440,1920]){
  await test(`${width}px: scene, two-way scroll, all readers, focus and screenshots`,async()=>{
@@ -65,7 +65,7 @@ await test('reduced motion: immediate poses and working reader',async()=>{
 });
 await test('WebGL unavailable: semantic cover and text reader',async()=>{
  const c=await browser.newContext();await c.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:get.call(this,type,...args)}});
- const p=await start(c);await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.screenshot({path:`${out}/fallback.png`});await c.close();
+ const p=await start(c,{enable3D:false});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.screenshot({path:`${out}/fallback.png`});await c.close();
 });
 await test('WebGL context loss and resizing during reader transition',async()=>{
  const c=await browser.newContext(),p=await start(c);await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.locator('.edition-index [data-open="0"]').click();await p.locator('#next').click();await p.setViewportSize({width:390,height:844});

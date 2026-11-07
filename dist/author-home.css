@@ -119,3 +119,6 @@ body.reader-open{overflow:hidden}
 
 /* Lenis owns interpolation while active; native smooth scrolling would compete with it. */
 html.lenis{scroll-behavior:auto!important}
+
+.enable-3d{position:absolute;right:var(--gutter);bottom:8rem;z-index:3;min-height:44px;padding:.7rem 1rem;border:1px solid var(--gold);background:var(--ground);color:var(--gold);font:500 .875rem var(--sans);cursor:pointer}
+@media(max-width:959px){.enable-3d{bottom:6.5rem}}

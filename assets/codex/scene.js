@@ -2,7 +2,7 @@
 const BOOKS=window.MACKENZIE_BOOKS;
 const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
-let turnTween, sceneReady=false;
+let turnTween, sceneReady=false, gpuContext;
 const coverLoads=[];
 const experience=document.getElementById("experience");
 let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
@@ -118,7 +118,7 @@ function fallback(message){
  $('status').textContent='The text reader remains available.';
 }
 async function initScene(){
- renderer=new T.WebGLRenderer({canvas:rendererCanvas,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
+ renderer=new T.WebGLRenderer({canvas:rendererCanvas,context:gpuContext,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
@@ -303,8 +303,21 @@ rendererCanvas.addEventListener('webglcontextrestored',()=>{
 reduced.addEventListener('change',()=>{scroller.options.smoothWheel=!reduced.matches;restart()});
 initScroll();
 document.fonts.ready.then(()=>{
- const start=async()=>{try{await initScene()}catch(error){renderer?.dispose();renderer=null;fallback(error);}};
- if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1200});else setTimeout(start,100);
+ const start=async(force=false)=>{
+  try{
+   gpuContext=rendererCanvas.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'high-performance',failIfMajorPerformanceCaveat:!force});
+   if(!gpuContext&&!force){
+    document.body.classList.add('no-gl');
+    const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
+    button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
+    button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
+    experience.append(button);document.body.dataset.codexFallback='performance';return;
+   }
+   if(!gpuContext){fallback('WebGL is unavailable. Text reader is active.');return;}
+   await initScene();document.body.classList.remove('no-gl');
+  }catch(error){renderer?.dispose();renderer=null;fallback(error);}
+ };
+ if('requestIdleCallback' in window)requestIdleCallback(()=>start(),{timeout:1200});else setTimeout(()=>start(),100);
 });
 addEventListener('pagehide',event=>{
  if(event.persisted){cancelAnimationFrame(frame);frame=0;return;}

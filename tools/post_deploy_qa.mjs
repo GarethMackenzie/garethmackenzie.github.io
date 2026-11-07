@@ -30,7 +30,7 @@ for(const width of [390,1440]){
  const c=await browser.newContext({viewport:{width,height:width===390?844:1000}});
  await c.addInitScript(()=>localStorage.setItem('built-analytics-consent','declined'));
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
- await p.goto(base,{waitUntil:'networkidle'});await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.waitForTimeout(1600);
+ await p.goto(base,{waitUntil:'networkidle'});await p.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));if(await p.locator('.enable-3d').count())await p.locator('.enable-3d').click();await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.waitForTimeout(1600);
  await p.screenshot({path:`qa-reports/production/home-${width}.png`});
  for(const i of [0,1,2]){
   await p.locator(`.edition-index [data-open="${i}"]`).click();
