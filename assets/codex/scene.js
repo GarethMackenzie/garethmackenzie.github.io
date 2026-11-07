@@ -306,7 +306,10 @@ document.fonts.ready.then(()=>{
  const start=async(force=false)=>{
   try{
    gpuContext=rendererCanvas.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'high-performance',failIfMajorPerformanceCaveat:!force});
-   if(!gpuContext&&!force){
+   const debug=gpuContext?.getExtension('WEBGL_debug_renderer_info');
+   const device=debug?gpuContext.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
+   const software=/SwiftShader|llvmpipe|softpipe|software rasterizer/i.test(device);
+   if(!force&&(!gpuContext||software)){
     document.body.classList.add('no-gl');
     const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
     button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
