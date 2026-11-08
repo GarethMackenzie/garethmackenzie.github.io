@@ -21,12 +21,20 @@ for(const width of [320,390,768,1024,1440,1920]){
  await page.waitForFunction(()=>document.body.dataset.codexReady==='true',{},{timeout:20000});await settle(page);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'horizontal overflow');
  const state=()=>page.locator('#experience').evaluate(el=>JSON.parse(el.dataset.sceneState));
- let s=await state();assert.equal(s.active,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);
+ let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert(s.third.visible);assert(s.first.z>s.third.z);assert.equal(s.atmosphere.z,-1.2);
+ if(width>=960){assert.equal(s.atmosphere.x,3.6);assert.equal(s.atmosphere.y,4.4)}
+ if(width<768){const bar=await page.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=844-15,'chapter bar overlaps bottom safe margin');assert(bar.x>=15&&bar.x+bar.width<=width-15)}
  await page.screenshot({path:`${out}/hero-${width}.png`});
  await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*1.65));await settle(page);
- s=await state();assert.equal(s.active,1);assert(s.second.z>s.first.z);
+ s=await state();assert.equal(s.active,1);assert.equal(s.transition,1);assert(s.second.z>s.first.z);assert(s.second.z>s.third.z);
  assert.equal(await page.locator('#folio-2').getAttribute('aria-hidden'),'false');
  await page.screenshot({path:`${out}/second-${width}.png`});
+ await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*2.75));await settle(page);
+ s=await state();assert.equal(s.active,2);assert.equal(s.transition,2);assert(s.third.z>s.first.z&&s.third.z>s.second.z);assert(s.third.scale>s.first.scale);assert.equal(await page.locator('#folio-3').getAttribute('aria-hidden'),'false');
+ assert.equal(await page.locator('.edition-index [data-open="2"]').getAttribute('aria-current'),'true');
+ await page.screenshot({path:`${out}/third-${width}.png`});
+ await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*1.65));await settle(page);assert.equal((await state()).transition,1);
+
  await page.evaluate(()=>window.scrollTo(0,0));await settle(page);assert.equal((await state()).active,0);
  for(const [i,title] of ['BUILT','When Advantage Expires','What Comes Next'].entries()){
   const entry=page.locator(`.edition-index [data-open="${i}"]`);await entry.click();await settle(page);
@@ -59,6 +67,22 @@ for(const width of [320,390,768,1024,1440,1920]){
  }finally{await context.close()}
  });
 }
+await test('short mobile viewports: safe chapter bar and three scroll stops',async()=>{
+ for(const [width,height] of [[320,568],[390,667]]){
+  const c=await browser.newContext({viewport:{width,height},hasTouch:true}),p=await start(c);
+  await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
+  for(const [index,offset] of [[0,0],[1,1.65],[2,2.75]]){
+   await p.evaluate(offset=>window.scrollTo(0,document.getElementById('experience').offsetHeight*offset),offset);await settle(p);
+   const bar=await p.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=height-15);assert(bar.y>=0);
+   assert.equal(await p.locator('#experience').evaluate(el=>Math.round(el.getBoundingClientRect().height)),height);
+   assert(await p.locator(`#folio-${index+1} .cta`).isVisible());
+   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+   await p.screenshot({path:`${out}/compact-${width}-${height}-${index}.png`});
+   await p.locator(`.edition-index [data-open="${index}"]`).click();assert(await p.locator('#reader').evaluate(el=>el.open));await p.keyboard.press('Escape');
+  }
+  await c.close();
+ }
+});
 await test('reduced motion: immediate poses and working reader',async()=>{
  const c=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}}),p=await start(c);
  await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.keyboard.press('Escape');await c.close();

@@ -32,6 +32,13 @@ for(const width of [390,1440]){
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto(base,{waitUntil:'networkidle'});await p.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));if(await p.locator('.enable-3d').count())await p.locator('.enable-3d').click();await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.waitForTimeout(1600);
  await p.screenshot({path:`qa-reports/production/home-${width}.png`});
+ for(const [index,offset] of [[1,1.65],[2,2.75],[0,0]]){
+  await p.evaluate(offset=>window.scrollTo(0,document.getElementById('experience').offsetHeight*offset),offset);
+  await p.waitForFunction(index=>{const s=JSON.parse(document.getElementById('experience').dataset.sceneState);return s.active===index&&s.transition===index},index);
+  await p.waitForTimeout(1300);
+  if(index===2)await p.screenshot({path:`qa-reports/production/third-${width}.png`});
+ }
+
  for(const i of [0,1,2]){
   await p.locator(`.edition-index [data-open="${i}"]`).click();
   assert(await p.locator('#reader').evaluate(el=>el.open));
