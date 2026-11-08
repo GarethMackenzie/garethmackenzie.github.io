@@ -96,8 +96,10 @@ void main(){
  gl_PointSize=clamp((3.+3.*aSeed)*uDpr/max(1.,-mv.z),1.,4.*uDpr);vSeed=aSeed;
 }`;
 const particleFragment=`
-uniform float uDark,uOpacity;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
-vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity);}`;
+uniform float uDark,uOpacity,uViewHeight,uClipTop,uClipBottom;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
+float screenY=1.-gl_FragCoord.y/uViewHeight;
+float clearText=smoothstep(uClipTop,uClipTop+.035,screenY)*(1.-smoothstep(uClipBottom-.025,uClipBottom,screenY));
+vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity*clearText);}`;
 function pointCloud(){
  const n=innerWidth<=959?24000:60000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),b=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
  let seed=81273;const rand=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);
@@ -116,7 +118,7 @@ function pointCloud(){
  s[i]=rand();}
 
  for(const [key,arr,size] of [['position',a,3],['aSand',b,3],['aHalo',c,3],['aSeed',s,1]])geom.setAttribute(key,new T.BufferAttribute(arr,size));
- const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uDark:{value:1},uOpacity:{value:1}}});
+ const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uDark:{value:1},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
  const cloud=new T.Points(geom,mat);cloud.frustumCulled=false;scene.add(cloud);return cloud;
 }
 function contactShadow(){
@@ -134,7 +136,7 @@ function fit(){
  const size=dimensions();
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<=959?1.5:2));
  renderer.setSize(size.width,size.height,false);camera.aspect=size.width/size.height;camera.updateProjectionMatrix();
- particles.material.uniforms.uDpr.value=renderer.getPixelRatio();restart();
+ particles.material.uniforms.uDpr.value=renderer.getPixelRatio();particles.material.uniforms.uViewHeight.value=renderer.domElement.height;restart();
 }
 function fallback(message){
  console.warn(message);contextFailed=true;
@@ -185,8 +187,9 @@ function layout(dt){
  if(!renderer)return;
  const mobile=innerWidth<=959,half=Math.tan(camera.fov*Math.PI/360)*camera.position.z,wide=half*camera.aspect;
  const speed=reduced.matches?1:1-Math.exp(-dt*8);
- const phone=innerWidth<768,heroX=mobile?0:wide*.48;
- const ringRadius=mobile?wide*.66:Math.min(wide*.28,1.65);
+ const phone=innerWidth<768,ringCenter=mobile?0:.48;
+ const heroX=ringCenter*wide*((camera.position.z+1.2)/camera.position.z);
+ const ringRadius=mobile?.66:.32;
  const baseY=mobile?-half*.35+(phone?.25:0):0;
  books.forEach((g,i)=>{
   const focus=reading&&i===selected,angle=(i-desired)*Math.PI*2/3;
@@ -198,7 +201,9 @@ function layout(dt){
   }
   const size=focus?(mobile?Math.min(.70,wide*.60):Math.min(1.04,wide*.34)):scrollSize;
   const targetScale=reading?(focus?size:.001):size;
-  const x=focus?(mobile?.76*size:wide*.37+.72*size):heroX+Math.sin(angle)*ringRadius;
+  const z=focus?.5:-.65+1.15*depth;
+  // Compensate for perspective so each rear cover remains legible at the sides.
+  const x=focus?(mobile?.76*size:wide*.37+.72*size):(ringCenter+Math.sin(angle)*ringRadius)*wide*((camera.position.z-z)/camera.position.z);
   let y=focus?(mobile?half*.28:0):baseY+(1-depth)*.18;
   if(phone&&mobileBounds&&!reading){
    const halfAtBook=half*(8/8.5),h=mobileBounds.height;
@@ -207,7 +212,7 @@ function layout(dt){
    y=clamp(y,Math.min(lower,upper),upper);
   }
   g.position.x=mix(g.position.x,x,speed);g.position.y=mix(g.position.y,y,speed);
-  g.position.z=mix(g.position.z,focus?.5:-.65+1.15*depth,speed);
+  g.position.z=mix(g.position.z,z,speed);
   g.scale.setScalar(mix(g.scale.x,targetScale,speed));g.visible=g.scale.x>.008;
   g.rotation.y=mix(g.rotation.y,focus?.035:(i===1?-.42:-.45),speed);
   g.rotation.x=mix(g.rotation.x,focus?-.085:-.035,speed);
@@ -218,8 +223,11 @@ function layout(dt){
   shadow.position.set(g.position.x,g.position.y-1.24*g.scale.x,g.position.z);
   shadow.scale.setScalar(g.scale.x);shadow.material.opacity=mix(shadow.material.opacity,reading?0:1,speed);
  });
- const atmosphereScale=mobile?Math.min(.62,wide*.57)*(phone?1.12:1):1;
- particles.position.set(heroX,reading?baseY:books[active].position.y,-1.2);
+ const atmosphereScale=mobile?Math.min(Math.min(.62,wide*.57)*(phone?1.12:1),books[active].scale.x/1.15):1;
+ const atmosphereY=books[active].position.y*((camera.position.z+1.2)/(camera.position.z-books[active].position.z));
+ particles.position.set(heroX,reading?baseY:atmosphereY,-1.2);
+ particles.material.uniforms.uClipTop.value=phone&&mobileBounds?clamp(mobileBounds.top/mobileBounds.height):0;
+ particles.material.uniforms.uClipBottom.value=phone&&mobileBounds?clamp(mobileBounds.bottom/mobileBounds.height):1;
  particles.rotation.y=0;particles.scale.set(3.6*atmosphereScale,4.4*atmosphereScale,.7*atmosphereScale);
  particles.material.uniforms.uOpacity.value=mix(particles.material.uniforms.uOpacity.value,reading?0:1,speed);
 }
