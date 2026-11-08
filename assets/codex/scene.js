@@ -1,24 +1,35 @@
 (()=>{
 const BOOKS=window.MACKENZIE_BOOKS;
-const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let T;
+const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
-let turnTween, sceneReady=false, gpuContext;
+let turnTween, sceneReady=false, gpuContext, mobileBounds;
 const coverLoads=[];
 const experience=document.getElementById("experience");
 let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
 const mix=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 function progress(value){
- const next=clamp(value,0,1);if(panelsReady&&Math.abs(next-desired)<.00001)return;
- panelsReady=true;desired=next;active=desired<.5?0:1;
+ const next=clamp(value,0,2);if(panelsReady&&Math.abs(next-desired)<.00001)return;
+ const oldActive=active;panelsReady=true;desired=next;active=Math.round(desired);
  document.querySelectorAll('.folio').forEach((panel,i)=>{
   panel.setAttribute('aria-hidden',String(i!==active));panel.inert=i!==active;
  });
  document.querySelectorAll('.edition-index [data-open]').forEach((link,i)=>link.setAttribute('aria-current',String(i===active)));
  if(particles)particles.material.uniforms.uTransitionProgress.value=desired;
+ if(oldActive!==active||!mobileBounds)measureComposition();
  restart();
 }
 gsap.registerPlugin(ScrollTrigger);gsap.ticker.lagSmoothing(0);
+// Each edition has a resting interval, with a complete morph between intervals.
+function editionProgress(p){return p<.5?clamp((p-.18)/.20):1+clamp((p-.62)/.20)}
+function measureComposition(){
+ if(innerWidth>=768){mobileBounds=null;return;}
+ const intro=document.querySelectorAll('.folio .copy')[active].getBoundingClientRect();
+ const bar=document.querySelector('.edition-index').getBoundingClientRect();
+ const stage=experience.getBoundingClientRect();
+ mobileBounds={top:intro.bottom-stage.top+12,bottom:Math.min(stage.height,bar.top-stage.top)-12,height:stage.height};
+}
 function initScroll(){
  scroller=new Lenis({smoothWheel:!reduced.matches,lerp:.13,prevent:node=>Boolean(node.closest('#reader,.nav,.consent-banner'))});
  scroller.on('scroll',ScrollTrigger.update);
@@ -32,12 +43,12 @@ function initScroll(){
  wakeScroll();
  document.body.classList.add('codex-ready');
  trigger=ScrollTrigger.create({
-  trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*2,
+  trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*3,
   pin:true,anticipatePin:1,invalidateOnRefresh:true,
-  onUpdate:self=>{if(!reading)progress(clamp((self.progress-.25)/.5))},
-  onToggle:self=>{regionVisible=self.isActive||self.progress===0;restart()}
+  onUpdate:self=>{if(!reading)progress(editionProgress(self.progress))},
+  onToggle:self=>{regionVisible=self.isActive||self.progress===0;document.body.classList.toggle('codex-offstage',!regionVisible);restart()}
  });
- progress(clamp((trigger.progress-.25)/.5));
+ progress(editionProgress(trigger.progress));
 }
 function coverTexture(url){
  const canvas=document.createElement('canvas');const width=innerWidth<=959?400:800,height=width*1.5;canvas.width=width;canvas.height=height;
@@ -69,29 +80,46 @@ varying float vSeed;
 // Analytic curl of a smooth 3D vector potential. Divergence-free motion avoids
 // the many finite-difference noise samples that stalled low-powered renderers.
 vec3 curl(vec3 p){return vec3(cos(p.y)+sin(p.z),cos(p.z)+sin(p.x),cos(p.x)+sin(p.y));}
-void main(){float t=uTransitionProgress;float a=smoothstep(0.,1.,t),b=smoothstep(1.,2.,t);vec3 sand=aSand;
-float y=fract(aSeed+uTime*.10)*2.-1.;sand.y=-y*1.65;sand.xz*=.12+abs(y)*.34;
-vec3 p=position+sin(3.14159*a)*(sand-position)*.35;
-float motion=sin(3.14159*fract(t));if(motion>.01)p+=curl(p*.86+vec3(uTime*.12))*.045*motion;
-p.y+=b*(1.-b)*1.1;
-vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp((3.+3.*aSeed)*uDpr/max(1.,-mv.z),1.,4.*uDpr);vSeed=aSeed;}`;
+void main(){
+ float t=clamp(uTransitionProgress,0.,2.);
+ float towerToSand=smoothstep(0.,1.,t),sandToHalo=smoothstep(1.,2.,t);
+ vec3 sand=aSand;
+ float y=.5-fract(aSeed+uTime*.13);
+ sand.y=y;
+ // Two falling streams surround the cover, narrowing towards an hourglass waist.
+ sand.x=sign(aSand.x)*(.28+.32*abs(y))+aSand.x*.16;
+ sand.z*=.2+abs(y);
+ vec3 p=mix(position,sand,towerToSand);
+ p=mix(p,aHalo,sandToHalo);
+ float motion=sin(3.14159*fract(t));
+ p+=curl(p*2.+vec3(uTime*.12))*.018*motion;
+ vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;
+ gl_PointSize=clamp((3.+3.*aSeed)*uDpr/max(1.,-mv.z),1.,4.*uDpr);vSeed=aSeed;
+}`;
 const particleFragment=`
-uniform float uDark,uOpacity;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
-vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity);}`;
+uniform float uDark,uOpacity,uViewHeight,uClipTop,uClipBottom;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
+float screenY=1.-gl_FragCoord.y/uViewHeight;
+float clearText=smoothstep(uClipTop,uClipTop+.035,screenY)*(1.-smoothstep(uClipBottom-.025,uClipBottom,screenY));
+vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity*clearText);}`;
 function pointCloud(){
  const n=innerWidth<=959?24000:60000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),b=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
  let seed=81273;const rand=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);
  for(let i=0;i<n;i++){
- const u=rand(),y=-1.5+u*3.9;
- const spireRadius=.48*Math.pow(1-u,.65)+.015;
- const rib=Math.floor(rand()*8),angle=rib*Math.PI/4+(rand()-.5)*.10;
- const ribRadius=spireRadius*(.82+.18*rand());
- let x=ribRadius*Math.cos(angle),z=ribRadius*Math.sin(angle);
- if(rand()<.24){const ringAngle=rand()*Math.PI*2;x=spireRadius*Math.cos(ringAngle);z=spireRadius*Math.sin(ringAngle);}
- a.set([x,y,z],3*i);let ang=rand()*Math.PI*2,r=Math.sqrt(rand());b.set([r*Math.cos(ang),0,r*Math.sin(ang)],3*i);
- let radius=1.6+rand()*.53;c.set([radius*Math.cos(ang),.48*radius*Math.sin(ang)+.22*Math.cos(ang),.7*radius*Math.sin(ang)],3*i);s[i]=rand();}
+ const u=rand(),kind=rand(),y=u-.5;
+ let x,z=(rand()-.5)*.35;
+ if(kind<.45){x=(rand()<.5?-1:1)*(.34-.07*u)+(rand()-.5)*.035;}
+ else if(kind<.72){x=(rand()-.5)*.94;}
+ else{x=(rand()-.5)*(.42*(1-u)+.035);}
+ const towerY=kind>=.45&&kind<.72?Math.round(y*12)/12:y;
+ a.set([x,towerY,z],3*i);
+ const angle=rand()*Math.PI*2,r=Math.sqrt(rand());
+ b.set([r*Math.cos(angle)*.5,y,r*Math.sin(angle)*.35],3*i);
+ const radius=.45+rand()*.035;
+ c.set([radius*Math.cos(angle),radius*Math.sin(angle)+.06*Math.cos(angle),radius*.55*Math.sin(angle)],3*i);
+ s[i]=rand();}
+
  for(const [key,arr,size] of [['position',a,3],['aSand',b,3],['aHalo',c,3],['aSeed',s,1]])geom.setAttribute(key,new T.BufferAttribute(arr,size));
- const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uDark:{value:1},uOpacity:{value:1}}});
+ const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uDark:{value:1},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
  const cloud=new T.Points(geom,mat);cloud.frustumCulled=false;scene.add(cloud);return cloud;
 }
 function contactShadow(){
@@ -104,11 +132,12 @@ function contactShadow(){
 }
 function dimensions(){return reading?{width:innerWidth,height:innerHeight}:{width:experience.clientWidth,height:experience.clientHeight};}
 function fit(){
+ measureComposition();
  if(!renderer)return;
  const size=dimensions();
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<=959?1.5:2));
  renderer.setSize(size.width,size.height,false);camera.aspect=size.width/size.height;camera.updateProjectionMatrix();
- particles.material.uniforms.uDpr.value=renderer.getPixelRatio();restart();
+ particles.material.uniforms.uDpr.value=renderer.getPixelRatio();particles.material.uniforms.uViewHeight.value=renderer.domElement.height;restart();
 }
 function fallback(message){
  console.warn(message);contextFailed=true;
@@ -159,16 +188,32 @@ function layout(dt){
  if(!renderer)return;
  const mobile=innerWidth<=959,half=Math.tan(camera.fov*Math.PI/360)*camera.position.z,wide=half*camera.aspect;
  const speed=reduced.matches?1:1-Math.exp(-dt*8);
- const heroX=mobile?-.22:wide*.32,backX=mobile?wide*.62:wide*.78;
+ const phone=innerWidth<768,ringCenter=mobile?0:.48;
+ const heroX=ringCenter*wide*((camera.position.z+1.2)/camera.position.z);
+ const ringRadius=mobile?.66:.32;
+ const baseY=mobile?-half*.35+(phone?.25:0):0;
  books.forEach((g,i)=>{
-  const focus=reading&&i===selected,weight=i<2?1-Math.abs(i-desired):0;
-  const scrollSize=(.85+.30*weight)*(mobile?Math.min(.62,wide*.57):1);
+  const focus=reading&&i===selected,angle=(i-desired)*Math.PI*2/3;
+  const depth=Math.cos(angle),weight=clamp((depth+.5)/1.5);
+  let scrollSize=(.85+.30*weight)*(mobile?Math.min(.62,wide*.57):1)*(phone?1.12:1);
+  if(phone&&mobileBounds&&!reading){
+   const available=Math.max(40,mobileBounds.bottom-mobileBounds.top);
+   scrollSize=Math.min(scrollSize,available/mobileBounds.height*(2*half*(8/8.5))/2.55);
+  }
   const size=focus?(mobile?Math.min(.70,wide*.60):Math.min(1.04,wide*.34)):scrollSize;
-  const targetScale=reading?(focus?size:.001):(i<2?size:.001);
-  const x=focus?(mobile?.76*size:wide*.37+.72*size):mix(backX,heroX,weight);
-  const y=focus?(mobile?half*.28:0):(mobile?-half*.35:0);
+  const targetScale=reading?(focus?size:.001):size;
+  const z=focus?.5:-.65+1.15*depth;
+  // Compensate for perspective so each rear cover remains legible at the sides.
+  const x=focus?(mobile?.76*size:wide*.37+.72*size):(ringCenter+Math.sin(angle)*ringRadius)*wide*((camera.position.z-z)/camera.position.z);
+  let y=focus?(mobile?half*.28:0):baseY+(1-depth)*.18;
+  if(phone&&mobileBounds&&!reading){
+   const halfAtBook=half*(8/8.5),h=mobileBounds.height;
+   const upper=(.5-mobileBounds.top/h)*2*halfAtBook-1.25*size;
+   const lower=(.5-mobileBounds.bottom/h)*2*halfAtBook+1.25*size;
+   y=clamp(y,Math.min(lower,upper),upper);
+  }
   g.position.x=mix(g.position.x,x,speed);g.position.y=mix(g.position.y,y,speed);
-  g.position.z=mix(g.position.z,focus?.5:mix(-.9,.5,weight),speed);
+  g.position.z=mix(g.position.z,z,speed);
   g.scale.setScalar(mix(g.scale.x,targetScale,speed));g.visible=g.scale.x>.008;
   g.rotation.y=mix(g.rotation.y,focus?.035:(i===1?-.42:-.45),speed);
   g.rotation.x=mix(g.rotation.x,focus?-.085:-.035,speed);
@@ -179,8 +224,12 @@ function layout(dt){
   shadow.position.set(g.position.x,g.position.y-1.24*g.scale.x,g.position.z);
   shadow.scale.setScalar(g.scale.x);shadow.material.opacity=mix(shadow.material.opacity,reading?0:1,speed);
  });
- particles.position.set(heroX,mobile?-half*.35:0,-1.3);
- particles.rotation.y=.3;particles.scale.setScalar(mobile?.45:1.07);
+ const atmosphereScale=mobile?Math.min(Math.min(.62,wide*.57)*(phone?1.12:1),books[active].scale.x/1.15):1;
+ const atmosphereY=books[active].position.y*((camera.position.z+1.2)/(camera.position.z-books[active].position.z));
+ particles.position.set(heroX,reading?baseY:atmosphereY,-1.2);
+ particles.material.uniforms.uClipTop.value=phone&&mobileBounds?clamp(mobileBounds.top/mobileBounds.height):0;
+ particles.material.uniforms.uClipBottom.value=phone&&mobileBounds?clamp(mobileBounds.bottom/mobileBounds.height):1;
+ particles.rotation.y=0;particles.scale.set(3.6*atmosphereScale,4.4*atmosphereScale,.7*atmosphereScale);
  particles.material.uniforms.uOpacity.value=mix(particles.material.uniforms.uOpacity.value,reading?0:1,speed);
 }
 function animate(ms){
@@ -190,13 +239,17 @@ function animate(ms){
  const dt=Math.min(.05,(ms-previous)/1000||.016);previous=ms;lastRender=ms;
  if(!reduced.matches&&!reading)time+=dt;
  particles.material.uniforms.uTime.value=time;layout(dt);renderer.render(scene,camera);
- const first=books[0],second=books[1];
+ const first=books[0],second=books[1],third=books[2];
  experience.dataset.sceneState=JSON.stringify({
   active,desired,particleCount:particles.geometry.attributes.position.count,
   first:{z:first.position.z,scale:first.scale.x},
-  second:{z:second.position.z,scale:second.scale.x},reading
+  second:{z:second.position.z,scale:second.scale.x},
+  third:{z:third.position.z,scale:third.scale.x,visible:third.visible},
+  transition:particles.material.uniforms.uTransitionProgress.value,
+  atmosphere:{x:particles.scale.x,y:particles.scale.y,z:particles.position.z},reading
  });
- if(!reduced.matches&&ms<activeUntil)frame=requestAnimationFrame(animate);
+ const sandMoving=!reading&&desired>.4&&desired<1.6;
+ if(!reduced.matches&&(ms<activeUntil||sandMoving))frame=requestAnimationFrame(animate);
 }
 function restart(){activeUntil=performance.now()+1500;if(!frame&&renderer&&sceneReady&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
 
@@ -303,20 +356,23 @@ rendererCanvas.addEventListener('webglcontextrestored',()=>{
 reduced.addEventListener('change',()=>{scroller.options.smoothWheel=!reduced.matches;restart()});
 initScroll();
 document.fonts.ready.then(()=>{
+ document.body.classList.add('no-gl');
+ const offer3D=()=>{
+  const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
+  button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
+  button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
+  experience.append(button);document.body.dataset.codexFallback='performance';
+ };
  const start=async(force=false)=>{
   try{
+   if(!force&&await window.MACKENZIE_GPU==='software'){offer3D();return;}
    gpuContext=rendererCanvas.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'high-performance',failIfMajorPerformanceCaveat:!force});
    const debug=gpuContext?.getExtension('WEBGL_debug_renderer_info');
    const device=debug?gpuContext.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
    const software=/SwiftShader|llvmpipe|softpipe|software rasterizer/i.test(device);
-   if(!force&&(!gpuContext||software)){
-    document.body.classList.add('no-gl');
-    const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
-    button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
-    button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
-    experience.append(button);document.body.dataset.codexFallback='performance';return;
-   }
+   if(!force&&(!gpuContext||software)){offer3D();return;}
    if(!gpuContext){fallback('WebGL is unavailable. Text reader is active.');return;}
+   T=await window.loadMackenzieThree();
    await initScene();document.body.classList.remove('no-gl');
   }catch(error){renderer?.dispose();renderer=null;fallback(error);}
  };
