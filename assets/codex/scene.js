@@ -115,7 +115,7 @@ function pointCloud(){
  const angle=rand()*Math.PI*2,r=Math.sqrt(rand());
  b.set([r*Math.cos(angle)*.5,y,r*Math.sin(angle)*.35],3*i);
  const radius=.45+rand()*.035;
- c.set([radius*Math.cos(angle),radius*.67*Math.sin(angle)+.08*Math.cos(angle),radius*.55*Math.sin(angle)],3*i);
+ c.set([radius*Math.cos(angle),radius*Math.sin(angle)+.06*Math.cos(angle),radius*.55*Math.sin(angle)],3*i);
  s[i]=rand();}
 
  for(const [key,arr,size] of [['position',a,3],['aSand',b,3],['aHalo',c,3],['aSeed',s,1]])geom.setAttribute(key,new T.BufferAttribute(arr,size));
