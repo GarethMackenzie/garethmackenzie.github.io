@@ -1,6 +1,7 @@
 (()=>{
 const BOOKS=window.MACKENZIE_BOOKS;
-const T=THREE, $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let T;
+const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
 let turnTween, sceneReady=false, gpuContext, mobileBounds;
 const coverLoads=[];
@@ -355,20 +356,23 @@ rendererCanvas.addEventListener('webglcontextrestored',()=>{
 reduced.addEventListener('change',()=>{scroller.options.smoothWheel=!reduced.matches;restart()});
 initScroll();
 document.fonts.ready.then(()=>{
+ document.body.classList.add('no-gl');
+ const offer3D=()=>{
+  const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
+  button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
+  button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
+  experience.append(button);document.body.dataset.codexFallback='performance';
+ };
  const start=async(force=false)=>{
   try{
+   if(!force&&await window.MACKENZIE_GPU==='software'){offer3D();return;}
    gpuContext=rendererCanvas.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'high-performance',failIfMajorPerformanceCaveat:!force});
    const debug=gpuContext?.getExtension('WEBGL_debug_renderer_info');
    const device=debug?gpuContext.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
    const software=/SwiftShader|llvmpipe|softpipe|software rasterizer/i.test(device);
-   if(!force&&(!gpuContext||software)){
-    document.body.classList.add('no-gl');
-    const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
-    button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
-    button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
-    experience.append(button);document.body.dataset.codexFallback='performance';return;
-   }
+   if(!force&&(!gpuContext||software)){offer3D();return;}
    if(!gpuContext){fallback('WebGL is unavailable. Text reader is active.');return;}
+   T=await window.loadMackenzieThree();
    await initScene();document.body.classList.remove('no-gl');
   }catch(error){renderer?.dispose();renderer=null;fallback(error);}
  };
