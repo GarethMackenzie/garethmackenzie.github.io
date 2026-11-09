@@ -12,6 +12,12 @@ async function start(context,{enable3D=true}={}){
  await context.addInitScript(()=>localStorage.setItem('built-analytics-consent','declined'));
  const page=await context.newPage();page.testErrors=[];page.on('pageerror',e=>page.testErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')page.testErrors.push(m.text())});page.on('requestfailed',r=>page.testErrors.push(r.url()+': '+r.failure()?.errorText));await page.goto(url,{waitUntil:'networkidle'});if(enable3D){await page.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));const opt=page.locator('.enable-3d');if(await opt.count()){assert.equal(await page.evaluate(()=>typeof window.THREE),'undefined','Three.js loaded before software-renderer opt-in');await opt.click()}}return page;
 }
+async function selectEdition(page,index){
+ await page.locator(`.edition-index [data-edition="${index}"]`).click();
+ await page.waitForFunction(index=>document.querySelector(`.edition-index [data-edition="${index}"]`).getAttribute('aria-current')==='true',index);await settle(page);
+ assert.equal(await page.locator('#reader').evaluate(el=>el.open),false,'ledger should select, not open reader');
+}
+async function openBook(page,index){await selectEdition(page,index);await page.locator(`.art-hit[data-open="${index}"]`).press('Enter')}
 for(const width of [320,390,768,1024,1440,1920]){
  await test(`${width}px: scene, two-way scroll, all readers, focus and screenshots`,async()=>{
  const context=await browser.newContext({viewport:{width,height:width<768?844:1000},recordVideo:width===1440?{dir:`${out}/recording`,size:{width:1440,height:1000}}:undefined,hasTouch:width<768});
@@ -21,23 +27,17 @@ for(const width of [320,390,768,1024,1440,1920]){
  await page.waitForFunction(()=>document.body.dataset.codexReady==='true',{},{timeout:20000});await settle(page);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'horizontal overflow');
  const state=()=>page.locator('#experience').evaluate(el=>JSON.parse(el.dataset.sceneState));
- let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert(s.third.visible);assert(s.first.z>s.third.z);assert.equal(s.atmosphere.z,-1.2);
- if(width>=960){assert.equal(s.atmosphere.x,3.6);assert.equal(s.atmosphere.y,4.4)}
+ let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert.equal(s.bookCount,2);assert.equal(s.particleCount,1500);assert(s.transparent);assert.equal(s.atmosphere.z,-1.5);
+ if(width>=960){assert.equal(s.atmosphere.x,7);assert.equal(s.atmosphere.y,4.5)}
  if(width<768){const bar=await page.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=844-15,'chapter bar overlaps bottom safe margin');assert(bar.x>=15&&bar.x+bar.width<=width-15)}
  await page.screenshot({path:`${out}/hero-${width}.png`});
  await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*1.65));await settle(page);
- s=await state();assert.equal(s.active,1);assert.equal(s.transition,1);assert(s.second.z>s.first.z);assert(s.second.z>s.third.z);
+ s=await state();assert.equal(s.active,1);assert.equal(s.transition,1);assert(s.second.z>s.first.z);
  assert.equal(await page.locator('#folio-2').getAttribute('aria-hidden'),'false');
  await page.screenshot({path:`${out}/second-${width}.png`});
- await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*2.75));await settle(page);
- s=await state();assert.equal(s.active,2);assert.equal(s.transition,2);assert(s.third.z>s.first.z&&s.third.z>s.second.z);assert(s.third.scale>s.first.scale);assert.equal(await page.locator('#folio-3').getAttribute('aria-hidden'),'false');
- assert.equal(await page.locator('.edition-index [data-open="2"]').getAttribute('aria-current'),'true');
- await page.screenshot({path:`${out}/third-${width}.png`});
- await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*1.65));await settle(page);assert.equal((await state()).transition,1);
-
  await page.evaluate(()=>window.scrollTo(0,0));await settle(page);assert.equal((await state()).active,0);
- for(const [i,title] of ['BUILT','When Advantage Expires','What Comes Next'].entries()){
-  const entry=page.locator(`.edition-index [data-open="${i}"]`);await entry.click();await settle(page);
+ for(const [i,title] of ['BUILT','When Advantage Expires'].entries()){
+  const entry=page.locator(`.art-hit[data-open="${i}"]`);await openBook(page,i);await settle(page);
   assert.equal(await page.locator('#reader').evaluate(el=>el.open),true);assert((await page.locator('#bookLabel').innerText()).includes(title));
   assert.equal(await page.locator('#sound').getAttribute('aria-pressed'),'false');
   if(i<2){
@@ -53,13 +53,13 @@ for(const width of [320,390,768,1024,1440,1920]){
    }else{await page.mouse.move(drag.x+drag.width*.7,drag.y+drag.height*.4);await page.mouse.down();await page.mouse.move(drag.x+drag.width*.2,drag.y+drag.height*.4,{steps:8});await page.mouse.up()}
    await settle(page);
    assert.match(await page.locator('#folioNo').textContent(),/Page 2/);
-  }else{assert.match(await page.locator('#prose').innerText(),/concept/i);assert(await page.locator('#next').isDisabled());assert(await page.locator('#buy').isHidden())}
+  }
   for(let n=0;n<9;n++){await page.keyboard.press('Tab');assert(await page.evaluate(()=>document.getElementById('reader').contains(document.activeElement)),'focus escaped dialog')}
   await page.keyboard.press('Escape');assert.equal(await page.locator('#reader').evaluate(el=>el.open),false);assert.equal(await entry.evaluate(el=>el===document.activeElement),true);
  }
  // Rapid input and close during a page turn must not leave an inert page.
- await page.locator('.edition-index [data-open="0"]').click();await page.locator('#next').click();await page.keyboard.press('ArrowRight');await page.keyboard.press('Escape');
- await page.locator('.edition-index [data-open="1"]').click();assert.match(await page.locator('#folioNo').textContent(),/Page 1/);await page.locator('#close').click();
+ await openBook(page,0);await page.locator('#next').click();await page.keyboard.press('ArrowRight');await page.keyboard.press('Escape');
+ await openBook(page,1);assert.match(await page.locator('#folioNo').textContent(),/Page 1/);await page.locator('#close').click();
  assert.deepEqual(errors,[]);
  if(width===390||width===1440){
   const axe=await new AxeBuilder({page}).analyze();fs.writeFileSync(`${out}/axe-${width}.json`,JSON.stringify(axe,null,2));assert.equal(axe.violations.length,0,axe.violations.map(v=>v.id).join(','));
@@ -67,29 +67,29 @@ for(const width of [320,390,768,1024,1440,1920]){
  }finally{await context.close()}
  });
 }
-await test('short mobile viewports: safe chapter bar and three scroll stops',async()=>{
+await test('short mobile viewports: safe chapter bar and two scroll stops',async()=>{
  for(const [width,height] of [[320,568],[390,667]]){
   const c=await browser.newContext({viewport:{width,height},hasTouch:true}),p=await start(c);
   await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
-  for(const [index,offset] of [[0,0],[1,1.65],[2,2.75]]){
+  for(const [index,offset] of [[0,0],[1,1.65]]){
    await p.evaluate(offset=>window.scrollTo(0,document.getElementById('experience').offsetHeight*offset),offset);await settle(p);
    const bar=await p.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=height-15);assert(bar.y>=0);
    assert.equal(await p.locator('#experience').evaluate(el=>Math.round(el.getBoundingClientRect().height)),height);
    assert(await p.locator(`#folio-${index+1} .cta`).isVisible());
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
    await p.screenshot({path:`${out}/compact-${width}-${height}-${index}.png`});
-   await p.locator(`.edition-index [data-open="${index}"]`).click();assert(await p.locator('#reader').evaluate(el=>el.open));await p.keyboard.press('Escape');
+   await openBook(p,index);assert(await p.locator('#reader').evaluate(el=>el.open));await p.keyboard.press('Escape');
   }
   await c.close();
  }
 });
 await test('reduced motion: immediate poses and working reader',async()=>{
  const c=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}}),p=await start(c);
- await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.keyboard.press('Escape');await c.close();
+ await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await openBook(p,1);await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.keyboard.press('Escape');await c.close();
 });
 await test('WebGL unavailable: semantic cover and text reader',async()=>{
  const c=await browser.newContext();await c.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:get.call(this,type,...args)}});
- const p=await start(c,{enable3D:false});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.screenshot({path:`${out}/fallback.png`});await c.close();
+ const p=await start(c,{enable3D:false});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await openBook(p,1);await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await p.screenshot({path:`${out}/fallback.png`});await c.close();
 });
 await test('Worker unavailable: fallback detection and 3D opt-in',async()=>{
  const c=await browser.newContext();await c.addInitScript(()=>{delete window.Worker});
@@ -97,7 +97,32 @@ await test('Worker unavailable: fallback detection and 3D opt-in',async()=>{
  assert.deepEqual(p.testErrors,[]);await c.close();
 });
 await test('WebGL context loss and resizing during reader transition',async()=>{
- const c=await browser.newContext(),p=await start(c);await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.locator('.edition-index [data-open="0"]').click();await p.locator('#next').click();await p.setViewportSize({width:390,height:844});
- await p.evaluate(()=>{const canvas=document.getElementById('stage');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');gl.getExtension('WEBGL_lose_context').loseContext()});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.keyboard.press('Escape');await p.locator('.edition-index [data-open="1"]').click();await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await c.close();
+ const c=await browser.newContext(),p=await start(c);await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await openBook(p,0);await p.locator('#next').click();await p.setViewportSize({width:390,height:844});
+ await p.evaluate(()=>{const canvas=document.getElementById('stage');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');gl.getExtension('WEBGL_lose_context').loseContext()});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.keyboard.press('Escape');await openBook(p,1);await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await c.close();
+});
+await test('shared themes: persistence, contrast, transparent WebGL and Amazon destination',async()=>{
+ const c=await browser.newContext({viewport:{width:390,height:844}}),p=await start(c);
+ await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
+ for(const theme of ['alabaster','obsidian']){
+  await p.locator('[data-theme-toggle]').click();assert.equal(await p.evaluate(()=>localStorage.getItem('mackenzie_theme')),theme);
+  for(const route of ['/','/books/','/insights/','/about/']){
+   await p.goto(url+route,{waitUntil:'networkidle'});
+   assert.equal(await p.evaluate(()=>document.documentElement.dataset.theme),theme);
+   assert.equal(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor),theme==='alabaster'?'rgb(250, 248, 243)':'rgb(13, 13, 12)');
+   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+   const axe=await new AxeBuilder({page:p}).analyze();assert.equal(axe.violations.length,0,route+' '+theme+': '+axe.violations.map(v=>v.id));
+   await p.screenshot({path:`${out}/theme-${theme}-${route.replaceAll('/','')||'home'}.png`});
+  }
+  await p.goto(url,{waitUntil:'networkidle'});
+ }
+ await p.locator('[data-theme-toggle]').click();
+ const opt=p.locator('.enable-3d');await p.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));if(await opt.count())await opt.click();
+ await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await selectEdition(p,1);
+ assert.equal(await p.locator('#folio-2 .amazon-cta').getAttribute('href'),'https://www.amazon.com/dp/B0HQ3FSX3Y?dplnkId=87e87c65-b5c9-48b5-8f40-81b798e15fad&nodl=1');
+ await p.screenshot({path:`${out}/alabaster-webgl-390.png`});
+ await p.setViewportSize({width:1440,height:1000});await settle(p);
+ assert(await p.evaluate(()=>{const el=document.getElementById("experience"),s=JSON.parse(el.dataset.sceneState);return Math.abs(s.cameraAspect-el.clientWidth/el.clientHeight)<.01}),"WebGL camera aspect differs from resized stage");
+ await p.screenshot({path:`${out}/alabaster-webgl-1440.png`});
+ await c.close();
 });
 await browser.close();fs.writeFileSync(`${out}/results.json`,JSON.stringify({passed:results,failures},null,2));if(failures.length)process.exitCode=1;

@@ -68,7 +68,7 @@ def standardize_social(path: Path, alt: str = SOCIAL_ALT, image: str | None = No
     if image:
         text = set_or_add_meta(text, 'og:image', image, 'property')
         text = set_or_add_meta(text, 'twitter:image', image, 'name')
-    text = text.replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#11151a">')
+    text = text.replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#0D0D0C">')
     text = set_or_add_meta(text, 'og:image:width', '1200', 'property', 'og:image')
     text = set_or_add_meta(text, 'og:image:height', '630', 'property', 'og:image:width')
     text = set_or_add_meta(text, 'og:image:type', 'image/jpeg', 'property', 'og:image:height')
@@ -107,7 +107,7 @@ for relative in ['privacy/index.html', 'terms/index.html']:
     path = ROOT / relative
     text = path.read_text(encoding='utf-8').replace(
         '<meta name="theme-color" content="#080a0c">',
-        '<meta name="theme-color" content="#11151a">',
+        '<meta name="theme-color" content="#0D0D0C">',
     )
     write(path, text)
 
@@ -159,7 +159,7 @@ for slug, title, theme in ESSAYS:
 
 # Insights already has BreadcrumbList in its @graph. Keep the source theme color aligned.
 insights = ROOT / 'insights' / 'index.html'
-text = insights.read_text(encoding='utf-8').replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#11151a">')
+text = insights.read_text(encoding='utf-8').replace('<meta name="theme-color" content="#080a0c">', '<meta name="theme-color" content="#0D0D0C">')
 write(insights, link_person_entity(text))
 
 print('Technical SEO metadata, breadcrumbs, source semantics and contextual links standardized.')

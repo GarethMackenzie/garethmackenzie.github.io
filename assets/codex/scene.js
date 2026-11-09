@@ -4,27 +4,28 @@ let T;
 const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
 let turnTween, sceneReady=false, gpuContext, mobileBounds;
+let wakeScroll=()=>{};
 const coverLoads=[];
 const experience=document.getElementById("experience");
 let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
 const mix=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 function progress(value){
- const next=clamp(value,0,2);if(panelsReady&&Math.abs(next-desired)<.00001)return;
+ const next=clamp(value,0,1);if(panelsReady&&Math.abs(next-desired)<.00001)return;
  const oldActive=active;panelsReady=true;desired=next;active=Math.round(desired);
  document.querySelectorAll('.folio').forEach((panel,i)=>{
   panel.setAttribute('aria-hidden',String(i!==active));panel.inert=i!==active;
  });
- document.querySelectorAll('.edition-index [data-open]').forEach((link,i)=>link.setAttribute('aria-current',String(i===active)));
+ document.querySelectorAll('.edition-index [data-edition]').forEach((link,i)=>link.setAttribute('aria-current',String(i===active)));
  if(particles)particles.material.uniforms.uTransitionProgress.value=desired;
  if(oldActive!==active||!mobileBounds)measureComposition();
  restart();
 }
 gsap.registerPlugin(ScrollTrigger);gsap.ticker.lagSmoothing(0);
 // Each edition has a resting interval, with a complete morph between intervals.
-function editionProgress(p){return p<.5?clamp((p-.18)/.20):1+clamp((p-.62)/.20)}
+function editionProgress(p){return clamp((p-.25)/.40)}
 function measureComposition(){
- if(innerWidth>=768){mobileBounds=null;return;}
+ if(innerWidth>959){mobileBounds=null;return;}
  const intro=document.querySelectorAll('.folio .copy')[active].getBoundingClientRect();
  const bar=document.querySelector('.edition-index').getBoundingClientRect();
  const stage=experience.getBoundingClientRect();
@@ -36,14 +37,14 @@ function initScroll(){
  // Lenis needs frames only while input is settling, not an always-on GSAP ticker.
  let scrollFrame=0;
  const scrollTick=ms=>{scrollFrame=0;scroller.raf(ms);if(scroller.isScrolling)scrollFrame=requestAnimationFrame(scrollTick)};
- const wakeScroll=()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(scrollTick)};
+ wakeScroll=()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(scrollTick)};
  for(const event of ['wheel','touchmove','keydown','scroll'])addEventListener(event,wakeScroll,{passive:true});
  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(scrollFrame);scrollFrame=0}else wakeScroll()});
  addEventListener('pagehide',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=0});
  wakeScroll();
  document.body.classList.add('codex-ready');
  trigger=ScrollTrigger.create({
-  trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*3,
+  trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*2,
   pin:true,anticipatePin:1,invalidateOnRefresh:true,
   onUpdate:self=>{if(!reading)progress(editionProgress(self.progress))},
   onToggle:self=>{regionVisible=self.isActive||self.progress===0;document.body.classList.toggle('codex-offstage',!regionVisible);restart()}
@@ -60,68 +61,52 @@ function coverTexture(url){
  };image.onerror=()=>{loaded();fallback('A cover could not be loaded.');};image.src=url;return texture;
 }
 function box(w,h,d,mat){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.castShadow=m.receiveShadow=true;return m}
+function pageEdgeNormals(){
+ const c=document.createElement('canvas');c.width=32;c.height=512;
+ const ctx=c.getContext('2d');ctx.fillStyle='rgb(128,128,255)';ctx.fillRect(0,0,32,512);
+ for(let y=0;y<512;y+=4){ctx.fillStyle='rgb(128,150,253)';ctx.fillRect(0,y,32,1);ctx.fillStyle='rgb(128,108,253)';ctx.fillRect(0,y+1,32,1)}
+ const texture=new T.CanvasTexture(c);texture.wrapS=texture.wrapT=T.RepeatWrapping;return texture;
+}
 function makeBook(b,index){
- const group=new T.Group(), binding=new T.MeshStandardMaterial({color:0x665339,roughness:.67,metalness:.18}), cream=new T.MeshStandardMaterial({color:0xefece4,roughness:.88});
+ const group=new T.Group(), binding=new T.MeshStandardMaterial({color:0x665339,roughness:.67,metalness:.18}), cream=new T.MeshStandardMaterial({color:0xefece4,roughness:.88,normalMap:pageEdgeNormals(),normalScale:new T.Vector2(.12,.12)});
  // The case has its own front and back boards; its recessed core exposes the page edges.
- const shell=box(1.6,2.4,.28,new T.MeshStandardMaterial({color:0x887644,roughness:.65}));
- shell.scale.set(.038,1,1);shell.position.x=-.771; group.add(shell);
- const block=box(1.56,2.34,.25,cream);group.add(block);
- const back=box(1.6,2.4,.018,binding);back.position.z=-.135;group.add(back);
- const hinge=new T.Group();hinge.position.set(-.8,0,.139);group.add(hinge);
- const face=new T.MeshStandardMaterial({map:coverTexture(b.cover),color:index===1?0xefece4:0xffffff,roughness:.72,metalness:.035});
- const lid=box(1.6,2.4,.018,[binding,binding,binding,binding,face,cream]);lid.position.x=.8;hinge.add(lid);
+ const shell=box(1.62,2.42,.28,new T.MeshStandardMaterial({color:0x887644,roughness:.65}));
+ shell.scale.set(.038,1,1);shell.position.x=-.779; group.add(shell);
+ const block=box(1.57,2.36,.25,cream);group.add(block);
+ const back=box(1.62,2.42,.018,binding);back.position.z=-.135;group.add(back);
+ const hinge=new T.Group();hinge.position.set(-.81,0,.139);group.add(hinge);
+ const face=new T.MeshStandardMaterial({map:coverTexture(b.cover),color:index===1?0xf2efe7:0xffffff,roughness:.72,metalness:.035});
+ const lid=box(1.62,2.42,.018,[binding,binding,binding,binding,face,cream]);lid.position.x=.81;hinge.add(lid);
  const materials=[...new Set([binding,cream,shell.material,face])];
- group.userData={hinge,block,materials,baseColors:materials.map(m=>m.color.clone())};group.rotation.y=-.45;scene.add(group);return group;
+ const accent=new T.PointLight(0xfff1d5,.3,4,2);accent.position.set(0,1,2);group.add(accent);
+ group.userData={hinge,block,materials,accent,baseColors:materials.map(m=>m.color.clone())};group.rotation.y=-.45;scene.add(group);return group;
 }
 const particleVertex=`
 uniform float uTransitionProgress,uTime,uDpr;
-attribute vec3 aSand,aHalo;attribute float aSeed;
-varying float vSeed;
-// Analytic curl of a smooth 3D vector potential. Divergence-free motion avoids
-// the many finite-difference noise samples that stalled low-powered renderers.
-vec3 curl(vec3 p){return vec3(cos(p.y)+sin(p.z),cos(p.z)+sin(p.x),cos(p.x)+sin(p.y));}
+attribute float aSeed;varying float vSeed;
 void main(){
- float t=clamp(uTransitionProgress,0.,2.);
- float towerToSand=smoothstep(0.,1.,t),sandToHalo=smoothstep(1.,2.,t);
- vec3 sand=aSand;
- float y=.5-fract(aSeed+uTime*.13);
- sand.y=y;
- // Two falling streams surround the cover, narrowing towards an hourglass waist.
- sand.x=sign(aSand.x)*(.28+.32*abs(y))+aSand.x*.16;
- sand.z*=.2+abs(y);
- vec3 p=mix(position,sand,towerToSand);
- p=mix(p,aHalo,sandToHalo);
- float motion=sin(3.14159*fract(t));
- p+=curl(p*2.+vec3(uTime*.12))*.018*motion;
+ vec3 p=position;
+ p.x+=sin(uTime*.11+aSeed*32.)*.018;
+ p.y+=cos(uTime*.09+aSeed*47.)*.012;
  vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;
- gl_PointSize=clamp((3.+3.*aSeed)*uDpr/max(1.,-mv.z),1.,4.*uDpr);vSeed=aSeed;
+ gl_PointSize=clamp((9.+9.*aSeed)*uDpr/max(1.,-mv.z),1.5,4.*uDpr);vSeed=aSeed;
 }`;
 const particleFragment=`
-uniform float uDark,uOpacity,uViewHeight,uClipTop,uClipBottom;varying float vSeed;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
-float screenY=1.-gl_FragCoord.y/uViewHeight;
-float clearText=smoothstep(uClipTop,uClipTop+.035,screenY)*(1.-smoothstep(uClipBottom-.025,uClipBottom,screenY));
-vec3 c=mix(vec3(.40,.30,.11),vec3(.93,.76,.42),uDark);gl_FragColor=vec4(c,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.32+.52*vSeed)*uOpacity*clearText);}`;
+uniform vec3 uGold;uniform float uOpacity,uViewHeight,uClipTop,uClipBottom;varying float vSeed;
+void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
+ float y=1.-gl_FragCoord.y/uViewHeight;
+ float clip=smoothstep(uClipTop,uClipTop+.035,y)*(1.-smoothstep(uClipBottom-.025,uClipBottom,y));
+ gl_FragColor=vec4(uGold,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.25+.35*vSeed)*uOpacity*clip);
+}`;
 function pointCloud(){
- const n=innerWidth<=959?24000:60000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),b=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
+ const n=1500,geom=new T.BufferGeometry(),a=new Float32Array(n*3),seeds=new Float32Array(n);
  let seed=81273;const rand=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);
- for(let i=0;i<n;i++){
- const u=rand(),kind=rand(),y=u-.5;
- let x,z=(rand()-.5)*.35;
- if(kind<.45){x=(rand()<.5?-1:1)*(.34-.07*u)+(rand()-.5)*.035;}
- else if(kind<.72){x=(rand()-.5)*.94;}
- else{x=(rand()-.5)*(.42*(1-u)+.035);}
- const towerY=kind>=.45&&kind<.72?Math.round(y*12)/12:y;
- a.set([x,towerY,z],3*i);
- const angle=rand()*Math.PI*2,r=Math.sqrt(rand());
- b.set([r*Math.cos(angle)*.5,y,r*Math.sin(angle)*.35],3*i);
- const radius=.45+rand()*.035;
- c.set([radius*Math.cos(angle),radius*Math.sin(angle)+.06*Math.cos(angle),radius*.55*Math.sin(angle)],3*i);
- s[i]=rand();}
-
- for(const [key,arr,size] of [['position',a,3],['aSand',b,3],['aHalo',c,3],['aSeed',s,1]])geom.setAttribute(key,new T.BufferAttribute(arr,size));
- const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uDark:{value:1},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
+ for(let i=0;i<n;i++){a.set([rand()-.5,rand()-.5,(rand()-.5)*.4],i*3);seeds[i]=rand()}
+ geom.setAttribute('position',new T.BufferAttribute(a,3));geom.setAttribute('aSeed',new T.BufferAttribute(seeds,1));
+ const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uGold:{value:new T.Color(getComputedStyle(document.documentElement).getPropertyValue('--gold-primary').trim())},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
  const cloud=new T.Points(geom,mat);cloud.frustumCulled=false;scene.add(cloud);return cloud;
 }
+addEventListener('mackenzie-theme-change',()=>{if(particles){particles.material.uniforms.uGold.value.set(getComputedStyle(document.documentElement).getPropertyValue('--gold-primary').trim());restart()}});
 function contactShadow(){
  const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
  const ctx=canvas.getContext('2d'),gradient=ctx.createRadialGradient(64,64,2,64,64,62);
@@ -147,8 +132,8 @@ function fallback(message){
  $('status').textContent='The text reader remains available.';
 }
 async function initScene(){
- renderer=new T.WebGLRenderer({canvas:rendererCanvas,context:gpuContext,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
- renderer.setClearColor(0x0d0d0c,1);scene=new T.Scene();scene.background=new T.Color(0x0d0d0c);camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
+ renderer=new T.WebGLRenderer({canvas:rendererCanvas,context:gpuContext,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
+ renderer.setClearColor(0x000000,0);scene=new T.Scene();camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
 BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);
@@ -188,25 +173,22 @@ function layout(dt){
  if(!renderer)return;
  const mobile=innerWidth<=959,half=Math.tan(camera.fov*Math.PI/360)*camera.position.z,wide=half*camera.aspect;
  const speed=reduced.matches?1:1-Math.exp(-dt*8);
- const phone=innerWidth<768,ringCenter=mobile?0:.48;
- const heroX=ringCenter*wide*((camera.position.z+1.2)/camera.position.z);
- const ringRadius=mobile?.66:.32;
- const baseY=mobile?-half*.35+(phone?.25:0):0;
+ const phone=innerWidth<768;
+ const baseX=mobile?0:wide*.28,baseY=mobile?-half*.35+(phone?.25:0):0;
  books.forEach((g,i)=>{
-  const focus=reading&&i===selected,angle=(i-desired)*Math.PI*2/3;
-  const depth=Math.cos(angle),weight=clamp((depth+.5)/1.5);
-  let scrollSize=(.85+.30*weight)*(mobile?Math.min(.62,wide*.57):1)*(phone?1.12:1);
-  if(phone&&mobileBounds&&!reading){
+  const focus=reading&&i===selected,weight=i===0?1-desired:desired;
+  let scrollSize=(.84+.24*weight)*(mobile?Math.min(.62,wide*.57):1)*(phone?1.12:1);
+  if(mobile&&mobileBounds&&!reading){
    const available=Math.max(40,mobileBounds.bottom-mobileBounds.top);
    scrollSize=Math.min(scrollSize,available/mobileBounds.height*(2*half*(8/8.5))/2.55);
   }
   const size=focus?(mobile?Math.min(.70,wide*.60):Math.min(1.04,wide*.34)):scrollSize;
   const targetScale=reading?(focus?size:.001):size;
-  const z=focus?.5:-.65+1.15*depth;
+  const z=focus?.5:mix(-.55,.5,weight);
   // Compensate for perspective so each rear cover remains legible at the sides.
-  const x=focus?(mobile?.76*size:wide*.37+.72*size):(ringCenter+Math.sin(angle)*ringRadius)*wide*((camera.position.z-z)/camera.position.z);
-  let y=focus?(mobile?half*.28:0):baseY+(1-depth)*.18;
-  if(phone&&mobileBounds&&!reading){
+  const x=focus?(mobile?.76*size:wide*.37+.72*size):(mobile?mix(wide*.52,-wide*.13,weight):baseX+mix(1.75,.35,weight))*((camera.position.z-z)/8);
+  let y=focus?(mobile?half*.28:0):baseY+(1-weight)*.04;
+  if(mobile&&mobileBounds&&!reading){
    const halfAtBook=half*(8/8.5),h=mobileBounds.height;
    const upper=(.5-mobileBounds.top/h)*2*halfAtBook-1.25*size;
    const lower=(.5-mobileBounds.bottom/h)*2*halfAtBook+1.25*size;
@@ -215,21 +197,21 @@ function layout(dt){
   g.position.x=mix(g.position.x,x,speed);g.position.y=mix(g.position.y,y,speed);
   g.position.z=mix(g.position.z,z,speed);
   g.scale.setScalar(mix(g.scale.x,targetScale,speed));g.visible=g.scale.x>.008;
-  g.rotation.y=mix(g.rotation.y,focus?.035:(i===1?-.42:-.45),speed);
+  g.rotation.y=mix(g.rotation.y,focus?.035:mix(-.46,-.38,weight),speed);
   g.rotation.x=mix(g.rotation.x,focus?-.085:-.035,speed);
   g.userData.hinge.rotation.y=mix(g.userData.hinge.rotation.y,focus?-Math.PI-.06:0,speed);
-  const brightness=focus?1:mix(.48,1,weight);
+  const brightness=focus?1:mix(.68,1,weight);
+  g.userData.accent.intensity=mix(g.userData.accent.intensity,focus?.3:mix(.06,.3,weight),speed);
   g.userData.materials.forEach((m,j)=>m.color.lerp(g.userData.baseColors[j].clone().multiplyScalar(brightness),speed));
   const shadow=g.userData.shadow;shadow.visible=g.visible;
   shadow.position.set(g.position.x,g.position.y-1.24*g.scale.x,g.position.z);
   shadow.scale.setScalar(g.scale.x);shadow.material.opacity=mix(shadow.material.opacity,reading?0:1,speed);
  });
- const atmosphereScale=mobile?Math.min(Math.min(.62,wide*.57)*(phone?1.12:1),books[active].scale.x/1.15):1;
- const atmosphereY=books[active].position.y*((camera.position.z+1.2)/(camera.position.z-books[active].position.z));
- particles.position.set(heroX,reading?baseY:atmosphereY,-1.2);
- particles.material.uniforms.uClipTop.value=phone&&mobileBounds?clamp(mobileBounds.top/mobileBounds.height):0;
- particles.material.uniforms.uClipBottom.value=phone&&mobileBounds?clamp(mobileBounds.bottom/mobileBounds.height):1;
- particles.rotation.y=0;particles.scale.set(3.6*atmosphereScale,4.4*atmosphereScale,.7*atmosphereScale);
+ const atmosphereScale=mobile?Math.min(Math.min(.62,wide*.57)*(phone?1.12:1),books[active].scale.x/1.08):1;
+ particles.position.set(mobile?0:baseX+.7,reading?baseY:books[active].position.y,-1.5);
+ particles.material.uniforms.uClipTop.value=mobile&&mobileBounds?clamp(mobileBounds.top/mobileBounds.height):0;
+ particles.material.uniforms.uClipBottom.value=mobile&&mobileBounds?clamp(mobileBounds.bottom/mobileBounds.height):1;
+ particles.scale.set(7*atmosphereScale,4.5*atmosphereScale,.7*atmosphereScale);
  particles.material.uniforms.uOpacity.value=mix(particles.material.uniforms.uOpacity.value,reading?0:1,speed);
 }
 function animate(ms){
@@ -239,17 +221,17 @@ function animate(ms){
  const dt=Math.min(.05,(ms-previous)/1000||.016);previous=ms;lastRender=ms;
  if(!reduced.matches&&!reading)time+=dt;
  particles.material.uniforms.uTime.value=time;layout(dt);renderer.render(scene,camera);
- const first=books[0],second=books[1],third=books[2];
+ const first=books[0],second=books[1];
  experience.dataset.sceneState=JSON.stringify({
   active,desired,particleCount:particles.geometry.attributes.position.count,
   first:{z:first.position.z,scale:first.scale.x},
   second:{z:second.position.z,scale:second.scale.x},
-  third:{z:third.position.z,scale:third.scale.x,visible:third.visible},
+  bookCount:books.length,cameraAspect:camera.aspect,transparent:renderer.getClearAlpha()===0&&scene.background===null,
   transition:particles.material.uniforms.uTransitionProgress.value,
   atmosphere:{x:particles.scale.x,y:particles.scale.y,z:particles.position.z},reading
  });
- const sandMoving=!reading&&desired>.4&&desired<1.6;
- if(!reduced.matches&&(ms<activeUntil||sandMoving))frame=requestAnimationFrame(animate);
+ const dustMoving=!reading;
+ if(!reduced.matches&&(ms<activeUntil||dustMoving))frame=requestAnimationFrame(animate);
 }
 function restart(){activeUntil=performance.now()+1500;if(!frame&&renderer&&sceneReady&&!contextFailed&&!document.hidden&&(regionVisible||reading))frame=requestAnimationFrame(animate)}
 
@@ -274,10 +256,10 @@ function showPage(){
  }
  $('prev').disabled=folio===0;$('next').disabled=folio===BOOKS[selected].pages.length-1;
  $('buy').hidden=folio!==BOOKS[selected].pages.length-1||!BOOKS[selected].purchase;
- $('buy').href=BOOKS[selected].purchase||'#';$('buy').textContent='View BUILT on Amazon ↗';
- $('buy').target='_blank';$('buy').rel='noopener';
- $('details').href=['/built/','/when-advantage-expires/','#concept'][selected];
- $('details').hidden=selected===2;
+ $('buy').href=BOOKS[selected].purchase||'#';$('buy').textContent='View '+BOOKS[selected].title+' on Amazon ↗';
+ $('buy').target='_blank';$('buy').rel='noopener noreferrer';
+ $('details').href=['/built/','/when-advantage-expires/'][selected];
+ $('details').hidden=false;
  $('status').textContent=BOOKS[selected].title+', '+item[0]+', page '+(folio+1)+' of '+BOOKS[selected].pages.length;
  $('paper').scrollTop=0;
 }
@@ -315,6 +297,14 @@ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{
  }
  openReader(Number(b.dataset.open));
 });
+document.querySelectorAll('[data-edition]').forEach(link=>link.addEventListener('click',event=>{
+ event.preventDefault();const index=Number(link.dataset.edition);
+ if(reading)closeReader();
+ const destination=trigger.start+(trigger.end-trigger.start)*(index===0?.05:.85);
+ scroller.scrollTo(destination,{duration:reduced.matches?0:1.1,immediate:reduced.matches,force:true});
+ wakeScroll();
+ if(reduced.matches){ScrollTrigger.update();progress(index)}
+}));
 $('close').onclick=closeReader;
 dialog.addEventListener('cancel',e=>{e.preventDefault();closeReader()});
 $('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);
@@ -347,7 +337,9 @@ function release(e,cancelled=false){
 }
 $('drag').addEventListener('pointerup',release);
 $('drag').addEventListener('pointercancel',e=>release(e,true));
-addEventListener('resize',()=>{fit();ScrollTrigger.refresh()});
+addEventListener('resize',()=>{ScrollTrigger.refresh();fit()});
+// Pin refresh can change the stage after the window resize event.
+const stageObserver=new ResizeObserver(()=>fit());stageObserver.observe(experience);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0}else restart()});
 rendererCanvas.addEventListener('webglcontextlost',event=>{event.preventDefault();turnTween?.kill();transitioning=false;pages.forEach((p,i)=>pose(p,i<folio?1:0));fallback('WebGL context lost. Text reader is active.');});
 rendererCanvas.addEventListener('webglcontextrestored',()=>{
@@ -380,12 +372,12 @@ document.fonts.ready.then(()=>{
 });
 addEventListener('pagehide',event=>{
  if(event.persisted){cancelAnimationFrame(frame);frame=0;return;}
- turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
+ stageObserver.disconnect();turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
  const geometries=new Set(),materials=new Set(),textures=new Set();
  scene?.traverse(object=>{
   if(object.geometry)geometries.add(object.geometry);
   const list=object.material?(Array.isArray(object.material)?object.material:[object.material]):[];
-  list.forEach(material=>{materials.add(material);if(material.map)textures.add(material.map);});
+  list.forEach(material=>{materials.add(material);if(material.map)textures.add(material.map);if(material.normalMap)textures.add(material.normalMap);});
  });
  geometries.forEach(x=>x.dispose());materials.forEach(x=>x.dispose());textures.forEach(x=>x.dispose());renderer?.dispose();ctx?.close();
 });

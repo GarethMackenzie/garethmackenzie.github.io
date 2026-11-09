@@ -186,3 +186,19 @@ if (contactForm) {
   const wanted = new URLSearchParams(window.location.search).get('category');
   if (select && wanted && [...select.options].some((o) => o.value === wanted)) select.value = wanted;
 })();
+
+// Theme preference is restored synchronously in the document head.
+const themeToggle=document.querySelector('[data-theme-toggle]');
+function syncTheme(){
+ const light=root.dataset.theme==='alabaster';
+ themeToggle?.setAttribute('aria-label',light?'Switch to obsidian theme':'Switch to alabaster theme');
+ document.querySelector('meta[name="theme-color"]')?.setAttribute('content',light?'#FAF8F3':'#0D0D0C');
+ window.dispatchEvent(new Event('mackenzie-theme-change'));
+}
+themeToggle?.addEventListener('click',()=>{
+ root.dataset.theme=root.dataset.theme==='alabaster'?'obsidian':'alabaster';
+ try{localStorage.setItem('mackenzie_theme',root.dataset.theme)}catch{}
+ syncTheme();
+});
+window.addEventListener('storage',event=>{if(event.key==='mackenzie_theme'){root.dataset.theme=event.newValue==='alabaster'||event.newValue==='light'?'alabaster':'obsidian';syncTheme()}});
+syncTheme();

@@ -1,8 +1,7 @@
 # Gareth Andrew Mackenzie
 
 Author website for Gareth Andrew Mackenzie. The author is the brand; *BUILT:
-How Wealth Is Deliberately Constructed* is his current book, not the site's
-identity.
+How Wealth Is Deliberately Constructed* and *When Advantage Expires* are his two books.
 
 Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 
@@ -20,7 +19,7 @@ Live site: https://mackenziebooks.bbroot.com/ (custom domain; GitHub Pages)
 ```
 /                 Homepage
 /about/           Author bio
-/books/           Books index (currently: BUILT)
+/books/           Books index (BUILT and When Advantage Expires)
 /built/           BUILT book page
 /insights/        Writing index
 /insights/<slug>/ Individual essays (10)
@@ -77,3 +76,9 @@ correct.
 - The author portrait (`assets/gareth-mackenzie-author.jpeg`, plus 640/1200 WebP variants) is 1278x872 and must stay that size: the `width`/`height` attributes on `/`, `/about/` and `/media/` assume it. The JPEG has a 1px grey column on its left edge; on `/about/` the image is scaled up 1.2% inside a clipped frame so that column is not visible.
 - Analytics consent banner styles live in `dist/site.css`.
 - Verify real typography in a browser after changes: the font files are served from `assets/fonts/`.
+
+## Shared theme and two-book homepage
+
+`dist/site.css` owns the obsidian/alabaster tokens for every page. Each document restores `mackenzie_theme` before styles paint; the shared header control in `script.js` persists changes. Large headings retain the exact palette gold. Small text uses a contrast-adjusted gold blend in alabaster mode.
+
+`assets/codex/books.js` contains exactly two editions and their purchase links. Covers open accessible readers. The fixed ledger selects a scroll stop. The transparent Three.js scene has two hardcover groups and 1,500 drifting dust points, with reduced-motion and semantic fallbacks. Browser QA covers themes, resizing, both directions of scrolling, readers and mobile safe-area layouts.
