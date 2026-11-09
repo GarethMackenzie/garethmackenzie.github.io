@@ -44,6 +44,7 @@
   };
 
   if (analyticsGranted) loadGoogleTag();
+  window.addEventListener('mackenzie-view',()=>{if(analyticsGranted)window.gtag('event','page_view',{page_location:location.href,page_title:document.title})});
 
   const setConsent = (value) => {
     analyticsGranted = value === 'granted';
