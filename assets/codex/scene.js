@@ -226,7 +226,7 @@ function animate(ms){
   active,desired,particleCount:particles.geometry.attributes.position.count,
   first:{z:first.position.z,scale:first.scale.x},
   second:{z:second.position.z,scale:second.scale.x},
-  bookCount:books.length,transparent:renderer.getClearAlpha()===0&&scene.background===null,
+  bookCount:books.length,cameraAspect:camera.aspect,transparent:renderer.getClearAlpha()===0&&scene.background===null,
   transition:particles.material.uniforms.uTransitionProgress.value,
   atmosphere:{x:particles.scale.x,y:particles.scale.y,z:particles.position.z},reading
  });
@@ -337,7 +337,9 @@ function release(e,cancelled=false){
 }
 $('drag').addEventListener('pointerup',release);
 $('drag').addEventListener('pointercancel',e=>release(e,true));
-addEventListener('resize',()=>{fit();ScrollTrigger.refresh()});
+addEventListener('resize',()=>{ScrollTrigger.refresh();fit()});
+// Pin refresh can change the stage after the window resize event.
+const stageObserver=new ResizeObserver(()=>fit());stageObserver.observe(experience);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0}else restart()});
 rendererCanvas.addEventListener('webglcontextlost',event=>{event.preventDefault();turnTween?.kill();transitioning=false;pages.forEach((p,i)=>pose(p,i<folio?1:0));fallback('WebGL context lost. Text reader is active.');});
 rendererCanvas.addEventListener('webglcontextrestored',()=>{
@@ -370,7 +372,7 @@ document.fonts.ready.then(()=>{
 });
 addEventListener('pagehide',event=>{
  if(event.persisted){cancelAnimationFrame(frame);frame=0;return;}
- turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
+ stageObserver.disconnect();turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
  const geometries=new Set(),materials=new Set(),textures=new Set();
  scene?.traverse(object=>{
   if(object.geometry)geometries.add(object.geometry);

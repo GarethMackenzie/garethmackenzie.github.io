@@ -131,4 +131,4 @@ html{background:var(--bg-page)}
 :root[data-theme="alabaster"] .button,:root[data-theme="alabaster"] .skip-link{color:var(--text-primary);background:var(--bg-elevated)}
 :root[data-theme="alabaster"] .button:hover{background:var(--bg-page)}
 /* Large editorial headings keep the exact palette gold. */
-.copy h1,.copy h2,.page-copy h2,.page-hero h1 em,.book-hero h1 em{color:var(--gold-primary)}
+:root .copy h1,:root .copy h2,:root .page-copy h2,:root .page-hero h1 em,:root .book-hero h1 em{color:var(--gold-primary)}

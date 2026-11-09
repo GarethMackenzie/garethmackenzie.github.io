@@ -120,7 +120,9 @@ await test('shared themes: persistence, contrast, transparent WebGL and Amazon d
  await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await selectEdition(p,1);
  assert.equal(await p.locator('#folio-2 .amazon-cta').getAttribute('href'),'https://www.amazon.com/dp/B0HQ3FSX3Y?dplnkId=87e87c65-b5c9-48b5-8f40-81b798e15fad&nodl=1');
  await p.screenshot({path:`${out}/alabaster-webgl-390.png`});
- await p.setViewportSize({width:1440,height:1000});await settle(p);await p.screenshot({path:`${out}/alabaster-webgl-1440.png`});
+ await p.setViewportSize({width:1440,height:1000});await settle(p);
+ assert(await p.evaluate(()=>{const el=document.getElementById("experience"),s=JSON.parse(el.dataset.sceneState);return Math.abs(s.cameraAspect-el.clientWidth/el.clientHeight)<.01}),"WebGL camera aspect differs from resized stage");
+ await p.screenshot({path:`${out}/alabaster-webgl-1440.png`});
  await c.close();
 });
 await browser.close();fs.writeFileSync(`${out}/results.json`,JSON.stringify({passed:results,failures},null,2));if(failures.length)process.exitCode=1;
