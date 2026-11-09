@@ -47,6 +47,20 @@ for(const width of [390,1440]){
   if(i<2){await p.locator('#next').click();await p.waitForFunction(()=>document.getElementById('folioNo').textContent.startsWith('Page 2'))}
   await p.keyboard.press('Escape');
  }
+ await p.evaluate(()=>{window.productionCanvas=document.querySelector('canvas#stage');window.productionRenderer=window.MackenzieScene.renderer});
+ for(const [route,view] of [['/books/','books'],['/insights/','writing'],['/about/','about'],['/','home']]){
+  await p.evaluate(route=>window.MackenzieRouter.navigate(new URL(route,location.href)),route);
+  await p.waitForFunction(view=>window.MackenzieScene.state.view===view,view);
+  assert(await p.evaluate(()=>document.querySelector('canvas#stage')===window.productionCanvas&&window.MackenzieScene.renderer===window.productionRenderer),'Persistent renderer on '+route);
+  assert.equal(await p.locator('h1').count(),1);
+  if(view==='books'){
+   await p.locator('[data-preview="1"]').click();
+   assert(await p.locator('#reader').evaluate(el=>el.open));
+   await p.keyboard.press('Escape');
+  }
+  await p.waitForTimeout(1400);
+  await p.screenshot({path:`qa-reports/production/${view}-${width}.png`});
+ }
  for(const route of routes.slice(1)){
   const response=await p.goto(base+route,{waitUntil:'networkidle'});assert(response.ok(),route);
   assert(await p.locator('h1').isVisible(),route);

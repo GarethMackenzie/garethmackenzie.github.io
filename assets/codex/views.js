@@ -23,7 +23,7 @@ window.createEditorialViews=({T,scene,books,camera,reduced,restart})=>{
  }
  for(const y of [-1.25,1.25])mesh(new T.TorusGeometry(.85,.025,8,64),gold,hourglass,0,y).rotation.x=Math.PI/2;
  for(let i=0;i<18;i++){const a=i/18*Math.PI*2,points=[];for(let j=0;j<=24;j++){const y=-1.25+j/24*2.5,r=.12+.73*Math.abs(y/1.25);points.push([Math.cos(a)*r,y,Math.sin(a)*r])}line(points,hourglass)}
- const monolith=new T.Group();rooms.about.add(monolith);
+ const monolith=new T.Group();rooms.about.position.x=-.45;rooms.about.add(monolith);
  mesh(new T.BoxGeometry(1.25,3.2,.68),stone,monolith);
  const edges=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(1.27,3.22,.70)),lineMat);monolith.add(edges);
  for(let i=0;i<7;i++)mesh(new T.BoxGeometry(.018,2.6-i*.24,.035),gold,monolith,-.47+i*.155,0,.365);

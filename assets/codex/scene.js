@@ -141,7 +141,7 @@ function fallback(message){
 }
 async function initScene(){
  renderer=new T.WebGLRenderer({canvas:rendererCanvas,context:gpuContext,alpha:true,antialias:true,powerPreference:'high-performance'});renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;
- renderer.setClearColor(0x000000,0);scene=new T.Scene();camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
+ renderer.setClearColor(0x000000,0);scene=new T.Scene();camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=view==='home'?8.5:view==='books'?9:8;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
 BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();editorial=window.createEditorialViews({T,scene,books,camera,reduced,restart});editorial.setView(view);fit();layout(100);
@@ -360,7 +360,7 @@ function release(e,cancelled=false){
 $('drag').addEventListener('pointerup',release);
 $('drag').addEventListener('pointercancel',e=>release(e,true));
 addEventListener('resize',()=>{ScrollTrigger.refresh();fit()});
-addEventListener('scroll',()=>{if(view!=='home'){fit();restart()}},{passive:true});
+addEventListener('scroll',()=>{if(view!=='home')restart()},{passive:true});
 addEventListener('mackenzie-theme-change',()=>editorial?.theme());
 // Pin refresh can change the stage after the window resize event.
 const stageObserver=new ResizeObserver(()=>fit());stageObserver.observe(experience);
@@ -378,7 +378,7 @@ window.MackenzieScene={
   editorial?.setView(next);
   if(next==='home'){if(trigger)trigger.enable();else mountHomeTrigger();ScrollTrigger.refresh()}
   scroller?.resize();fit();
-  if(camera)cameraTween=gsap.to(camera.position,{z:next==='home'?8.5:8,duration:reduced.matches?0:1.1,ease:'power2.inOut',onUpdate:()=>{fit();restart()}});
+  if(camera)cameraTween=gsap.to(camera.position,{z:next==='home'?8.5:next==='books'?9:8,duration:reduced.matches?0:1.1,ease:'power2.inOut',onUpdate:restart});
   restart();
  },
  scrollTo(y){scroller?.scrollTo(y,{immediate:true,force:true});wakeScroll()},
@@ -404,7 +404,7 @@ document.fonts.ready.then(()=>{
    if(!force&&(!gpuContext||software)){offer3D();return;}
    if(!gpuContext){fallback('WebGL is unavailable. Text reader is active.');return;}
    T=await window.loadMackenzieThree();
-   await initScene();document.body.classList.remove('no-gl');
+   await initScene();document.body.classList.remove('no-gl');fit();
   }catch(error){renderer?.dispose();renderer=null;fallback(error);}
  };
  if('requestIdleCallback' in window)requestIdleCallback(()=>start(),{timeout:1200});else setTimeout(()=>start(),100);
