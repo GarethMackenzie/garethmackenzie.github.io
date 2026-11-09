@@ -215,7 +215,7 @@ def audit() -> int:
                 failures.append(f"{label}: missing Open Graph fields {sorted(missing_og)}")
             if missing_tw:
                 failures.append(f"{label}: missing Twitter fields {sorted(missing_tw)}")
-            theme = "#0D0D0C" if route == "/" else "#11151a"
+            theme = "#0D0D0C"
             if parser.meta_name.get("theme-color") != theme:
                 failures.append(f"{label}: theme-color must be {theme}")
 

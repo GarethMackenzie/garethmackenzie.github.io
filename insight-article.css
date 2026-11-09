@@ -14,7 +14,7 @@
 .article-aside>a:hover{color:var(--ink)}
 
 .article-body{grid-column:4/12;max-width:var(--measure)}
-.article-body p,.article-body li{color:#d6d8d9;font:400 clamp(1.1rem,1.25vw,1.2rem)/1.7 var(--serif)}
+.article-body p,.article-body li{color:var(--text-muted);font:400 clamp(1.1rem,1.25vw,1.2rem)/1.7 var(--serif)}
 .article-body>p:first-child{color:var(--ink);font-size:clamp(1.3rem,1.8vw,1.5rem);line-height:1.55}
 .article-body p+p,.article-body p+ul,.article-body p+ol,.article-body ul+p,.article-body ol+p{margin-top:1.25rem}
 .article-body strong{font-weight:600;color:var(--ink)}

@@ -53,11 +53,10 @@
 }
 
 /* The reading room shares the site's navigation, tokens and content grid. */
-.codex-home{--ground:#0d0d0c;--ground-2:#151512;--ink:#f5f0e6;--ink-2:#ded8cc;--ink-3:#bdb6a8;--gold:#d0af68;--gold-hi:#e3c483;--rule:#39352d;--rule-gold:#796642}
 .codex-home .site-header,.codex-home .site-header.scrolled{background:var(--ground);border-bottom-color:var(--rule-gold)}
 .codex-home .nav a{text-decoration:none}
 #experience{position:relative;background:var(--ground);isolation:isolate}
-#stage{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:#0d0d0c}
+#stage{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:transparent}
 .folio{position:relative;z-index:1;min-height:100svh;display:grid;grid-template-columns:44% 56%;align-items:center;padding:calc(var(--header-h) + 2rem) max(var(--gutter),(100% - var(--page-max))/2) 7rem;pointer-events:none}
 .copy{max-width:36rem;pointer-events:auto}
 .copy h1,.copy h2{font:400 clamp(3.4rem,6.5vw,6.8rem)/1 var(--display);letter-spacing:-.04em;margin:.4em 0 .3em;color:var(--gold);text-wrap:balance}
@@ -78,10 +77,8 @@
 .edition-index small{display:block;color:var(--gold);font:500 .7rem/1.5 var(--sans)}
 .edition-index .hint{align-self:center;max-width:12rem;font:500 .6rem/1.6 var(--sans);letter-spacing:.13em;color:var(--gold)}
 .entry+.entry{margin-top:3rem}
-#concept h2{font:400 2.5rem/1.1 var(--display);margin:1rem 0}
-#concept p{max-width:var(--measure)}
-#reader{position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;border:0;padding:0;background:#0d0d0c;color:var(--ink);overflow:hidden}
-#reader::backdrop{background:#0d0d0c}
+#reader{position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;border:0;padding:0;background:var(--bg-page);color:var(--ink);overflow:hidden}
+#reader::backdrop{background:var(--bg-page)}
 #reader #stage{position:absolute}
 .reader-head,.reader-foot{position:absolute;left:0;right:0;padding:.65rem var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--ground);z-index:3}
 .reader-head{top:0;border-bottom:1px solid var(--rule-gold)}
@@ -142,4 +139,29 @@ html.lenis{scroll-behavior:auto!important}
  .copy h1,.copy h2{font-size:clamp(2rem,8vw,3rem)}
  .syn{font-size:16px;line-height:1.45;margin:.7rem 0}
  .cta{margin-top:0}
+}
+
+/* Two editions share one viewport and one fixed, safe-area ledger. */
+.codex-ready #experience{height:100svh;min-height:0}
+.codex-ready .edition-index{position:fixed;left:var(--gutter);right:var(--gutter);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;grid-template-columns:repeat(2,minmax(0,1fr));min-height:0;gap:.5rem;padding:.4rem;border:1px solid var(--border-hairline);background:var(--bg-page)}
+.edition-index{grid-template-columns:repeat(2,minmax(0,1fr))}
+.codex-offstage .edition-index{visibility:hidden;pointer-events:none}
+.edition-index>a{justify-content:center}
+.book-actions{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem}
+.book-actions .cta{margin-top:0}
+#reader,#reader::backdrop{background:var(--bg-page)}
+.reader-foot{padding-bottom:calc(.4rem + env(safe-area-inset-bottom,0px))}
+@media(max-width:767px){
+ .codex-ready .edition-index{left:16px;right:16px}
+ .edition-index>a{font-size:.75rem}
+ .book-actions .amazon-cta{font-size:.65rem;letter-spacing:.07em;padding:.5rem .75rem;min-height:44px;margin:.3rem 0}
+ .copy h1,.copy h2{font-size:clamp(2rem,7vw,3rem)}
+}
+
+@media(max-width:767px) and (max-height:700px){
+ .copy h1,.copy h2{font-size:1.75rem;line-height:1.05}
+ .syn{font-size:14px;line-height:1.5;margin:.5rem 0}
+ .book-actions{flex-direction:row;align-items:center;gap:.6rem}
+ .book-actions .amazon-cta{font-size:.56rem;letter-spacing:0;padding:.4rem .5rem;max-width:55%}
+ .book-actions .cta{font-size:.68rem;line-height:1.3}
 }

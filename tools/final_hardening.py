@@ -15,7 +15,7 @@ def update(path: Path, transform):
 
 # Legal pages: match the production dark palette in browser chrome/form controls.
 for rel in ('privacy/index.html', 'terms/index.html'):
-    update(ROOT / rel, lambda t: t.replace('content="#080a0c"', 'content="#11151a"'))
+    update(ROOT / rel, lambda t: t.replace('content="#080a0c"', 'content="#0D0D0C"'))
 
 # Contact: keep browser-native validation and make status semantics idempotent.
 def harden_contact(text: str) -> str:

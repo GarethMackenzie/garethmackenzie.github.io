@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 const base='https://mackenziebooks.bbroot.com', expected=process.env.EXPECTED_SHA;
 assert.match(expected||'',/^[a-f0-9]{40}$/);
 const routes=['/','/books/','/when-advantage-expires/','/built/','/about/','/insights/','/contact/'];
-const assets=['/assets/codex/scene.js','/assets/codex/books.js','/assets/codex/bootstrap.js','/assets/codex/gpu-probe.js','/dist/author-home.css'];
+const assets=['/assets/codex/scene.js','/assets/codex/books.js','/assets/codex/bootstrap.js','/assets/codex/gpu-probe.js','/dist/author-home.css','/dist/site.css','/script.js'];
 const hash=x=>createHash('sha256').update(x).digest('hex');
 let served=false;
 for(let i=0;i<60;i++){
@@ -32,15 +32,17 @@ for(const width of [390,1440]){
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto(base,{waitUntil:'networkidle'});await p.waitForFunction(()=>document.body.dataset.codexReady==='true'||document.querySelector('.enable-3d'));if(await p.locator('.enable-3d').count())await p.locator('.enable-3d').click();await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await p.waitForTimeout(1600);
  await p.screenshot({path:`qa-reports/production/home-${width}.png`});
- for(const [index,offset] of [[1,1.65],[2,2.75],[0,0]]){
+ for(const [index,offset] of [[1,1.65],[0,0]]){
   await p.evaluate(offset=>window.scrollTo(0,document.getElementById('experience').offsetHeight*offset),offset);
   await p.waitForFunction(index=>{const s=JSON.parse(document.getElementById('experience').dataset.sceneState);return s.active===index&&s.transition===index},index);
   await p.waitForTimeout(1300);
-  if(index===2)await p.screenshot({path:`qa-reports/production/third-${width}.png`});
+  if(index===1)await p.screenshot({path:`qa-reports/production/second-${width}.png`});
  }
 
- for(const i of [0,1,2]){
-  await p.locator(`.edition-index [data-open="${i}"]`).click();
+ for(const i of [0,1]){
+  await p.locator(`.edition-index [data-edition="${i}"]`).click();
+  await p.waitForFunction(i=>document.querySelector(`#folio-${i+1}`).getAttribute("aria-hidden")==="false",i);
+  await p.locator(`.art-hit[data-open="${i}"]`).press("Enter");
   assert(await p.locator('#reader').evaluate(el=>el.open));
   if(i<2){await p.locator('#next').click();await p.waitForFunction(()=>document.getElementById('folioNo').textContent.startsWith('Page 2'))}
   await p.keyboard.press('Escape');
@@ -54,4 +56,4 @@ for(const width of [390,1440]){
 }
 await browser.close();
 fs.writeFileSync('qa-reports/production/results.json',JSON.stringify({commit:expected,domain:base,routes,verified:true},null,2));
-console.log('Verified custom-domain source hashes, two readers, concept entry, and existing pages at',expected);
+console.log('Verified custom-domain source hashes, two readers, two-edition ledger, and existing pages at',expected);
