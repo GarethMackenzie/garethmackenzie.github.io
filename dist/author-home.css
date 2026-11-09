@@ -7,12 +7,12 @@
 .ledger{border-top:1px solid var(--rule)}
 .ledger li{border-bottom:1px solid var(--rule)}
 .ledger a{display:grid;grid-template-columns:3.25rem 11rem minmax(0,1fr) 2rem;column-gap:var(--col-gap);align-items:baseline;padding:1.75rem 0}
-.ledger-no{font:500 .8125rem/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--gold)}
+.ledger-no{font:500 .8125rem/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--text-accent)}
 .ledger-topic{font:500 .6875rem/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
 .ledger h3{font:400 clamp(1.4rem,2.1vw,1.85rem)/1.2 var(--display);letter-spacing:-.01em;transition:color .2s}
 .ledger p{margin-top:.4rem;max-width:56ch;color:var(--ink-2)}
 .ledger-go{justify-self:end;color:var(--ink-3);transition:color .2s,transform .2s}
-.ledger a:hover h3,.ledger a:hover .ledger-go{color:var(--gold-hi)}
+.ledger a:hover h3,.ledger a:hover .ledger-go{color:var(--text-accent)}
 .ledger a:hover .ledger-go{transform:translateX(4px)}
 .section-foot{margin-top:1.25rem}
 
@@ -21,7 +21,7 @@
 .entry-cover{grid-column:4/7;box-shadow:0 30px 50px -24px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.07)}
 .entry-body{grid-column:8/13}
 .entry h3{margin:.75rem 0 1rem;font:400 clamp(1.7rem,2.6vw,2.35rem)/1.15 var(--display);letter-spacing:-.01em}
-.entry h3 a:hover{color:var(--gold-hi)}
+.entry h3 a:hover{color:var(--text-accent)}
 .entry p:not(.eyebrow){max-width:44ch;color:var(--ink-2);margin-bottom:1rem}
 
 /* About */
@@ -59,9 +59,9 @@
 #stage{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:transparent}
 .folio{position:relative;z-index:1;min-height:100svh;display:grid;grid-template-columns:44% 56%;align-items:center;padding:calc(var(--header-h) + 2rem) max(var(--gutter),(100% - var(--page-max))/2) 7rem;pointer-events:none}
 .copy{max-width:36rem;pointer-events:auto}
-.copy h1,.copy h2{font:400 clamp(3.4rem,6.5vw,6.8rem)/1 var(--display);letter-spacing:-.04em;margin:.4em 0 .3em;color:var(--gold);text-wrap:balance}
+.copy h1,.copy h2{font:400 clamp(3.4rem,6.5vw,6.8rem)/1 var(--display);letter-spacing:-.04em;margin:.4em 0 .3em;color:var(--text-accent);text-wrap:balance}
 .syn{font:400 18px/1.65 var(--serif);max-width:33ch;color:var(--ink-2)}
-.cta{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;min-height:44px;border-bottom:1px solid var(--gold);color:var(--gold);font-size:.875rem}
+.cta{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;min-height:44px;border-bottom:1px solid var(--gold);color:var(--text-accent);font-size:.875rem}
 .cta:hover{color:var(--ink)}
 .art-hit{display:flex;width:100%;height:100%;max-height:60svh;align-items:center;justify-content:center;pointer-events:auto}
 .flat-cover{width:auto;max-width:52%;max-height:52svh;object-fit:contain;box-shadow:12px 18px 30px #0005}
@@ -73,9 +73,9 @@
 .codex-ready .edition-index{position:absolute;bottom:0;left:0;right:0}
 .edition-index>a{display:flex;align-items:center;gap:.8rem;font:400 clamp(1rem,1.7vw,1.35rem)/1.15 var(--display);padding:.5rem;min-height:44px;border-bottom:2px solid transparent}
 .edition-index>a[aria-current=true]{border-color:var(--gold);background:linear-gradient(0deg,#d0af6810,transparent)}
-.edition-index>a:hover{color:var(--gold-hi)}
-.edition-index small{display:block;color:var(--gold);font:500 .7rem/1.5 var(--sans)}
-.edition-index .hint{align-self:center;max-width:12rem;font:500 .6rem/1.6 var(--sans);letter-spacing:.13em;color:var(--gold)}
+.edition-index>a:hover{color:var(--text-accent)}
+.edition-index small{display:block;color:var(--text-accent);font:500 .7rem/1.5 var(--sans)}
+.edition-index .hint{align-self:center;max-width:12rem;font:500 .6rem/1.6 var(--sans);letter-spacing:.13em;color:var(--text-accent)}
 .entry+.entry{margin-top:3rem}
 #reader{position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;border:0;padding:0;background:var(--bg-page);color:var(--ink);overflow:hidden}
 #reader::backdrop{background:var(--bg-page)}
@@ -83,11 +83,11 @@
 .reader-head,.reader-foot{position:absolute;left:0;right:0;padding:.65rem var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--ground);z-index:3}
 .reader-head{top:0;border-bottom:1px solid var(--rule-gold)}
 .reader-foot{bottom:0;border-top:1px solid var(--rule-gold)}
-#reader button{min-height:44px;padding:.5rem;color:var(--gold);background:none;border:0;font:500 .875rem var(--sans);cursor:pointer}
+#reader button{min-height:44px;padding:.5rem;color:var(--text-accent);background:none;border:0;font:500 .875rem var(--sans);cursor:pointer}
 #reader button:disabled{opacity:.5;cursor:default}
 .reader-head strong{font:400 clamp(1.1rem,2vw,1.6rem)/1.2 var(--serif)}
 .page-copy{position:absolute;left:var(--gutter);top:19%;width:27%;max-height:65%;overflow:auto;overscroll-behavior:contain;background:transparent;z-index:2;padding:0 .6rem 1rem 0}
-.page-copy h2{font:400 clamp(1.8rem,3vw,3rem)/1.05 var(--display);color:var(--gold);margin:.6em 0}
+.page-copy h2{font:400 clamp(1.8rem,3vw,3rem)/1.05 var(--display);color:var(--text-accent);margin:.6em 0}
 .page-copy p:not(.eyebrow){font:400 1.15rem/1.6 var(--serif);margin:1rem 0}
 .page-copy .text-link{display:flex;font-size:.7rem;line-height:1.5;margin-top:1rem}
 .viewer{position:absolute;inset:12% 1% 12% 32%;touch-action:pan-y;cursor:grab;z-index:1}
@@ -117,7 +117,7 @@ body.reader-open{overflow:hidden}
 /* Lenis owns interpolation while active; native smooth scrolling would compete with it. */
 html.lenis{scroll-behavior:auto!important}
 
-.enable-3d{position:absolute;right:var(--gutter);bottom:8rem;z-index:3;min-height:44px;padding:.7rem 1rem;border:1px solid var(--gold);background:var(--ground);color:var(--gold);font:500 .875rem var(--sans);cursor:pointer}
+.enable-3d{position:absolute;right:var(--gutter);bottom:8rem;z-index:3;min-height:44px;padding:.7rem 1rem;border:1px solid var(--gold);background:var(--ground);color:var(--text-accent);font:500 .875rem var(--sans);cursor:pointer}
 @media(max-width:959px){.enable-3d{bottom:6.5rem}}
 
 /* Compact chapter navigation stays clear of iOS browser controls. */
