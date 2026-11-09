@@ -1,0 +1,31 @@
+/* One canvas remains mounted while semantic document views are exchanged. */
+#webgl-layer{position:fixed;inset:0;z-index:0;pointer-events:none}
+#webgl-layer #stage{position:absolute;inset:0;width:100%;height:100%;background:transparent}
+body[data-view] main,body[data-view] footer{position:relative;z-index:1}
+body[data-view] footer{background:var(--bg-page)}
+body[data-view=home] #experience{background:transparent}
+body[data-view=home].codex-offstage #webgl-layer{visibility:hidden}
+body[data-view]:not([data-view=home]) .edition-index{display:none}
+body[data-view] .enable-3d{position:fixed;right:var(--gutter);bottom:6rem;z-index:35}
+.scene-slot{position:relative;height:400px;margin:2rem var(--gutter);border-block:1px solid var(--border-hairline);touch-action:pan-y}
+.scene-caption{position:absolute;top:1rem;left:0;right:0;text-align:center;font:500 .65rem var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--text-accent)}
+.scene-note{position:absolute;bottom:1rem;text-align:center;left:0;right:0;font:.8rem var(--sans);color:var(--text-muted)}
+.inspection-controls,.preview-controls{position:absolute;bottom:4rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.6rem;font:.7rem var(--sans)}
+.preview-controls{bottom:0;align-items:stretch}
+.scene-slot button{min-height:44px;padding:.6rem;border:1px solid var(--border-hairline);background:var(--bg-elevated);color:var(--text-primary);font:500 .72rem/1.4 var(--sans);cursor:pointer}
+.preview-controls button{width:50%}
+.no-gl .scene-slot{height:auto;min-height:160px}
+.no-gl .scene-slot[data-scene-slot=writing],.no-gl .scene-slot[data-scene-slot=about]{display:none}
+@media(min-width:1100px){
+ body[data-view]:not([data-view=home]) main{width:58%;--gutter:clamp(24px,4vw,58px)}
+ body[data-view]:not([data-view=home]) main .page-hero,body[data-view]:not([data-view=home]) main .section{width:calc(100% - 2*var(--gutter))}
+ body[data-view]:not([data-view=home]) main .page-hero h1{font-size:clamp(3rem,4.5vw,5rem)}
+ body[data-view]:not([data-view=home]) .scene-slot{position:fixed;left:59%;right:2%;top:calc(var(--header-h) + 2rem);height:calc(100svh - var(--header-h) - 5rem);margin:0}
+ body[data-view] .catalogue-entry,body[data-view] .author,body[data-view] .overview-grid,body[data-view] .systems-panel{display:block}
+ body[data-view] .catalogue-cover{width:180px;margin-bottom:1.5rem}
+ body[data-view] .author-portrait{margin-bottom:2rem}
+ body[data-view] .insights-essay-card{grid-template-columns:1fr;gap:.75rem}
+ body[data-view] .essay-link{justify-self:start}
+}
+@media(prefers-reduced-motion:reduce){.scene-slot *{scroll-behavior:auto}}
+@media(scripting:none){.scene-slot{display:none}body[data-view]:not([data-view=home]) main{width:100%}}

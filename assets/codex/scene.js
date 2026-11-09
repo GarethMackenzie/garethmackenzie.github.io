@@ -1,22 +1,24 @@
 (()=>{
 const BOOKS=window.MACKENZIE_BOOKS;
 let T;
-const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const home=window.MackenzieRouter.home;
+const $=id=>document.getElementById(id)||home.querySelector('#'+id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rendererCanvas=$('stage'), dialog=$('reader'), books=[], pages=[];
-let turnTween, sceneReady=false, gpuContext, mobileBounds;
+let turnTween, sceneReady=false, gpuContext, mobileBounds,editorial;
+let view=window.MackenzieRouter.view,cameraTween;
 let wakeScroll=()=>{};
 const coverLoads=[];
-const experience=document.getElementById("experience");
+const experience=home.querySelector("#experience");
 let regionVisible=true,contextFailed=false,lastRender=0,activeUntil=0,panelsReady=false;
 let renderer,camera,scene,particles,rig,folio=0,active=0,reading=false,trigger,scroller,savedFocus,ctx,muted=true,frame=0,previous=0,time=0,selected=0,dragging=null,transitioning=false,desired=0;
 const mix=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 function progress(value){
  const next=clamp(value,0,1);if(panelsReady&&Math.abs(next-desired)<.00001)return;
  const oldActive=active;panelsReady=true;desired=next;active=Math.round(desired);
- document.querySelectorAll('.folio').forEach((panel,i)=>{
+ home.querySelectorAll('.folio').forEach((panel,i)=>{
   panel.setAttribute('aria-hidden',String(i!==active));panel.inert=i!==active;
  });
- document.querySelectorAll('.edition-index [data-edition]').forEach((link,i)=>link.setAttribute('aria-current',String(i===active)));
+ home.querySelectorAll('.edition-index [data-edition]').forEach((link,i)=>link.setAttribute('aria-current',String(i===active)));
  if(particles)particles.material.uniforms.uTransitionProgress.value=desired;
  if(oldActive!==active||!mobileBounds)measureComposition();
  restart();
@@ -25,9 +27,9 @@ gsap.registerPlugin(ScrollTrigger);gsap.ticker.lagSmoothing(0);
 // Each edition has a resting interval, with a complete morph between intervals.
 function editionProgress(p){return clamp((p-.25)/.40)}
 function measureComposition(){
- if(innerWidth>959){mobileBounds=null;return;}
- const intro=document.querySelectorAll('.folio .copy')[active].getBoundingClientRect();
- const bar=document.querySelector('.edition-index').getBoundingClientRect();
+ if(view!=="home"||innerWidth>959){mobileBounds=null;return;}
+ const intro=home.querySelectorAll('.folio .copy')[active].getBoundingClientRect();
+ const bar=home.querySelector('.edition-index').getBoundingClientRect();
  const stage=experience.getBoundingClientRect();
  mobileBounds={top:intro.bottom-stage.top+12,bottom:Math.min(stage.height,bar.top-stage.top)-12,height:stage.height};
 }
@@ -43,6 +45,10 @@ function initScroll(){
  addEventListener('pagehide',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=0});
  wakeScroll();
  document.body.classList.add('codex-ready');
+ if(view!=="home")return;
+ mountHomeTrigger();
+}
+function mountHomeTrigger(){
  trigger=ScrollTrigger.create({
   trigger:experience,start:'top top',end:()=>'+='+experience.offsetHeight*2,
   pin:true,anticipatePin:1,invalidateOnRefresh:true,
@@ -70,22 +76,23 @@ function pageEdgeNormals(){
 function makeBook(b,index){
  const group=new T.Group(), binding=new T.MeshStandardMaterial({color:0x665339,roughness:.67,metalness:.18}), cream=new T.MeshStandardMaterial({color:0xefece4,roughness:.88,normalMap:pageEdgeNormals(),normalScale:new T.Vector2(.12,.12)});
  // The case has its own front and back boards; its recessed core exposes the page edges.
- const shell=box(1.62,2.42,.28,new T.MeshStandardMaterial({color:0x887644,roughness:.65}));
+ const shell=box(1.6,2.4,.28,new T.MeshStandardMaterial({color:0x887644,roughness:.65}));
  shell.scale.set(.038,1,1);shell.position.x=-.779; group.add(shell);
- const block=box(1.57,2.36,.25,cream);group.add(block);
- const back=box(1.62,2.42,.018,binding);back.position.z=-.135;group.add(back);
+ const block=box(1.56,2.34,.25,cream);group.add(block);
+ const back=box(1.6,2.4,.018,binding);back.position.z=-.135;group.add(back);
  const hinge=new T.Group();hinge.position.set(-.81,0,.139);group.add(hinge);
  const face=new T.MeshStandardMaterial({map:coverTexture(b.cover),color:index===1?0xf2efe7:0xffffff,roughness:.72,metalness:.035});
- const lid=box(1.62,2.42,.018,[binding,binding,binding,binding,face,cream]);lid.position.x=.81;hinge.add(lid);
+ const lid=box(1.6,2.4,.018,[binding,binding,binding,binding,face,cream]);lid.position.x=.81;hinge.add(lid);
  const materials=[...new Set([binding,cream,shell.material,face])];
  const accent=new T.PointLight(0xfff1d5,.3,4,2);accent.position.set(0,1,2);group.add(accent);
  group.userData={hinge,block,materials,accent,baseColors:materials.map(m=>m.color.clone())};group.rotation.y=-.45;scene.add(group);return group;
 }
 const particleVertex=`
-uniform float uTransitionProgress,uTime,uDpr;
+uniform float uTransitionProgress,uTime,uDpr,uScatter;
 attribute float aSeed;varying float vSeed;
+vec3 curl(vec3 p){return vec3(cos(p.y)+sin(p.z),cos(p.z)+sin(p.x),cos(p.x)+sin(p.y));}
 void main(){
- vec3 p=position;
+ vec3 p=position+curl(position*3.+uTime*.1)*(.012+.06*uScatter);
  p.x+=sin(uTime*.11+aSeed*32.)*.018;
  p.y+=cos(uTime*.09+aSeed*47.)*.012;
  vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;
@@ -99,11 +106,11 @@ void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
  gl_FragColor=vec4(uGold,exp(-18.*d*d)*(1.-smoothstep(.30,.5,d))*(.25+.35*vSeed)*uOpacity*clip);
 }`;
 function pointCloud(){
- const n=1500,geom=new T.BufferGeometry(),a=new Float32Array(n*3),seeds=new Float32Array(n);
+ const n=2000,geom=new T.BufferGeometry(),a=new Float32Array(n*3),seeds=new Float32Array(n);
  let seed=81273;const rand=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);
  for(let i=0;i<n;i++){a.set([rand()-.5,rand()-.5,(rand()-.5)*.4],i*3);seeds[i]=rand()}
  geom.setAttribute('position',new T.BufferAttribute(a,3));geom.setAttribute('aSeed',new T.BufferAttribute(seeds,1));
- const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uGold:{value:new T.Color(getComputedStyle(document.documentElement).getPropertyValue('--gold-primary').trim())},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
+ const mat=new T.ShaderMaterial({vertexShader:particleVertex,fragmentShader:particleFragment,transparent:true,depthWrite:false,uniforms:{uScatter:{value:0},uTransitionProgress:{value:desired},uTime:{value:0},uDpr:{value:renderer.getPixelRatio()},uGold:{value:new T.Color(getComputedStyle(document.documentElement).getPropertyValue('--gold-primary').trim())},uOpacity:{value:1},uViewHeight:{value:1},uClipTop:{value:0},uClipBottom:{value:1}}});
  const cloud=new T.Points(geom,mat);cloud.frustumCulled=false;scene.add(cloud);return cloud;
 }
 addEventListener('mackenzie-theme-change',()=>{if(particles){particles.material.uniforms.uGold.value.set(getComputedStyle(document.documentElement).getPropertyValue('--gold-primary').trim());restart()}});
@@ -115,13 +122,14 @@ function contactShadow(){
  const material=new T.MeshBasicMaterial({map:new T.CanvasTexture(canvas),transparent:true,depthWrite:false,toneMapped:false});
  const mesh=new T.Mesh(new T.PlaneGeometry(2.5,.65),material);mesh.rotation.x=-1.1;scene.add(mesh);return mesh;
 }
-function dimensions(){return reading?{width:innerWidth,height:innerHeight}:{width:experience.clientWidth,height:experience.clientHeight};}
+function dimensions(){return {width:innerWidth,height:innerHeight}}
+function viewport(){return !reading&&view!=='home'?document.querySelector('[data-scene-slot]')?.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight}}
 function fit(){
  measureComposition();
  if(!renderer)return;
  const size=dimensions();
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<=959?1.5:2));
- renderer.setSize(size.width,size.height,false);camera.aspect=size.width/size.height;camera.updateProjectionMatrix();
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+ renderer.setSize(size.width,size.height,false);const rect=viewport();camera.aspect=rect?.width/Math.max(1,rect?.height)||size.width/size.height;camera.updateProjectionMatrix();
  particles.material.uniforms.uDpr.value=renderer.getPixelRatio();particles.material.uniforms.uViewHeight.value=renderer.domElement.height;restart();
 }
 function fallback(message){
@@ -136,13 +144,13 @@ async function initScene(){
  renderer.setClearColor(0x000000,0);scene=new T.Scene();camera=new T.PerspectiveCamera(44,1,.1,60);camera.position.z=8.5;
  scene.add(new T.HemisphereLight(0xfff7e3,0xb4a991,1.1));
  const light=new T.DirectionalLight(0xfff2d5,1.8);light.position.set(-3,5,5);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.0004;scene.add(light);
-BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();fit();layout(100);
+BOOKS.forEach(b=>{const book=makeBook(b,books.length);book.userData.shadow=contactShadow();books.push(book)});particles=pointCloud();editorial=window.createEditorialViews({T,scene,books,camera,reduced,restart});editorial.setView(view);fit();layout(100);
  await Promise.all(coverLoads);
  // Compile off the render path where KHR_parallel_shader_compile is available.
  // Keep the semantic covers visible until a complete frame is ready.
  await renderer.compileAsync(scene,camera);
  if(contextFailed)return;
- sceneReady=true;layout(100);renderer.render(scene,camera);
+ sceneReady=true;layout(100);renderScene();
  document.body.classList.add('gl');document.body.dataset.codexReady='true';
  if(reading){makeRig();restart()}else{activeUntil=0;frame=requestAnimationFrame(animate);}
 }
@@ -154,7 +162,7 @@ function textTexture(title,body,n){
  const tx=new T.CanvasTexture(cv);tx.colorSpace=T.SRGBColorSpace;return tx;
 }
 function leaf(item,n){
- const segments=14,w=1.53;const geo=new T.BoxGeometry(w,2.28,.007,segments,1,1);geo.translate(w/2,0,0);
+ const segments=20,w=1.53;const geo=new T.BoxGeometry(w,2.28,.007,segments,1,1);geo.translate(w/2,0,0);
  const pos=geo.attributes.position,indices=[],weights=[],bones=[];
  for(let j=0;j<=segments;j++){let b=new T.Bone();if(j){b.position.x=w/segments;bones[j-1].add(b);}bones.push(b);}
  for(let j=0;j<pos.count;j++){let along=clamp(pos.getX(j)/w)*segments,idx=Math.min(segments-1,Math.floor(along)),f=along-idx;indices.push(idx,idx+1,0,0);weights.push(1-f,f,0,0);}
@@ -171,6 +179,11 @@ function pose(p,f){f=clamp(f);p.userData.f=f;const bones=p.userData.bones;
 }
 function layout(dt){
  if(!renderer)return;
+ editorial?.layout(dt,time,reading);
+ if(view!=='home'&&!reading){
+  particles.position.set(0,0,-2);particles.scale.set(6,4,.7);particles.material.uniforms.uClipTop.value=0;particles.material.uniforms.uClipBottom.value=1;particles.material.uniforms.uOpacity.value=view==='writing'?.6:.25;particles.material.uniforms.uScatter.value=editorial?.state.hover||0;return;
+ }
+ particles.material.uniforms.uScatter.value=0;
  const mobile=innerWidth<=959,half=Math.tan(camera.fov*Math.PI/360)*camera.position.z,wide=half*camera.aspect;
  const speed=reduced.matches?1:1-Math.exp(-dt*8);
  const phone=innerWidth<768;
@@ -214,16 +227,25 @@ function layout(dt){
  particles.scale.set(7*atmosphereScale,4.5*atmosphereScale,.7*atmosphereScale);
  particles.material.uniforms.uOpacity.value=mix(particles.material.uniforms.uOpacity.value,reading?0:1,speed);
 }
+function renderScene(){
+ renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.clear();
+ const rect=viewport();if(!rect||rect.bottom<0||rect.top>innerHeight)return;
+ if(!reading&&view!=='home'){
+  renderer.setViewport(rect.left,innerHeight-rect.top-rect.height,rect.width,rect.height);
+  renderer.setScissor(Math.max(0,rect.left),Math.max(0,innerHeight-rect.top-rect.height),Math.min(innerWidth,rect.width),Math.min(innerHeight,rect.height));renderer.setScissorTest(true);
+ }
+ renderer.render(scene,camera);renderer.setScissorTest(false);
+}
 function animate(ms){
  frame=0;
  if(!renderer||!sceneReady||contextFailed||document.hidden||(!regionVisible&&!reading))return;
  if(!reduced.matches&&ms-lastRender<33){frame=requestAnimationFrame(animate);return;}
  const dt=Math.min(.05,(ms-previous)/1000||.016);previous=ms;lastRender=ms;
  if(!reduced.matches&&!reading)time+=dt;
- particles.material.uniforms.uTime.value=time;layout(dt);renderer.render(scene,camera);
+ particles.material.uniforms.uTime.value=time;layout(dt);renderScene();
  const first=books[0],second=books[1];
  experience.dataset.sceneState=JSON.stringify({
-  active,desired,particleCount:particles.geometry.attributes.position.count,
+  view,editorial:editorial?.state,active,desired,particleCount:particles.geometry.attributes.position.count,
   first:{z:first.position.z,scale:first.scale.x},
   second:{z:second.position.z,scale:second.scale.x},
   bookCount:books.length,cameraAspect:camera.aspect,transparent:renderer.getClearAlpha()===0&&scene.background===null,
@@ -284,11 +306,11 @@ function closeReader(){
  if(!reading)return;
  turnTween?.kill();
  reading=false;transitioning=false;dragging=null;if(renderer)renderer.shadowMap.enabled=false;
- dialog.close();experience.prepend(rendererCanvas);document.body.classList.remove('reader-open');scroller?.start();
+ dialog.close();document.getElementById('webgl-layer').append(rendererCanvas);document.body.classList.remove('reader-open');scroller?.start();
  // The reader meshes disappear immediately, while the case eases closed.
  dropRig();fit();restart();savedFocus?.focus({preventScroll:true});
 }
-document.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{
+home.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{
  e.preventDefault();
  if(renderer&&b.classList.contains('art-hit')&&e.detail){
   const rect=rendererCanvas.getBoundingClientRect();const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2),camera);
@@ -297,7 +319,7 @@ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{
  }
  openReader(Number(b.dataset.open));
 });
-document.querySelectorAll('[data-edition]').forEach(link=>link.addEventListener('click',event=>{
+home.querySelectorAll('[data-edition]').forEach(link=>link.addEventListener('click',event=>{
  event.preventDefault();const index=Number(link.dataset.edition);
  if(reading)closeReader();
  const destination=trigger.start+(trigger.end-trigger.start)*(index===0?.05:.85);
@@ -338,6 +360,8 @@ function release(e,cancelled=false){
 $('drag').addEventListener('pointerup',release);
 $('drag').addEventListener('pointercancel',e=>release(e,true));
 addEventListener('resize',()=>{ScrollTrigger.refresh();fit()});
+addEventListener('scroll',()=>{if(view!=='home'){fit();restart()}},{passive:true});
+addEventListener('mackenzie-theme-change',()=>editorial?.theme());
 // Pin refresh can change the stage after the window resize event.
 const stageObserver=new ResizeObserver(()=>fit());stageObserver.observe(experience);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0}else restart()});
@@ -347,13 +371,28 @@ rendererCanvas.addEventListener('webglcontextrestored',()=>{
 });
 reduced.addEventListener('change',()=>{scroller.options.smoothWheel=!reduced.matches;restart()});
 initScroll();
+window.MackenzieScene={
+ beforeView(){if(reading)closeReader();trigger?.disable(true);cameraTween?.kill()},
+ setView(next){
+  view=next;regionVisible=true;document.body.classList.remove('codex-offstage');
+  editorial?.setView(next);
+  if(next==='home'){if(trigger)trigger.enable();else mountHomeTrigger();ScrollTrigger.refresh()}
+  scroller?.resize();fit();
+  if(camera)cameraTween=gsap.to(camera.position,{z:next==='home'?8.5:8,duration:reduced.matches?0:1.1,ease:'power2.inOut',onUpdate:()=>{fit();restart()}});
+  restart();
+ },
+ scrollTo(y){scroller?.scrollTo(y,{immediate:true,force:true});wakeScroll()},
+ get renderer(){return renderer},get canvas(){return rendererCanvas},
+ get state(){return {view,bookCount:books.length,particleCount:particles?.geometry.attributes.position.count,ready:sceneReady}}
+};
+document.addEventListener('click',event=>{const button=event.target.closest('[data-preview]');if(button)openReader(Number(button.dataset.preview))});
 document.fonts.ready.then(()=>{
  document.body.classList.add('no-gl');
  const offer3D=()=>{
   const button=document.createElement('button');button.type='button';button.className='enable-3d';button.textContent='Enable 3D';
   button.setAttribute('aria-label','Enable 3D books. May be slower on this device.');
   button.onclick=()=>{button.disabled=true;button.textContent='Preparing 3D…';start(true).finally(()=>button.remove())};
-  experience.append(button);document.body.dataset.codexFallback='performance';
+  document.body.append(button);document.body.dataset.codexFallback='performance';
  };
  const start=async(force=false)=>{
   try{
@@ -372,7 +411,7 @@ document.fonts.ready.then(()=>{
 });
 addEventListener('pagehide',event=>{
  if(event.persisted){cancelAnimationFrame(frame);frame=0;return;}
- stageObserver.disconnect();turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
+ stageObserver.disconnect();editorial?.dispose();cameraTween?.kill();turnTween?.kill();trigger?.kill();scroller?.destroy();cancelAnimationFrame(frame);dropRig();
  const geometries=new Set(),materials=new Set(),textures=new Set();
  scene?.traverse(object=>{
   if(object.geometry)geometries.add(object.geometry);

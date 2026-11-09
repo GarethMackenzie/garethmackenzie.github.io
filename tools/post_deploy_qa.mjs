@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 const base='https://mackenziebooks.bbroot.com', expected=process.env.EXPECTED_SHA;
 assert.match(expected||'',/^[a-f0-9]{40}$/);
 const routes=['/','/books/','/when-advantage-expires/','/built/','/about/','/insights/','/contact/'];
-const assets=['/assets/codex/scene.js','/assets/codex/books.js','/assets/codex/bootstrap.js','/assets/codex/gpu-probe.js','/dist/author-home.css','/dist/site.css','/script.js'];
+const assets=['/assets/codex/scene.js','/assets/codex/books.js','/assets/codex/bootstrap.js','/assets/codex/gpu-probe.js','/dist/author-home.css','/dist/site.css','/script.js','/assets/codex/router.js','/assets/codex/views.js','/dist/editorial-views.css'];
 const hash=x=>createHash('sha256').update(x).digest('hex');
 let served=false;
 for(let i=0;i<60;i++){

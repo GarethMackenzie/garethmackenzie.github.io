@@ -27,7 +27,7 @@ for(const width of [320,390,768,1024,1440,1920]){
  await page.waitForFunction(()=>document.body.dataset.codexReady==='true',{},{timeout:20000});await settle(page);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'horizontal overflow');
  const state=()=>page.locator('#experience').evaluate(el=>JSON.parse(el.dataset.sceneState));
- let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert.equal(s.bookCount,2);assert.equal(s.particleCount,1500);assert(s.transparent);assert.equal(s.atmosphere.z,-1.5);
+ let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert.equal(s.bookCount,2);assert.equal(s.particleCount,2000);assert(s.transparent);assert.equal(s.atmosphere.z,-1.5);
  if(width>=960){assert.equal(s.atmosphere.x,7);assert.equal(s.atmosphere.y,4.5)}
  if(width<768){const bar=await page.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=844-15,'chapter bar overlaps bottom safe margin');assert(bar.x>=15&&bar.x+bar.width<=width-15)}
  await page.screenshot({path:`${out}/hero-${width}.png`});
@@ -124,5 +124,33 @@ await test('shared themes: persistence, contrast, transparent WebGL and Amazon d
  assert(await p.evaluate(()=>{const el=document.getElementById("experience"),s=JSON.parse(el.dataset.sceneState);return Math.abs(s.cameraAspect-el.clientWidth/el.clientHeight)<.01}),"WebGL camera aspect differs from resized stage");
  await p.screenshot({path:`${out}/alabaster-webgl-1440.png`});
  await c.close();
+});
+await test('persistent views: one canvas, history, inspection, reader, focus and route fallbacks',async()=>{
+ const c=await browser.newContext({viewport:{width:1440,height:1000}}),p=await start(c);
+ await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
+ await p.evaluate(()=>{window.testCanvas=document.getElementById('stage');window.testRenderer=window.MackenzieScene.renderer;window.testDocument=document});
+ for(const [view,path] of [['books','/books/'],['writing','/insights/'],['about','/about/'],['home','/']]){
+  await p.locator(view==='home'?'.site-header .wordmark':`.site-header a[href="${path}"]`).click();
+  await p.waitForFunction(view=>document.body.dataset.view===view&&!document.body.hasAttribute('aria-busy'),view);await settle(p);
+  assert(await p.evaluate(()=>window.testCanvas===document.getElementById('stage')&&window.testRenderer===window.MackenzieScene.renderer&&window.testDocument===document),'renderer or document replaced');
+  assert.equal(await p.locator('canvas#stage').count(),1);assert.equal(await p.locator('main h1').count(),1);
+  assert(await p.evaluate(()=>document.activeElement===document.querySelector('main h1')),'route focus');
+  if(view==='books'){
+   const before=await p.evaluate(()=>JSON.parse(window.MackenzieRouter.home.querySelector('#experience').dataset.sceneState).editorial.angle);
+   await p.locator('[data-orbit="1"]').click();await settle(p);
+   const after=await p.evaluate(()=>JSON.parse(window.MackenzieRouter.home.querySelector('#experience').dataset.sceneState).editorial.angle);assert(after>before);
+   await p.locator('[data-preview="1"]').click();await settle(p);assert.match(await p.locator('#folioNo').innerText(),/1 \/ 6/);
+   await p.keyboard.press('ArrowRight');await settle(p);assert.match(await p.locator('#pageTitle').innerText(),/Table of Contents/);
+   for(let i=0;i<4;i++){await p.locator('#next').click();await settle(p)}assert.match(await p.locator('#folioNo').innerText(),/6 \/ 6/);assert(await p.locator('#buy').isVisible());
+   await p.keyboard.press('Escape');assert(await p.locator('[data-preview="1"]').evaluate(el=>el===document.activeElement));
+  }
+  if(view==='writing'){await p.locator('.insights-essay-card').nth(1).focus();await settle(p);assert.equal(await p.evaluate(()=>JSON.parse(window.MackenzieRouter.home.querySelector('#experience').dataset.sceneState).editorial.essay),1)}
+  await p.screenshot({path:`${out}/persistent-${view}-1440.png`});
+ }
+ await p.goBack();await p.waitForFunction(()=>document.body.dataset.view==='about'&&!document.body.hasAttribute('aria-busy'));
+ await p.goForward();await p.waitForFunction(()=>document.body.dataset.view==='home'&&!document.body.hasAttribute('aria-busy'));
+ await p.evaluate(()=>{window.MackenzieRouter.navigate('/books/');window.MackenzieRouter.navigate('/about/')});await p.waitForFunction(()=>document.body.dataset.view==='about'&&!document.body.hasAttribute('aria-busy'));
+ await p.setViewportSize({width:390,height:844});await settle(p);await p.screenshot({path:`${out}/persistent-about-390.png`});
+ assert.deepEqual(p.testErrors,[]);await c.close();
 });
 await browser.close();fs.writeFileSync(`${out}/results.json`,JSON.stringify({passed:results,failures},null,2));if(failures.length)process.exitCode=1;
