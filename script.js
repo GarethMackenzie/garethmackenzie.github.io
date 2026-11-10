@@ -41,7 +41,7 @@ const scheduleViewportUpdate = () => {
   viewportFrame = requestAnimationFrame(updateViewportState);
 };
 
-updateViewportState();
+scheduleViewportUpdate();
 window.addEventListener('scroll', scheduleViewportUpdate, { passive: true });
 window.addEventListener('resize', scheduleViewportUpdate, { passive: true });
 

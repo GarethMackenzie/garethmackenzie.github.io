@@ -1,6 +1,7 @@
 // The original cover is the first-paint asset. WebGL progressively enhances it.
 (async()=>{
- window.MACKENZIE_GPU=new Promise(resolve=>{
+ let probeGPU;
+ window.MACKENZIE_GPU=new Promise(resolve=>{probeGPU=()=>{
   if(!('Worker' in window)||!('OffscreenCanvas' in window)){resolve('unknown');return;}
   let worker,timer,done=false;
   const finish=value=>{if(done)return;done=true;clearTimeout(timer);worker?.terminate();resolve(value)};
@@ -10,9 +11,13 @@
    worker.onerror=event=>{event.preventDefault();finish('unknown')};
    timer=setTimeout(()=>finish('unknown'),2500);
   }catch{finish('unknown')}
- });
+ };});
  const cover=document.querySelector('#folio-1 .flat-cover');
  try{await cover?.decode()}catch{}
+ await document.fonts.ready;
+ // Paint readable content before driver discovery and animation setup compete for CPU.
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ probeGPU();
  const load=src=>new Promise((resolve,reject)=>{
   const script=document.createElement('script');script.src=src;
   script.onload=resolve;script.onerror=()=>reject(new Error('Unable to load '+src));
