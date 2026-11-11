@@ -181,7 +181,7 @@ def audit() -> int:
     parsed_pages: dict[str, PageParser] = {}
 
     html_paths = sorted(ROOT.glob("**/index.html"))
-    html_paths = [p for p in html_paths if ".git" not in p.parts and "node_modules" not in p.parts]
+    html_paths = [p for p in html_paths if not any(part in {".git", "node_modules", "_site", "qa-reports"} for part in p.parts)]
 
     for path in html_paths:
         route = route_for(path)
@@ -326,7 +326,7 @@ def audit() -> int:
     # Fonts are self-hosted and preloaded; no third-party stylesheet is allowed.
     for path in sorted(ROOT.glob("**/*.html")):
         rel = path.relative_to(ROOT).as_posix()
-        if rel.startswith((".git", "node_modules")) or rel.startswith("google"):
+        if rel.startswith((".git", "node_modules", "_site", "qa-reports")) or rel.startswith("google"):
             continue
         page_source = path.read_text(encoding="utf-8")
         linked = re.findall(r'<link rel="stylesheet" href="([^"]+)"', page_source)
@@ -365,7 +365,7 @@ def audit() -> int:
 
     for path in sorted(ROOT.glob("**/*.html")):
         rel = path.relative_to(ROOT).as_posix()
-        if rel.startswith((".git", "node_modules")) or rel.startswith("google"):
+        if rel.startswith((".git", "node_modules", "_site", "qa-reports")) or rel.startswith("google"):
             continue
         page_source = path.read_text(encoding="utf-8")
         og = re.search(r'<meta property="og:image" content="([^"]+)">', page_source)

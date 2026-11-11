@@ -57,7 +57,7 @@ def local_target(url: str) -> Path | None:
 
 
 errors = []
-pages = sorted(ROOT.rglob("index.html"))
+pages = sorted(p for p in ROOT.rglob("index.html") if not any(part in {".git", "node_modules", "_site", "qa-reports"} for part in p.parts))
 for page in pages:
     text = page.read_text(encoding="utf-8")
     parser = PageParser()
