@@ -1,6 +1,6 @@
 /* One canvas remains mounted while semantic document views are exchanged. */
 #webgl-layer{position:fixed;inset:0;z-index:0;pointer-events:none}
-#webgl-layer #stage{position:absolute;inset:0;width:100%;height:100%;background:transparent}
+#webgl-layer #webgl-stage{position:absolute;inset:0;width:100%;height:100%;background:transparent}
 body[data-view] main,body[data-view] footer{position:relative;z-index:1}
 body[data-view] footer{background:var(--bg-page)}
 body[data-view=home] #experience{background:transparent}
@@ -17,10 +17,10 @@ body[data-view] .enable-3d{position:fixed;right:var(--gutter);bottom:6rem;z-inde
 .no-gl .scene-slot{height:auto;min-height:160px}
 .no-gl .scene-slot[data-scene-slot=writing],.no-gl .scene-slot[data-scene-slot=about]{display:none}
 @media(min-width:1100px){
- body[data-view]:not([data-view=home]) main{width:58%;--gutter:clamp(24px,4vw,58px)}
- body[data-view]:not([data-view=home]) main .page-hero,body[data-view]:not([data-view=home]) main .section{width:calc(100% - 2*var(--gutter))}
- body[data-view]:not([data-view=home]) main .page-hero h1{font-size:clamp(3rem,4.5vw,5rem)}
- body[data-view]:not([data-view=home]) .scene-slot{position:fixed;left:59%;right:2%;top:calc(var(--header-h) + 2rem);height:calc(100svh - var(--header-h) - 5rem);margin:0}
+ body[data-view=about] main{width:58%;--gutter:clamp(24px,4vw,58px)}
+ body[data-view=about] main .page-hero,body[data-view=about] main .section{width:calc(100% - 2*var(--gutter))}
+ body[data-view=about] main .page-hero h1{font-size:clamp(3rem,4.5vw,5rem)}
+ body[data-view=about] .scene-slot{position:fixed;left:59%;right:2%;top:calc(var(--header-h) + 2rem);height:calc(100svh - var(--header-h) - 5rem);margin:0}
  body[data-view] .catalogue-entry,body[data-view] .author,body[data-view] .overview-grid,body[data-view] .systems-panel{display:block}
  body[data-view] .catalogue-cover{width:180px;margin-bottom:1.5rem}
  body[data-view] .author-portrait{margin-bottom:2rem}
@@ -28,4 +28,28 @@ body[data-view] .enable-3d{position:fixed;right:var(--gutter);bottom:6rem;z-inde
  body[data-view] .essay-link{justify-self:start}
 }
 @media(prefers-reduced-motion:reduce){.scene-slot *{scroll-behavior:auto}}
-@media(scripting:none){.scene-slot{display:none}body[data-view]:not([data-view=home]) main{width:100%}}
+@media(scripting:none){.scene-slot{display:none}body[data-view=about] main{width:100%}}
+
+/* Embedded compositions share the fixed transparent renderer. */
+#webgl-stage,#webgl-layer #webgl-stage{position:fixed;inset:0;width:100vw;height:100svh;z-index:0;pointer-events:none}
+#reader{background:var(--bg-glass)}#reader::backdrop{background:var(--bg-page)}
+body[data-view=books] main,body[data-view=writing] main,body[data-view=media] main,body[data-view=contact] main,body[data-view=detail] main,body[data-view=legal] main,body[data-view=article] main{width:100%}
+body[data-view] .scene-slot[data-book-slot]{position:relative;inset:auto;grid-column:1;grid-row:1;height:440px;margin:0;min-width:0;border:1px solid var(--border-hairline);touch-action:pan-y;cursor:grab}
+body[data-view=books] .catalogue-entry{display:grid;grid-template-columns:minmax(260px,.85fr) minmax(0,1fr);gap:clamp(2rem,6vw,6rem);align-items:center;padding-block:3rem}
+body[data-view=books].gl .catalogue-cover{display:none}
+body[data-view=books] .catalogue-body{grid-column:2;grid-row:1}
+.preview-controls button{width:auto;padding-inline:1.2rem}.scene-slot .inspection-controls{bottom:3.5rem}.scene-slot .preview-controls{bottom:.5rem}
+.essay-art{height:180px;min-width:0;border-top:1px solid var(--border-hairline);pointer-events:none}
+.no-gl .essay-art{display:none}.ledger li{position:relative}.ledger li .essay-art{height:140px}
+body[data-view=writing] .insights-essay-card{display:grid;grid-template-columns:1fr;gap:1rem}
+.shift-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--border-hairline);border:1px solid var(--border-hairline)}
+.shift-card{padding:1.6rem;background:var(--bg-page);transition:transform .25s ease}.shift-card summary{display:flex;align-items:center;gap:1rem;cursor:pointer;list-style:none}.shift-card h3{font:400 clamp(1.25rem,2.2vw,1.75rem)/1.2 var(--serif);flex:1}.shift-card p{margin-top:1rem;max-width:38ch;color:var(--text-secondary)}
+.shift-card[open] summary>span:last-child{transform:rotate(45deg)}
+.audience-pillars{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}.audience-pillars li{padding-block:1.5rem;border-top:1px solid var(--border-hairline)}.audience-pillars h3{font:400 clamp(1.3rem,2vw,2rem)/1.2 var(--serif);margin-top:.7rem}
+.home-faq{margin-top:3rem;max-width:55rem}.home-faq details{padding:1.4rem 0;border-top:1px solid var(--border-hairline)}.home-faq summary{cursor:pointer;font:400 1.5rem/1.3 var(--serif)}.home-faq p{margin-top:1rem;color:var(--text-secondary)}
+.author-tagline{font:400 .85rem/1.5 var(--serif);color:var(--text-secondary);margin-block:.7rem}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.shift-card:hover{transform:perspective(900px) rotateX(2deg) rotateY(-2deg)}}
+@media(min-width:1100px){.ledger li{padding-right:240px}.ledger li .essay-art{position:absolute;right:0;top:1rem;width:220px;height:calc(100% - 2rem);border-top:0}}
+@media(max-width:767px){body[data-view=books] .catalogue-entry{grid-template-columns:1fr}.catalogue-entry .catalogue-body{grid-column:1!important;grid-row:auto!important}body[data-view] .scene-slot[data-book-slot]{height:360px}.shift-grid{grid-template-columns:1fr}.audience-pillars{grid-template-columns:1fr 1fr}.author-tagline{font-size:.75rem}.folio .syn{font-size:16px;line-height:1.45}.folio{padding-bottom:calc(6rem + env(safe-area-inset-bottom,0px))}}
+
+@media(max-width:767px){.site-header .wordmark{white-space:nowrap;font-size:clamp(.65rem,2.8vw,.85rem);letter-spacing:.16em}}

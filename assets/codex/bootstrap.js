@@ -29,7 +29,7 @@
   await load('/assets/codex/router.js');await window.MackenzieRouter.ready;
   await Promise.all([load('/assets/vendor/gsap.js'),load('/assets/vendor/lenis.js')]);
   await load('/assets/vendor/st.js');
-  await load('/assets/codex/views.js');await load('/assets/codex/scene.js');
+  await load('/assets/codex/materials.js');await load('/assets/codex/views.js');await load('/assets/codex/scene.js');
  }catch{
   document.body.classList.add('no-gl');
  }

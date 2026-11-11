@@ -330,14 +330,7 @@ def audit() -> int:
             continue
         page_source = path.read_text(encoding="utf-8")
         linked = re.findall(r'<link rel="stylesheet" href="([^"]+)"', page_source)
-        if rel == "index.html":
-            expected = ["/dist/site.css", "/dist/author-home.css", "/dist/pages.css", "/dist/editorial-views.css"]
-        elif rel in ("books/index.html", "insights/index.html", "about/index.html"):
-            expected = ["/dist/site.css", "/dist/pages.css", "/dist/author-home.css", "/dist/editorial-views.css"]
-        elif rel.startswith("insights/") and rel != "insights/index.html":
-            expected = ["/dist/site.css", "/dist/pages.css", "/insight-article.css"]
-        else:
-            expected = ["/dist/site.css", "/dist/pages.css"]
+        expected = ["/dist/site.css", "/dist/pages.css", "/dist/author-home.css", "/insight-article.css", "/dist/editorial-views.css"]
         if linked != expected:
             failures.append(f"{rel}: stylesheets are {linked}, expected {expected}")
         for href in linked:

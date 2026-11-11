@@ -190,15 +190,16 @@ if (contactForm) {
 // Theme preference is restored synchronously in the document head.
 const themeToggle=document.querySelector('[data-theme-toggle]');
 function syncTheme(){
- const light=root.dataset.theme==='alabaster';
- themeToggle?.setAttribute('aria-label',light?'Switch to obsidian theme':'Switch to alabaster theme');
+ const light=(root.dataset.theme==='light'||root.dataset.theme==='alabaster');
+ themeToggle?.setAttribute('aria-label',light?'Switch to Sovereign theme':'Switch to Editorial theme');
+ themeToggle?.setAttribute('title',light?'Editorial · switch to Sovereign':'Sovereign · switch to Editorial');
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',light?'#FAF8F3':'#0D0D0C');
  window.dispatchEvent(new Event('mackenzie-theme-change'));
 }
 themeToggle?.addEventListener('click',()=>{
- root.dataset.theme=root.dataset.theme==='alabaster'?'obsidian':'alabaster';
+ root.dataset.theme=(root.dataset.theme==='light'||root.dataset.theme==='alabaster')?'obsidian':'light';
  try{localStorage.setItem('mackenzie_theme',root.dataset.theme)}catch{}
  syncTheme();
 });
-window.addEventListener('storage',event=>{if(event.key==='mackenzie_theme'){root.dataset.theme=event.newValue==='alabaster'||event.newValue==='light'?'alabaster':'obsidian';syncTheme()}});
+window.addEventListener('storage',event=>{if(event.key==='mackenzie_theme'){root.dataset.theme=event.newValue==='alabaster'||event.newValue==='light'?'light':'obsidian';syncTheme()}});
 syncTheme();
