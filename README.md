@@ -33,23 +33,11 @@ There is no BUILT button in the global navigation: BUILT is the current flagship
 
 ## Stylesheets
 
-Every page loads `dist/site.css` first (fonts, layout tokens, header, footer, buttons, consent banner), then one page stylesheet:
-
-| Pages | Page stylesheet |
-|---|---|
-| `/` | `dist/author-home.css` |
-| About, Books, BUILT, Media, Contact, Writing index, Privacy, Terms, 404 | `dist/pages.css` |
-| `/insights/<slug>/` (10 essays) | `dist/pages.css` + `insight-article.css` |
-
-All of these are edited directly. There is no build step for them.
-
-**Layout grid.** One set of tokens in `dist/site.css` drives every page: `--page-max` (1320px content width), `--gutter` (page margin, 24px on small screens up to 72px), `--col-gap`, twelve columns, `--section-y` (section spacing), `--measure` (40rem reading column) and `--header-h`. The header, footer and every section align to the same left edge. Two-column pages use one split: a left rail in columns 1-5 and content in columns 6-12. Essays keep the narrower `--measure` column inside the same 12-column grid.
-
-**Fonts.** Newsreader (variable, optical size) and Instrument Sans (variable) are self-hosted as trimmed WOFF2 subsets in `assets/fonts/` (weights 400-600 and only the characters the site uses; rebuild them with `tools/subset_fonts.py`), under the SIL Open Font License 1.1 (full text in `assets/fonts/LICENSE.txt`). They are preloaded in every page head. `dist/site.css` also declares metric-adjusted local fallbacks so headlines keep their line breaks while the web fonts load. GitHub Pages serves static files with `Cache-Control: max-age=600`, so returning visitors revalidate the font files after ten minutes.
-
-**Books catalogue.** `/books/` is a list of `.catalogue-entry` items. Each carries `data-status`. To add a title, add another `li.catalogue-entry`; when BUILT is no longer the flagship, remove the `catalogue-entry--flagship` modifier and change its status label to "Published work".
-
-**Retired CSS pipeline.** The old generated bundles (`dist/interior.css`, `dist/home.css`), their source stylesheets and `tools/build_css.py` were removed. `tools/build_cover_images.py` regenerates the cover WebP renditions, `tools/apply_technical_seo.py`, `tools/generate_social_cards.py` and `tools/final_hardening.py` still run in the regeneration workflow, and `tools/site_qa.py` now checks the stylesheet architecture (shared foundation first, one page stylesheet, self-hosted fonts).
+All routes load the shared foundation and view styles in the same order:
+`dist/site.css`, `dist/pages.css`, `dist/author-home.css`,
+`insight-article.css`, and `dist/editorial-views.css`. This keeps direct entry
+and client-side navigation consistent. These are authored files with no CSS build
+step. Newsreader and Instrument Sans remain self-hosted under `assets/fonts/`.
 
 ## Validation
 
@@ -79,6 +67,41 @@ correct.
 
 ## Shared theme and two-book homepage
 
-`dist/site.css` owns the obsidian/alabaster tokens for every page. Each document restores `mackenzie_theme` before styles paint; the shared header control in `script.js` persists changes. Large headings retain the exact palette gold. Small text uses a contrast-adjusted gold blend in alabaster mode.
+`dist/site.css` owns the obsidian/alabaster tokens for every page. Each document restores `mackenzie_theme` before styles paint; the shared header control in `script.js` persists changes. Large headings retain the exact palette gold. Small text uses the dedicated gold-eyebrow token in each theme.
 
-`assets/codex/books.js` contains exactly two editions and their purchase links. Covers open accessible readers. The fixed ledger selects a scroll stop. The transparent Three.js scene has two hardcover groups and 1,500 drifting dust points, with reduced-motion and semantic fallbacks. Browser QA covers themes, resizing, both directions of scrolling, readers and mobile safe-area layouts.
+`assets/codex/books.js` contains exactly two editions and their purchase links. Covers open accessible readers. The fixed ledger selects a scroll stop. The transparent Three.js scene has two hardcover groups and 1,600 drifting dust points, with reduced-motion and semantic fallbacks. Browser QA covers themes, resizing, both directions of scrolling, readers and mobile safe-area layouts.
+
+## Sovereign editorial runtime
+
+Every entry document loads the same five stylesheets, in the same order: site,
+pages, author-home, insight-article, and editorial-views. This keeps History API
+navigation and direct entry visually consistent. The light theme uses
+`data-theme="light"`; older saved `alabaster` preferences remain supported.
+
+- `assets/codex/materials.js`: 1024 × 1536 procedural cover artwork, raster
+  replacement, separate foil metalness/roughness maps, sRGB albedo and linear
+  data textures. A missing cover leaves the procedural version intact.
+- `assets/codex/scene.js`: one transparent renderer and fixed
+  `#webgl-stage`, hardcover assembly, adaptive hero camera, bone-rigged reader,
+  and a `trackedViews` Map for independently clipped book/essay scenes.
+- `assets/codex/router.js`: home, catalogue, writing, all ten essays, biography,
+  media, contact, both book details, and legal routes retain the renderer.
+- Embedded scenes are disposed on route changes. Only visible viewports render.
+  Software rendering is opt-in; semantic covers and the text reader remain usable
+  when WebGL is unavailable. Reduced motion disables ornamental animation.
+- Amazon destinations belong to their individual volumes. BUILT retains its
+  verified retailer link rather than sending its readers to the second book.
+
+### Reader editorial sources
+
+The six reader pages use the existing repository's approved material. The second
+volume includes its contents and Chapter 1 excerpt. BUILT uses a clearly labelled
+book overview and companion essay list; no unsupplied epigraph or manuscript
+excerpt is represented as an authentic quotation.
+
+### Local verification
+
+Serve the repository root on port 4173, then run `tools/site_qa.py`,
+`tools/validate_site.py`, and `tools/codex_qa.mjs`. Browser tests require
+Playwright and @axe-core/playwright. Set `CHROME_PATH` to use an installed
+Chromium browser; otherwise Playwright uses its managed browser.

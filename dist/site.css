@@ -118,7 +118,7 @@ footer p{margin:.4rem 0 0}
 }
 
 /* The same tokens govern every route, including menus, forms and reader UI. */
-:root[data-theme="alabaster"]{color-scheme:light;--bg-page:#FAF8F3;--bg-elevated:#F2EFE7;--text-primary:#1C1B18;--text-muted:#5A554C;--gold-primary:#8B7238;--border-hairline:#D8D2C5;--button-ink:#FAF8F3}
+:root:is([data-theme="light"],[data-theme="alabaster"]){color-scheme:light;--bg-page:#FAF8F3;--bg-elevated:#F2EFE7;--text-primary:#1C1B18;--text-muted:#5A554C;--gold-primary:#8B7238;--border-hairline:#D8D2C5;--button-ink:#FAF8F3}
 html{background:var(--bg-page)}
 .site-header,.site-header.scrolled{background:var(--bg-page);border-bottom-color:var(--border-hairline);transition:none}
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:44px;height:44px;margin-left:auto;margin-right:1.2rem;border:1px solid var(--border-hairline);background:var(--bg-elevated);color:var(--gold-primary);cursor:pointer}
@@ -127,8 +127,12 @@ html{background:var(--bg-page)}
 @media(max-width:1024px){.theme-toggle{margin-right:.5rem}.wordmark{max-width:calc(100% - 102px);font-size:1rem;line-height:1.2}}
 
 :root{--text-accent:var(--gold-primary)}
-:root[data-theme="alabaster"]{--text-accent:color-mix(in srgb,var(--gold-primary) 88%,var(--text-primary))}
-:root[data-theme="alabaster"] .button,:root[data-theme="alabaster"] .skip-link{color:var(--text-primary);background:var(--bg-elevated)}
-:root[data-theme="alabaster"] .button:hover{background:var(--bg-page)}
+:root:is([data-theme="light"],[data-theme="alabaster"]){--text-accent:color-mix(in srgb,var(--gold-primary) 88%,var(--text-primary))}
+:root:is([data-theme="light"],[data-theme="alabaster"]) .button,:root:is([data-theme="light"],[data-theme="alabaster"]) .skip-link{color:var(--text-primary);background:var(--bg-elevated)}
+:root:is([data-theme="light"],[data-theme="alabaster"]) .button:hover{background:var(--bg-page)}
 /* Large editorial headings keep the exact palette gold. */
 :root .copy h1,:root .copy h2,:root .page-copy h2,:root .page-hero h1 em,:root .book-hero h1 em{color:var(--gold-primary)}
+
+:root{--bg-glass:rgba(13,13,12,.82);--text-secondary:#D0C9BC;--gold-display:#C5A059;--gold-eyebrow:#B5995A;--text-muted:var(--text-secondary);--gold-primary:var(--gold-display);--text-accent:var(--gold-eyebrow)}
+:root:is([data-theme="light"],[data-theme="alabaster"]){--bg-glass:rgba(250,248,243,.88);--text-secondary:#4A463E;--gold-display:#8B7238;--gold-eyebrow:#82692F;--text-muted:var(--text-secondary);--gold-primary:var(--gold-display);--text-accent:var(--gold-eyebrow)}
+.wordmark{letter-spacing:.16em}.nav a{text-decoration:none}.eyebrow{color:var(--gold-eyebrow)}

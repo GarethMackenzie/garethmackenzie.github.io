@@ -4,9 +4,9 @@ import {chromium} from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 const url=process.env.BASE_URL||'http://127.0.0.1:4173';
 const out='qa-reports/codex';fs.mkdirSync(out,{recursive:true});
-const browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});
+const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--enable-unsafe-swiftshader']});
 const results=[],failures=[];
-async function test(name,fn){try{await fn();results.push(name);console.log('PASS',name)}catch(e){failures.push(`${name}: ${e.stack}`);console.error('FAIL',name,e.message)}}
+async function test(name,fn){if(process.env.QA_FILTER&&!new RegExp(process.env.QA_FILTER).test(name))return;try{await fn();results.push(name);console.log('PASS',name)}catch(e){failures.push(`${name}: ${e.stack}`);console.error('FAIL',name,e.message)}}
 const settle=page=>page.waitForTimeout(1300);
 async function start(context,{enable3D=true}={}){
  await context.addInitScript(()=>localStorage.setItem('built-analytics-consent','declined'));
@@ -27,8 +27,8 @@ for(const width of [320,390,768,1024,1440,1920]){
  await page.waitForFunction(()=>document.body.dataset.codexReady==='true',{},{timeout:20000});await settle(page);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'horizontal overflow');
  const state=()=>page.locator('#experience').evaluate(el=>JSON.parse(el.dataset.sceneState));
- let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert.equal(s.bookCount,2);assert.equal(s.particleCount,2000);assert(s.transparent);assert.equal(s.atmosphere.z,-1.5);
- if(width>=960){assert.equal(s.atmosphere.x,7);assert.equal(s.atmosphere.y,4.5)}
+ let s=await state();assert.equal(s.active,0);assert.equal(s.transition,0);assert(s.first.z>s.second.z);assert(s.first.scale>s.second.scale);assert.equal(s.bookCount,2);assert.equal(s.particleCount,1600);assert(s.transparent);assert.equal(s.atmosphere.z,-2.3);
+ if(width>=960){assert.equal(s.atmosphere.x,7.5);assert.equal(s.atmosphere.y,4.8)}
  if(width<768){const bar=await page.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=844-15,'chapter bar overlaps bottom safe margin');assert(bar.x>=15&&bar.x+bar.width<=width-15)}
  await page.screenshot({path:`${out}/hero-${width}.png`});
  await page.evaluate(()=>window.scrollTo(0,document.getElementById('experience').offsetHeight*1.65));await settle(page);
@@ -75,7 +75,8 @@ await test('short mobile viewports: safe chapter bar and two scroll stops',async
    await p.evaluate(offset=>window.scrollTo(0,document.getElementById('experience').offsetHeight*offset),offset);await settle(p);
    const bar=await p.locator('.edition-index').boundingBox();assert(bar.y+bar.height<=height-15);assert(bar.y>=0);
    assert.equal(await p.locator('#experience').evaluate(el=>Math.round(el.getBoundingClientRect().height)),height);
-   assert(await p.locator(`#folio-${index+1} .cta`).isVisible());
+   assert(await p.locator(`#folio-${index+1} .cta`).first().isVisible());
+   const copy=await p.locator(`#folio-${index+1} .copy`).boundingBox();assert(copy.y+copy.height<bar.y,"editorial copy overlaps the ledger");
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
    await p.screenshot({path:`${out}/compact-${width}-${height}-${index}.png`});
    await openBook(p,index);assert(await p.locator('#reader').evaluate(el=>el.open));await p.keyboard.press('Escape');
@@ -98,17 +99,17 @@ await test('Worker unavailable: fallback detection and 3D opt-in',async()=>{
 });
 await test('WebGL context loss and resizing during reader transition',async()=>{
  const c=await browser.newContext(),p=await start(c);await p.waitForFunction(()=>document.body.dataset.codexReady==='true');await openBook(p,0);await p.locator('#next').click();await p.setViewportSize({width:390,height:844});
- await p.evaluate(()=>{const canvas=document.getElementById('stage');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');gl.getExtension('WEBGL_lose_context').loseContext()});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.keyboard.press('Escape');await openBook(p,1);await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await c.close();
+ await p.evaluate(()=>{const canvas=document.getElementById('webgl-stage');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');gl.getExtension('WEBGL_lose_context').loseContext()});await p.waitForFunction(()=>document.body.classList.contains('no-gl'));await p.keyboard.press('Escape');await openBook(p,1);await p.locator('#next').click();assert.match(await p.locator('#folioNo').textContent(),/Page 2/);await c.close();
 });
 await test('shared themes: persistence, contrast, transparent WebGL and Amazon destination',async()=>{
  const c=await browser.newContext({viewport:{width:390,height:844}}),p=await start(c);
  await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
- for(const theme of ['alabaster','obsidian']){
+ for(const theme of ['light','obsidian']){
   await p.locator('[data-theme-toggle]').click();assert.equal(await p.evaluate(()=>localStorage.getItem('mackenzie_theme')),theme);
   for(const route of ['/','/books/','/insights/','/about/']){
    await p.goto(url+route,{waitUntil:'networkidle'});
    assert.equal(await p.evaluate(()=>document.documentElement.dataset.theme),theme);
-   assert.equal(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor),theme==='alabaster'?'rgb(250, 248, 243)':'rgb(13, 13, 12)');
+   assert.equal(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor),theme==='light'?'rgb(250, 248, 243)':'rgb(13, 13, 12)');
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
    const axe=await new AxeBuilder({page:p}).analyze();assert.equal(axe.violations.length,0,route+' '+theme+': '+axe.violations.map(v=>v.id));
    await p.screenshot({path:`${out}/theme-${theme}-${route.replaceAll('/','')||'home'}.png`});
@@ -128,17 +129,17 @@ await test('shared themes: persistence, contrast, transparent WebGL and Amazon d
 await test('persistent views: one canvas, history, inspection, reader, focus and route fallbacks',async()=>{
  const c=await browser.newContext({viewport:{width:1440,height:1000}}),p=await start(c);
  await p.waitForFunction(()=>document.body.dataset.codexReady==='true');
- await p.evaluate(()=>{window.testCanvas=document.getElementById('stage');window.testRenderer=window.MackenzieScene.renderer;window.testDocument=document});
+ await p.evaluate(()=>{window.testCanvas=document.getElementById('webgl-stage');window.testRenderer=window.MackenzieScene.renderer;window.testDocument=document});
  for(const [view,path] of [['books','/books/'],['writing','/insights/'],['about','/about/'],['home','/']]){
   await p.locator(view==='home'?'.site-header .wordmark':`.site-header a[href="${path}"]`).click();
   await p.waitForFunction(view=>document.body.dataset.view===view&&!document.body.hasAttribute('aria-busy'),view);await settle(p);
-  assert(await p.evaluate(()=>window.testCanvas===document.getElementById('stage')&&window.testRenderer===window.MackenzieScene.renderer&&window.testDocument===document),'renderer or document replaced');
-  assert.equal(await p.locator('canvas#stage').count(),1);assert.equal(await p.locator('main h1').count(),1);
+  assert(await p.evaluate(()=>window.testCanvas===document.getElementById('webgl-stage')&&window.testRenderer===window.MackenzieScene.renderer&&window.testDocument===document),'renderer or document replaced');
+  assert.equal(await p.locator('canvas#webgl-stage').count(),1);assert.equal(await p.locator('main h1').count(),1);
   assert(await p.evaluate(()=>document.activeElement===document.querySelector('main h1')),'route focus');
   if(view==='books'){
-   const before=await p.evaluate(()=>JSON.parse(window.MackenzieRouter.home.querySelector('#experience').dataset.sceneState).editorial.angle);
-   await p.locator('[data-orbit="1"]').click();await settle(p);
-   const after=await p.evaluate(()=>JSON.parse(window.MackenzieRouter.home.querySelector('#experience').dataset.sceneState).editorial.angle);assert(after>before);
+   const before=await p.evaluate(()=>window.MackenzieScene.trackedViews.values().next().value.scene.children.find(x=>x.type==='Group').rotation.y);
+   await p.locator('[data-slot-orbit="1"]').first().click();await settle(p);
+   const after=await p.evaluate(()=>window.MackenzieScene.trackedViews.values().next().value.scene.children.find(x=>x.type==='Group').rotation.y);assert(after>before);
    await p.locator('[data-preview="1"]').click();await settle(p);assert.match(await p.locator('#folioNo').innerText(),/1 \/ 6/);
    await p.keyboard.press('ArrowRight');await settle(p);assert.match(await p.locator('#pageTitle').innerText(),/Table of Contents/);
    for(let i=0;i<4;i++){await p.locator('#next').click();await settle(p)}assert.match(await p.locator('#folioNo').innerText(),/6 \/ 6/);assert(await p.locator('#buy').isVisible());
@@ -152,5 +153,18 @@ await test('persistent views: one canvas, history, inspection, reader, focus and
  await p.evaluate(()=>{window.MackenzieRouter.navigate('/books/');window.MackenzieRouter.navigate('/about/')});await p.waitForFunction(()=>document.body.dataset.view==='about'&&!document.body.hasAttribute('aria-busy'));
  await p.setViewportSize({width:390,height:844});await settle(p);await p.screenshot({path:`${out}/persistent-about-390.png`});
  assert.deepEqual(p.testErrors,[]);await c.close();
+});
+await test('missing raster covers: procedural books keep the renderer and reader usable',async()=>{
+ const c=await browser.newContext({viewport:{width:390,height:844}});await c.route('**/assets/book-cover-*.webp',r=>r.abort());await c.route('**/assets/when-advantage-expires.jpg',r=>r.abort());
+ const p=await start(c);await p.waitForFunction(()=>window.MackenzieScene.state.ready);await settle(p);assert.equal(await p.locator('canvas#webgl-stage').count(),1);assert(await p.evaluate(()=>document.body.classList.contains('gl')));await p.screenshot({path:out+'/procedural-fallback.png'});await openBook(p,1);assert(await p.locator('#buy').isVisible());await p.keyboard.press('Escape');await c.close();
+});
+await test('all route families: direct entry, renderer persistence and robots metadata',async()=>{
+ const c=await browser.newContext({viewport:{width:390,height:844}}),p=await start(c);await p.waitForFunction(()=>window.MackenzieScene.state.ready);await p.evaluate(()=>window.savedRenderer=window.MackenzieScene.renderer);
+ for(const route of ['/media/','/contact/','/built/','/when-advantage-expires/','/insights/ownership/','/privacy/','/']){
+  await p.evaluate(route=>window.MackenzieRouter.navigate(route),route);assert(await p.evaluate(()=>window.savedRenderer===window.MackenzieScene.renderer));assert.equal(await p.locator('h1').count(),1);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  if(route==='/privacy/')assert.match(await p.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
+  if(route==='/')assert.doesNotMatch(await p.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
+ }
+ await p.goto(url+'/contact/');await p.waitForFunction(()=>window.MackenzieRouter?.view==='contact');assert.equal(await p.locator('[data-contact-form]').count(),1);await c.close();
 });
 await browser.close();fs.writeFileSync(`${out}/results.json`,JSON.stringify({passed:results,failures},null,2));if(failures.length)process.exitCode=1;
