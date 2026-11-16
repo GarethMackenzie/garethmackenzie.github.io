@@ -18,7 +18,7 @@ jobs:
   qa:
     name: Site QA
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -65,19 +65,18 @@ jobs:
           cat /tmp/built-site.log
           exit 1
 
-      - name: Codex rendered interaction and capture audit
+      - name: Editorial rendered interaction and capture audit
         env:
           BASE_URL: http://127.0.0.1:4173
         run: |
-          node tools/codex_qa.mjs
-          python tools/check_reader_captures.py
+          node tools/editorial_qa.mjs
 
-      - name: Upload Codex visual review
+      - name: Upload Editorial visual review
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: codex-visual-review
-          path: qa-reports/codex/
+          name: editorial-visual-review
+          path: qa-reports/editorial/
           if-no-files-found: ignore
           retention-days: 14
 

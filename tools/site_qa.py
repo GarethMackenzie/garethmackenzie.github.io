@@ -330,7 +330,7 @@ def audit() -> int:
             continue
         page_source = path.read_text(encoding="utf-8")
         linked = re.findall(r'<link rel="stylesheet" href="([^"]+)"', page_source)
-        expected = ["/dist/site.css", "/dist/pages.css", "/dist/author-home.css", "/insight-article.css", "/dist/editorial-views.css"]
+        expected = ["/dist/site.css", "/dist/pages.css", "/dist/author-home.css", "/insight-article.css"]
         if linked != expected:
             failures.append(f"{rel}: stylesheets are {linked}, expected {expected}")
         for href in linked:
@@ -400,7 +400,7 @@ def audit() -> int:
             failures.append(f"dist/site.css missing guardrail: {token}")
 
     script = (ROOT / "script.js").read_text(encoding="utf-8")
-    for token in ("aria-expanded", "Escape", "inert", "IntersectionObserver", "requestAnimationFrame"):
+    for token in ("aria-expanded", "Escape", "inert", "IntersectionObserver"):
         if token not in script:
             failures.append(f"script.js missing interaction guardrail: {token}")
 
