@@ -33,6 +33,7 @@ try{
     await page.screenshot({path:`${out}/${theme}-${width}-${route.replace(/[^a-z0-9]/g,'')||'home'}.png`,fullPage:true});checks++;
    }
    await page.goto(base);
+   assert.equal(await page.locator('#reader a:not([href])').count(),0,'Preview links always have crawlable destinations');
    assert.equal(await page.locator('.book-feature').count(),2);
    for(const book of [0,1]){
     const card=page.locator('.book-feature').nth(book),opener=card.locator('[data-preview]');

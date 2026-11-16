@@ -7,6 +7,9 @@
   dialog.className = 'reader';
   dialog.setAttribute('aria-labelledby', 'reader-book');
   dialog.innerHTML = `<header class="reader-header"><div><p class="eyebrow">Reading preview</p><h2 id="reader-book"></h2></div><button type="button" data-close-reader aria-label="Close reading preview">Close <span aria-hidden="true">×</span></button></header><div class="reader-scroll" tabindex="0" role="region" aria-label="Preview text"><p class="reader-notice"></p><p class="eyebrow" id="reader-position" role="status" aria-live="polite"></p><article class="reader-page"><h3 tabindex="-1"></h3><div class="reader-prose"></div></article></div><footer class="reader-footer"><div class="reader-pagination"><button type="button" data-previous>← Previous</button><button type="button" data-next>Next →</button></div><a class="button reader-buy" target="_blank" rel="noopener noreferrer">Buy on Amazon ↗<span class="sr-only"> (opens in a new tab)</span></a><a class="text-link reader-about">About the book →</a></footer>`;
+  // Hidden dialog links still need real destinations for crawlers and assistive tools.
+  dialog.querySelector('.reader-buy').href = books[0].purchase;
+  dialog.querySelector('.reader-about').href = '/built/';
   document.body.append(dialog);
   const previous = dialog.querySelector('[data-previous]');
   const next = dialog.querySelector('[data-next]');
