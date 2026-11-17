@@ -18,7 +18,7 @@ const series = [
   ['/insights/strategic-execution/', 'Strategy becomes real only when execution has a system'],
 ];
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, headless: true });
 try {
   // Raw-source semantics must remain correct with JavaScript disabled.
   const noJs = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });

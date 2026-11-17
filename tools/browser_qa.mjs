@@ -168,7 +168,7 @@ async function testNoJavaScriptFallback(browser) {
         return main ? getComputedStyle(main).display !== 'none' && main.getBoundingClientRect().height > 0 : false;
       })(),
       hiddenRevealCount: [...document.querySelectorAll('.reveal')].filter((el) => getComputedStyle(el).opacity === '0').length,
-      hiddenHeroCount: [...document.querySelectorAll('.stage-text, .stage-plate, .stage-cover, .stage-caption')].filter((el) => getComputedStyle(el).opacity === '0').length,
+      hiddenHeroCount: [...document.querySelectorAll('.author-intro, .book-feature')].filter((el) => getComputedStyle(el).opacity === '0').length,
     }));
     if (!state.navVisible) fail(`no-JS ${route}: navigation fallback is hidden`);
     if (!state.mainVisible) fail(`no-JS ${route}: main content is hidden`);
@@ -187,7 +187,7 @@ async function testReducedMotion(browser) {
   const page = await context.newPage();
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
   const state = await page.evaluate(() => {
-    const hero = document.querySelector('.stage-text');
+    const hero = document.querySelector('.author-intro');
     const reveal = document.querySelector('.reveal');
     const heroStyle = hero ? getComputedStyle(hero) : null;
     const revealStyle = reveal ? getComputedStyle(reveal) : null;
@@ -319,7 +319,7 @@ async function testContactFormSemantics(browser) {
   note('contact form validation semantics and status region checked');
 }
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, headless: true });
 try {
   const viewports = [
     [{ width: 320, height: 800 }, '320px'],

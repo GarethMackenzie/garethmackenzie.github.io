@@ -7,44 +7,6 @@ const nav = document.querySelector('[data-nav]');
 const compactMenuQuery = window.matchMedia('(max-width: 1024px)');
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-const isHomePage = document.body.classList.contains('author-home');
-const isPremiumInterior = !isHomePage;
-if (isPremiumInterior) {
-  document.body.classList.add('premium-page');
-  header?.classList.add('premium-header');
-  if (!document.querySelector('.reading-progress')) {
-    const progress = document.createElement('div');
-    progress.className = 'reading-progress';
-    progress.setAttribute('aria-hidden', 'true');
-    progress.innerHTML = '<span data-reading-progress></span>';
-    document.body.prepend(progress);
-  }
-}
-
-let progressBar = isPremiumInterior ? document.querySelector('[data-reading-progress]') : null;
-let viewportFrame = 0;
-
-const updateViewportState = () => {
-  viewportFrame = 0;
-  header?.classList.toggle('scrolled', window.scrollY > 24);
-
-  if (progressBar) {
-    const rootElement = document.documentElement;
-    const max = Math.max(1, rootElement.scrollHeight - window.innerHeight);
-    const progress = Math.min(100, Math.max(0, (window.scrollY / max) * 100));
-    progressBar.style.width = `${progress}%`;
-  }
-};
-
-const scheduleViewportUpdate = () => {
-  if (viewportFrame) return;
-  viewportFrame = requestAnimationFrame(updateViewportState);
-};
-
-scheduleViewportUpdate();
-window.addEventListener('scroll', scheduleViewportUpdate, { passive: true });
-window.addEventListener('resize', scheduleViewportUpdate, { passive: true });
-
 const setMenuState = (open, { restoreFocus = false } = {}) => {
   if (!menuButton || !nav) return;
 
@@ -117,58 +79,6 @@ document.querySelectorAll('[data-year]').forEach(element => {
   element.textContent = new Date().getFullYear();
 });
 
-if (isPremiumInterior) {
-  progressBar = document.querySelector('[data-reading-progress]');
-  scheduleViewportUpdate();
-
-  const canHover = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
-  const reduceMotion = reducedMotionQuery.matches;
-  const book = document.querySelector('.book-shell');
-  if (book && canHover && !reduceMotion) {
-    const stage = book.closest('.book-stage');
-    let pointerFrame = 0;
-    let pointerX = 0;
-    let pointerY = 0;
-
-    const renderBookTilt = () => {
-      pointerFrame = 0;
-      if (!stage) return;
-      const rect = stage.getBoundingClientRect();
-      const x = (pointerX - rect.left) / rect.width - 0.5;
-      const y = (pointerY - rect.top) / rect.height - 0.5;
-      book.style.transform = `rotateY(${x * 6}deg) rotateX(${y * -4}deg) translateY(-3px)`;
-    };
-
-    stage?.addEventListener('pointermove', (event) => {
-      pointerX = event.clientX;
-      pointerY = event.clientY;
-      if (!pointerFrame) pointerFrame = requestAnimationFrame(renderBookTilt);
-    }, { passive: true });
-
-    stage?.addEventListener('pointerleave', () => {
-      if (pointerFrame) cancelAnimationFrame(pointerFrame);
-      pointerFrame = 0;
-      book.style.transform = '';
-    });
-  }
-
-  document.querySelectorAll('.systems-flow').forEach((element) => {
-    if (!('IntersectionObserver' in window) || reduceMotion) {
-      element.classList.add('activated');
-      return;
-    }
-    const systemsObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('activated');
-          systemsObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.28 });
-    systemsObserver.observe(element);
-  });
-}
-
 const contactForm = document.querySelector('[data-contact-form]');
 if (contactForm) {
   const status = document.getElementById('form-status');
@@ -191,10 +101,9 @@ if (contactForm) {
 const themeToggle=document.querySelector('[data-theme-toggle]');
 function syncTheme(){
  const light=(root.dataset.theme==='light'||root.dataset.theme==='alabaster');
- themeToggle?.setAttribute('aria-label',light?'Switch to Sovereign theme':'Switch to Editorial theme');
+ themeToggle?.setAttribute('aria-label',light?'Switch to dark theme':'Switch to light theme');
  themeToggle?.setAttribute('title',light?'Editorial · switch to Sovereign':'Sovereign · switch to Editorial');
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',light?'#FAF8F3':'#0D0D0C');
- window.dispatchEvent(new Event('mackenzie-theme-change'));
 }
 themeToggle?.addEventListener('click',()=>{
  root.dataset.theme=(root.dataset.theme==='light'||root.dataset.theme==='alabaster')?'obsidian':'light';

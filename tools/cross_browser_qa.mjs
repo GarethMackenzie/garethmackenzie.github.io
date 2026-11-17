@@ -34,16 +34,14 @@ for (const [name, engine] of [['firefox', firefox], ['webkit', webkit]]) {
     }
     await page.goto(`${baseURL}/`, {waitUntil:'networkidle'});
     for(const book of [0,1]) {
-      await page.locator(`.edition-index [data-edition="${book}"]`).click();
-      await page.waitForFunction(book=>document.querySelector(`#folio-${book+1}`).getAttribute("aria-hidden")==="false",book);
-      await page.locator(`.art-hit[data-open="${book}"]`).press("Enter");
+      await page.locator(`a[data-preview="${book}"]`).press("Enter");
       if(!(await page.locator('#reader').evaluate(el=>el.open))) fail(`${name}: reader ${book} failed to open`);
       if(book<2) {
         await page.keyboard.press('ArrowRight');
-        await page.waitForFunction(()=>document.getElementById('folioNo').textContent.startsWith('Page 2'));
+        await page.waitForFunction(()=>document.getElementById('reader-position').textContent.startsWith('Page 2'));
       }
       await page.keyboard.press('Escape');
-      if(!(await page.locator(`.art-hit[data-open="${book}"]`).evaluate(el=>el===document.activeElement))) fail(`${name}: reader focus was not restored`);
+      if(!(await page.locator(`.book-actions a[data-preview="${book}"]`).evaluate(el=>el===document.activeElement))) fail(`${name}: reader focus was not restored`);
     }
     if (errors.length) fail(`${name} ${width}px: script errors ${errors.slice(0, 3).join(' | ')}`);
     if (width === 390) {

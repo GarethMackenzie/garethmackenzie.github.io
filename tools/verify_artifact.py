@@ -16,7 +16,7 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parents[1]
 SITE_HOST = "mackenziebooks.bbroot.com"
 FORBIDDEN = ["tools", ".github", "docs", "node_modules", "qa-reports", "README.md", "MIGRATION-NOTES.md", "package.json", "package-lock.json"]
-REQUIRED = ["index.html", "404.html", "books/index.html", "when-advantage-expires/index.html", "built/index.html", "about/index.html", "media/index.html", "contact/index.html",
+REQUIRED = ["assets/books.js", "assets/reader.js", "index.html", "404.html", "books/index.html", "when-advantage-expires/index.html", "built/index.html", "about/index.html", "media/index.html", "contact/index.html",
             "insights/index.html", "robots.txt", "sitemap.xml", "dist/site.css", "dist/pages.css", "dist/author-home.css", "insight-article.css",
             "assets/fonts/newsreader-latin-opsz-normal.woff2", "assets/fonts/instrument-sans-latin-wght-normal.woff2", "assets/social-card.jpg", "assets/social-card-home.jpg"]
 
@@ -47,6 +47,8 @@ class References(HTMLParser):
 def stage(target: Path) -> None:
     gate = (ROOT / ".github" / "workflows" / "production-gate.yml").read_text(encoding="utf-8")
     lists = {name: re.search(rf"{name}=\(\n(.*?)\n\s*\)", gate, re.S).group(1).split() for name in ("runtime_files", "runtime_dirs")}
+    if target.resolve() != (ROOT / "_site").resolve():
+        raise ValueError("Staging is restricted to the repository _site directory")
     shutil.rmtree(target, ignore_errors=True)
     target.mkdir(parents=True)
     for name in lists["runtime_files"]:

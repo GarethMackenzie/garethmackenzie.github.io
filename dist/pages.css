@@ -66,10 +66,9 @@
 .book-title{display:block;font:400 clamp(4.5rem,11vw,9.5rem)/.9 var(--display);letter-spacing:-.035em;color:var(--ink)}
 .book-hero h1 em{display:block;margin-top:1.1rem;font:400 clamp(1.5rem,2.8vw,2.4rem)/1.2 var(--display);letter-spacing:-.01em;color:var(--text-accent)}
 .book-hero .hero-lead{max-width:30rem}
-.book-stage{grid-column:9/13;perspective:1200px}
-.book-shell{position:relative;transition:transform .3s ease;box-shadow:0 40px 70px -28px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.07)}
-.book-shell::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,255,255,0) 2.5%,rgba(0,0,0,.2) 4%,rgba(0,0,0,0) 8%)}
-.book-cover{width:100%;aspect-ratio:1600/2560;object-fit:cover}
+.book-stage{grid-column:9/13}
+ .book-shell{box-shadow:0 12px 24px #0003}
+.book-cover{width:100%;height:auto}
 
 /* Ten shifts and other numbered lists */
 .section-intro{max-width:var(--measure);margin-bottom:clamp(2rem,4vw,3rem)}
@@ -107,19 +106,6 @@
 /* Closing call to action */
 .final-cta{width:var(--wrap);margin-inline:auto;padding-block:var(--section-y);border-top:1px solid var(--rule)}
 .final-cta h2{max-width:16ch;margin:1rem 0 2rem;font-size:clamp(2rem,4.2vw,3.75rem);line-height:1.08;letter-spacing:-.02em}
-
-/* Books catalogue. Entries carry a status, so the flagship can become published work beside later titles. */
-.catalogue{display:grid;row-gap:clamp(3rem,6vw,5rem)}
-.catalogue-entry{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--col-gap);align-items:center}
-.catalogue-entry+.catalogue-entry{padding-top:clamp(3rem,6vw,5rem);border-top:1px solid var(--rule)}
-.catalogue-cover{grid-column:1/3;display:block;box-shadow:0 30px 50px -24px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.07)}
-.catalogue-body{grid-column:4/11}
-.catalogue-entry--flagship .catalogue-cover{grid-column:1/5}
-.catalogue-entry--flagship .catalogue-body{grid-column:6/12}
-.catalogue-body h2{margin:.6rem 0 .4rem;font:400 clamp(2.4rem,5vw,4.25rem)/1 var(--display);letter-spacing:-.025em}
-.catalogue-body h2 a:hover{color:var(--text-accent)}
-.catalogue-sub{font:italic 400 clamp(1.15rem,1.8vw,1.4rem)/1.35 var(--serif);color:var(--text-accent)}
-.catalogue-body p:not(.eyebrow):not(.catalogue-sub){max-width:34rem;margin-top:1.1rem;font:400 1.1875rem/1.7 var(--serif);color:var(--ink-2)}
 
 /* Media */
 .routes{border-top:1px solid var(--rule)}
@@ -175,9 +161,6 @@
   .author-portrait{max-width:520px}
   .learning-grid{grid-template-columns:1fr}
   .about-links-grid,.media-kit-grid{grid-template-columns:1fr}
-  .catalogue-entry{display:flex;flex-direction:column;align-items:flex-start;gap:1.75rem}
-  .catalogue-cover{width:min(46%,220px)}
-  .catalogue-entry--flagship .catalogue-cover{width:min(60%,280px)}
   .routes li{grid-template-columns:1fr;row-gap:.5rem}
   .routes h3,.routes p,.routes .text-link{grid-column:1;justify-self:start}
   .insights-essay-card{grid-template-columns:1fr;row-gap:.6rem}

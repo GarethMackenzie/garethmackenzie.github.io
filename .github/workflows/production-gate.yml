@@ -67,7 +67,6 @@ jobs:
             404.html
             analytics.js
             script.js
-            premium-home.js
             robots.txt
             sitemap.xml
             insight-article.css
